@@ -11,11 +11,22 @@ themes/     -> renk temaları (omarchy'den uyarlandı)
 templates/  -> tema şablonları (*.tpl)
 ```
 
-## Kurulum
+## Kurulum / geri yükleme
+
+Yedek: <https://github.com/savpavi/dotfiles> (private).
 
 ```bash
-git clone <repo> ~/dotfiles
-~/dotfiles/bin/dot-link
+git clone git@github.com:savpavi/dotfiles.git ~/dotfiles
+~/dotfiles/bin/dot-link          # önce --dry-run ile bak
+~/dotfiles/bin/dot-theme reapply # temayı uygula
+```
+
+Ayrıca elle bağlanması gerekenler (repo dışında kalan üç şey):
+
+```bash
+ln -s ~/dotfiles/docs/hyprland-cheatsheet.md ~/hyprland-cheatsheet.md
+ln -sfn ~/dotfiles/themes ~/Pictures/wallpapers/omarchy
+echo 'export PATH="$HOME/dotfiles/bin:$PATH"' >> ~/.zshrc
 ```
 
 `dot-link`, `~/.config` altındaki mevcut dosyaları
