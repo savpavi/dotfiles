@@ -15,7 +15,7 @@ set -uo pipefail
 DOT="${DOT_DIR:-$HOME/dotfiles}"
 THEMES_DIR="$DOT/themes"
 STATE="${DOT_STATE:-$HOME/.local/state/dotfiles}/theme"
-WALLPAPERS="${DOT_WALLPAPERS:-$HOME/Pictures/wallpapers/omarchy}"
+WALLPAPERS="${DOT_WALLPAPERS:-$THEMES_DIR}"
 CFG="${XDG_CONFIG_HOME:-$HOME/.config}"
 # Duvar kağıdı uygulanacak monitörler (dikey DP-3 varsayılan olarak hariç)
 MONITORS="${DOT_THEME_MONITORS:-DP-1}"
@@ -41,8 +41,8 @@ current_theme() {
 
 theme_backgrounds() {
   local theme="$1"
-  [[ -d $WALLPAPERS/$theme ]] || return 0
-  find -L "$WALLPAPERS/$theme" -maxdepth 1 -type f \
+  [[ -d $WALLPAPERS/$theme/backgrounds ]] || return 0
+  find -L "$WALLPAPERS/$theme/backgrounds" -maxdepth 1 -type f \
     \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.bmp' \) \
     | sort
 }
