@@ -1,0 +1,40 @@
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "source": "fedora",
+        "padding": {
+            "top": 2,
+            "right": 4
+        }
+    },
+    "display": {
+        "separator": "   ",
+        "key": {
+            "width": 13
+        }
+    },
+    "modules": [
+        "title",
+        "separator",
+        { "type": "os",       "key": "{#81}󰣛 OS" },
+        { "type": "kernel",   "key": "{#81}󰜗 Kernel", "format": "{release}" },
+        { "type": "uptime",   "key": "{#81}󰅐 Uptime" },
+        { "type": "command",  "key": "{#81}󰃭 Kurulum", "text": "b=$(stat -c %W /); n=$(date +%s); s=$((n-b)); d=$((s/86400)); h=$((s%86400/3600)); printf '%s (%d gün %d saat)' \"$(LC_TIME=tr_TR.UTF-8 date -d @$b '+%d %B %Y')\" $d $h" },
+        "break",
+        { "type": "shell",    "key": "{#81} Shell" },
+        { "type": "de",       "key": "{#81} Desktop" },
+        { "type": "terminal", "key": "{#81} Terminal" },
+        { "type": "display",  "key": "{#81}󰍹 Display", "compactType": "original" },
+        "break",
+        { "type": "cpu",      "key": "{#81} CPU", "showPeCoreCount": true },
+        { "type": "gpu",      "key": "{#81}󰢮 GPU" },
+        { "type": "memory",   "key": "{#81} Memory" },
+        { "type": "disk",     "key": "{#81}󰋊 Samsung", "folders": "/" },
+        { "type": "disk",     "key": "{#81}󰋊 Lexar", "folders": "/srv/lexar" },
+        { "type": "disk",     "key": "{#81}󰦚 Depolama", "folders": "/srv/storage" },
+        "break",
+        { "type": "locale",   "key": "{#81}󰗊 Locale" },
+        "break",
+        "colors"
+    ]
+}
