@@ -70,6 +70,12 @@ local menu        = "hyprlauncher"
 -- Or execute your favorite apps at launch like this:
 --
 hl.on("hyprland.start", function ()
+  -- Oturum ortam degiskenlerini systemd user session ve dbus tarafina aktar.
+  -- Bunlar olmadan portal/dosya secici/flatpak uygulamalari yavas veya yanlis
+  -- ortamla aciliyor. (omarchy default/hypr/autostart.lua)
+  hl.exec_cmd("systemctl --user import-environment $(env | cut -d'=' -f 1)")
+  hl.exec_cmd("dbus-update-activation-environment --systemd --all")
+
   hl.exec_cmd("waybar")
   hl.exec_cmd("swaync")                                  -- mako degil: sistemde kurulu olan bu
   hl.exec_cmd("systemctl --user start hyprpolkitagent")  -- parola/yetki pencereleri
@@ -248,6 +254,23 @@ hl.config({
     misc = {
         force_default_wallpaper = 0,
         disable_hyprland_logo   = true,
+
+        -- omarchy default/hypr/looknfeel.lua'dan alinanlar
+        disable_splash_rendering   = true,
+        disable_scale_notification = true,
+        focus_on_activate          = true,  -- uygulama kendini one cagirinca odaklan
+        anr_missed_pings           = 3,     -- donmus uygulama uyarisi
+        on_focus_under_fullscreen  = 1,     -- tam ekranin altinda kalan pencereye odak
+        initial_workspace_tracking = 0,
+    },
+
+    cursor = {
+        hide_on_key_press        = true,  -- yazarken imlec kaybolur
+        warp_on_change_workspace = 1,     -- calisma alani degisince imlec takip eder
+    },
+
+    binds = {
+        hide_special_on_workspace_change = true,
     },
 })
 
@@ -328,6 +351,9 @@ hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("pkill -x waybar; waybar"))
 
 hl.bind("Print", hl.dsp.exec_cmd([[mkdir -p "$HOME/Pictures/Screenshots" && grim "$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"]]))
 hl.bind("SHIFT + Print", hl.dsp.exec_cmd([[geometry="$(slurp)" && [ -n "$geometry" ] && mkdir -p "$HOME/Pictures/Screenshots" && grim -g "$geometry" "$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"]]))
+
+-- Renk secici (omarchy bindings/utilities.lua). Calisiyorsa kapatir, degilse acar.
+hl.bind("SUPER + Print", hl.dsp.exec_cmd("pkill hyprpicker || hyprpicker -a"))
 
 -- Move focus with mainMod + arrow keys
 hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
@@ -441,6 +467,9 @@ hl.window_rule({
 
 -- omarchy'den uyarlanan pencere kuralları (varsayılan saydamlık + PiP).
 require("windows")
+
+-- omarchy tiling.lua'nin cakismayan kismi: gruplar, scratchpad, ALT+TAB dongusu.
+require("tiling")
 
 ------------------
 ----  TEMA    ----

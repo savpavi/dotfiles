@@ -1,17 +1,21 @@
 # omarchy quattro modülleri — değerlendirme ve puanlama
 
-`windows.lua` uygulandı (bkz. `~/.config/hypr/windows.lua`). Bu dosya geri kalan
-modülleri, **mevcut `hyprland.lua`'nla karşılaştırarak** puanlıyor.
+**Durum (22.08.2026):** "Al" denilen dört maddenin dördü de uygulandı.
+Uygulanan dosyalar: `~/.config/hypr/windows.lua`, `~/.config/hypr/tiling.lua`
+ve `hyprland.lua` içindeki üç düzenleme (hyprpicker bind'i, `hyprland.start`
+env aktarımı, genişletilmiş `misc`/`cursor`/`binds` bloğu).
+
+Bu dosya modülleri **mevcut `hyprland.lua`'nla karşılaştırarak** puanlıyor.
 
 Puanlama: **Zorluk** 1 (kopyala-yapıştır) → 5 (yeniden yazmak gerekir).
 **Kazanç** 0 (sende zaten var) → 5 (ciddi eksik kapanır).
 
 | Modül | Zorluk | Kazanç | Karar |
 |---|:---:|:---:|---|
-| `bindings/tiling.lua` (çakışmayan kısım) | 3 | **4** | **Al** |
-| `autostart.lua` (ilk 2 satır) | **1** | 3 | **Al** |
-| `looknfeel.lua` (sadece misc bloğu) | 2 | 2 | Al, isteğe bağlı |
-| `bindings/utilities.lua` (sadece hyprpicker) | 1 | 1 | Al, tek satır |
+| `bindings/tiling.lua` (çakışmayan kısım) | 3 | **4** | ✅ uygulandı → `hypr/tiling.lua` |
+| `autostart.lua` (ilk 2 satır) | **1** | 3 | ✅ uygulandı → `hyprland.start` |
+| `looknfeel.lua` (sadece misc bloğu) | 2 | 2 | ✅ uygulandı → `misc`/`cursor`/`binds` |
+| `bindings/utilities.lua` (sadece hyprpicker) | 1 | 1 | ✅ uygulandı → `SUPER+Print` |
 | `bindings/clipboard.lua` | 4 | 2 | Bekle |
 | `input.lua` | 2 | 1 | **Alma — riskli** |
 | `envs.lua` | 3 | 1 | **Alma — riskli** |
@@ -206,3 +210,44 @@ flatpak/binary çalıştıran karşılıkları var.
 - **webapp** — bir siteyi ayrı pencere uygulaması gibi aç (Chromium `--app=`).
 
 İkisi de yeni script yazmak demek; kopyalanabilir bir şey yok.
+
+---
+
+## Uygulama sonrası — yeni kısayollar (22.08.2026)
+
+`tiling.lua` ile gelen 42 bind. Hiçbir mevcut bind kaybolmadı (72 → 114).
+
+| Kısayol | İşlev |
+|---|---|
+| `SUPER+G` | Pencere grubu aç/kapa (sekmeli pencere) |
+| `SUPER+ALT+G` | Pencereyi gruptan çıkar |
+| `SUPER+ALT+ok` | Pencereyi komşu gruba taşı |
+| `SUPER+ALT+TAB` / `+SHIFT` | Grup içinde sonraki / önceki |
+| `SUPER+ALT+tekerlek` | Grup içinde gez |
+| `SUPER+ALT+1..5` | Doğrudan o sekmeye atla |
+| `SUPER+grave` | Scratchpad aç/kapa |
+| `SUPER+SHIFT+grave` | Pencereyi scratchpad'e taşı |
+| `ALT+TAB` / `+SHIFT` | Pencere döngüsü (+ öne getir) |
+| `SUPER+TAB` / `+SHIFT` | Sonraki / önceki çalışma alanı |
+| `SUPER+CTRL+TAB` | Önceki çalışma alanına dön |
+| `CTRL+ALT+TAB` / `+SHIFT` | Sonraki / önceki monitör odağı |
+| `SUPER+SHIFT+ALT+ok` | Çalışma alanını komşu monitöre taşı |
+| `SUPER+-` / `SUPER+=` | Yatay boyutlandır, 100 px |
+| `+ALT` / `+CTRL` | 25 px / 300 px kademe |
+| `+SHIFT` | Dikey eksen |
+| `SUPER+Print` | Renk seçici (hyprpicker) |
+
+Mevcut `SUPER+CTRL+ok` (40 px boyutlandırma) korundu.
+
+### Doğrulama
+
+- `Hyprland --verify-config` → `config ok`
+- Bind sayısı 72 → 114, kaybolan orijinal bind yok
+- `hl.dsp.workspace.toggle_special("scratchpad")` ve `hl.dsp.group.toggle()`
+  canlı oturumda test edildi, ikisi de `ok`
+- `systemctl --user import-environment` + `dbus-update-activation-environment`
+  çalışan oturuma da elle uygulandı (yeniden giriş beklemeden)
+
+**Not:** Lua config modunda `hyprctl dispatch` Lua sözdizimi ister.
+`hyprctl dispatch togglespecialworkspace scratchpad` **çalışmaz**;
+doğrusu `hyprctl dispatch 'hl.dsp.workspace.toggle_special("scratchpad")'`.
