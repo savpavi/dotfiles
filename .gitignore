@@ -2,3 +2,15 @@
 *.log
 *.tmp
 .cache/
+
+# dot-theme tarafından üretilen dosyalar (tema değiştikçe yeniden yazılır)
+config/kitty/active-theme.conf
+config/alacritty/active-theme.toml
+config/ghostty/theme.conf
+config/btop/themes/dot-theme.theme
+config/waybar/colors.css
+config/rofi/colors.rasi
+config/swaync/colors.css
+config/wlogout/colors.css
+config/hypr/hypr-theme.conf
+config/hypr/hyprland-theme.lua

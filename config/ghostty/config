@@ -55,3 +55,8 @@ window-decoration = client
 gtk-titlebar-style = tabs
 window-show-tab-bar = always
 gtk-tabs-location = top
+
+# dot-theme tarafından üretilen renk paleti. En sonda olması şart:
+# ghostty'de sonraki tanım öncekini ezer, yani yukarıdaki Monochrome paleti
+# bunun altında kalır. Monochrome'a dönmek için bu satırı yorumla.
+config-file = theme.conf

@@ -1,0 +1,235 @@
+#!/usr/bin/env bash
+# Tema değiştirici — omarchy'nin tema sisteminden uyarlandı.
+#
+#   dot-theme list           temaları listele
+#   dot-theme current        aktif temayı yaz
+#   dot-theme set <isim>     temayı uygula
+#   dot-theme next           sıradaki temaya geç
+#   dot-theme bg             aktif temanın sıradaki duvar kağıdına geç
+#   dot-theme menu           rofi ile tema seç
+#   dot-theme reapply        aktif temayı yeniden uygula (oturum açılışı için)
+#
+# Seçenekler: --no-bg (duvar kağıdına dokunma)
+set -uo pipefail
+
+DOT="${DOT_DIR:-$HOME/dotfiles}"
+THEMES_DIR="$DOT/themes"
+STATE="${DOT_STATE:-$HOME/.local/state/dotfiles}/theme"
+WALLPAPERS="${DOT_WALLPAPERS:-$HOME/Pictures/wallpapers/omarchy}"
+CFG="${XDG_CONFIG_HOME:-$HOME/.config}"
+# Duvar kağıdı uygulanacak monitörler (dikey DP-3 varsayılan olarak hariç)
+MONITORS="${DOT_THEME_MONITORS:-DP-1}"
+
+SKIP_BG=0
+
+fail() { echo "dot-theme: $1" >&2; exit 1; }
+have() { command -v "$1" >/dev/null 2>&1; }
+
+theme_names() {
+  local d
+  for d in "$THEMES_DIR"/*/; do
+    [[ -f $d/colors.toml ]] || continue
+    basename "$d"
+  done | sort
+}
+
+current_theme() {
+  [[ -f $STATE/name ]] && cat "$STATE/name"
+}
+
+# ------------------------------------------------------------------ duvar kağıdı
+
+theme_backgrounds() {
+  local theme="$1"
+  [[ -d $WALLPAPERS/$theme ]] || return 0
+  find -L "$WALLPAPERS/$theme" -maxdepth 1 -type f \
+    \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.bmp' \) \
+    | sort
+}
+
+# Temanın duvar kağıtlarından sıradakini seçer (yoksa ilkini).
+pick_background() {
+  local theme="$1" advance="${2:-0}"
+  local -a backgrounds
+  local current index=-1 i
+
+  mapfile -t backgrounds < <(theme_backgrounds "$theme")
+  (( ${#backgrounds[@]} )) || return 1
+
+  current=$(readlink "$STATE/background" 2>/dev/null || true)
+  for i in "${!backgrounds[@]}"; do
+    [[ ${backgrounds[$i]} == "$current" ]] && { index=$i; break; }
+  done
+
+  if (( index == -1 )); then
+    printf '%s' "${backgrounds[0]}"
+  elif (( advance )); then
+    printf '%s' "${backgrounds[$(( (index + 1) % ${#backgrounds[@]} ))]}"
+  else
+    printf '%s' "${backgrounds[$index]}"
+  fi
+}
+
+apply_background() {
+  local image="$1" monitor
+  [[ -f $image ]] || return 1
+
+  ln -nsf "$image" "$STATE/background"
+
+  # hyprpaper.conf içindeki ilgili monitörün path satırını kalıcı yap
+  local conf="$CFG/hypr/hyprpaper.conf"
+  if [[ -f $conf ]]; then
+    for monitor in $MONITORS; do
+      awk -v mon="$monitor" -v img="$image" '
+        /^[[:space:]]*monitor[[:space:]]*=/ { in_block = ($0 ~ "=[[:space:]]*" mon "[[:space:]]*$") }
+        in_block && /^[[:space:]]*path[[:space:]]*=/ {
+          sub(/=.*/, "= " img)
+          in_block = 0
+        }
+        { print }
+      ' "$conf" >"$conf.tmp" && mv "$conf.tmp" "$conf"
+    done
+  fi
+
+  # Çalışan hyprpaper'a canlı uygula
+  if have hyprctl && pgrep -x hyprpaper >/dev/null; then
+    hyprctl hyprpaper preload "$image" >/dev/null 2>&1
+    for monitor in $MONITORS; do
+      hyprctl hyprpaper wallpaper "$monitor,$image" >/dev/null 2>&1
+    done
+    hyprctl hyprpaper unload unused >/dev/null 2>&1
+  fi
+}
+
+# ------------------------------------------------------------------ uygulama
+
+install_file() {
+  local src="$1" dst="$2"
+  [[ -f $src ]] || return 0
+  mkdir -p "$(dirname "$dst")"
+  cp "$src" "$dst"
+}
+
+reload_apps() {
+  # kitty: SIGUSR1 ile config yeniden okur
+  pkill -USR1 -x kitty 2>/dev/null
+
+  # waybar: SIGUSR2 ile yeniden yükler
+  pkill -USR2 -x waybar 2>/dev/null
+
+  # swaync
+  have swaync-client && swaync-client --reload-css >/dev/null 2>&1
+
+  # hyprland
+  have hyprctl && hyprctl reload >/dev/null 2>&1
+
+  # btop çalışıyorsa yeni temayı ancak yeniden başlatınca alır
+  return 0
+}
+
+apply_theme() {
+  local theme="$1" advance_bg="${2:-0}"
+  local colors="$THEMES_DIR/$theme/colors.toml"
+  [[ -f $colors ]] || fail "tema bulunamadı: $theme"
+
+  mkdir -p "$STATE"
+  local staging="$STATE/next"
+  rm -rf "$staging"
+
+  "$DOT/bin/dot-theme-render" "$colors" "$staging" || fail "render başarısız"
+
+  install_file "$staging/kitty.conf"          "$CFG/kitty/active-theme.conf"
+  install_file "$staging/ghostty.conf"        "$CFG/ghostty/theme.conf"
+  install_file "$staging/alacritty.toml"      "$CFG/alacritty/active-theme.toml"
+  install_file "$staging/btop.theme"          "$CFG/btop/themes/dot-theme.theme"
+  install_file "$staging/waybar-colors.css"   "$CFG/waybar/colors.css"
+  install_file "$staging/rofi-colors.rasi"    "$CFG/rofi/colors.rasi"
+  install_file "$staging/swaync-colors.css"   "$CFG/swaync/colors.css"
+  install_file "$staging/wlogout-colors.css"  "$CFG/wlogout/colors.css"
+  install_file "$staging/hypr-theme.conf"     "$CFG/hypr/hypr-theme.conf"
+  install_file "$staging/hyprland-theme.lua"  "$CFG/hypr/hyprland-theme.lua"
+
+  cp "$colors" "$STATE/colors.toml"
+  echo "$theme" >"$STATE/name"
+  rm -rf "$staging"
+
+  if (( ! SKIP_BG )); then
+    local image
+    if image=$(pick_background "$theme" "$advance_bg") && [[ -n $image ]]; then
+      apply_background "$image"
+    fi
+  fi
+
+  reload_apps
+  echo "Tema: $theme"
+  [[ -L $STATE/background ]] && echo "Duvar kağıdı: $(basename "$(readlink "$STATE/background")") ($MONITORS)"
+}
+
+# ------------------------------------------------------------------ komutlar
+
+cmd_list() {
+  local cur name
+  cur=$(current_theme)
+  while read -r name; do
+    if [[ $name == "$cur" ]]; then
+      echo "* $name"
+    else
+      echo "  $name"
+    fi
+  done < <(theme_names)
+}
+
+cmd_next() {
+  local -a names
+  local cur index=-1 i
+  mapfile -t names < <(theme_names)
+  (( ${#names[@]} )) || fail "tema yok"
+  cur=$(current_theme)
+  for i in "${!names[@]}"; do
+    [[ ${names[$i]} == "$cur" ]] && { index=$i; break; }
+  done
+  apply_theme "${names[$(( (index + 1) % ${#names[@]} ))]}"
+}
+
+cmd_bg() {
+  local theme
+  theme=$(current_theme) || fail "aktif tema yok"
+  [[ -n $theme ]] || fail "aktif tema yok"
+  local image
+  image=$(pick_background "$theme" 1) || fail "$theme için duvar kağıdı yok"
+  apply_background "$image" && echo "Duvar kağıdı: $(basename "$image")"
+}
+
+cmd_menu() {
+  have rofi || fail "rofi kurulu değil"
+  local choice
+  choice=$(theme_names | rofi -dmenu -i -p "Tema" -config "$CFG/rofi/config-short.rasi" 2>/dev/null) \
+    || choice=$(theme_names | rofi -dmenu -i -p "Tema")
+  [[ -n $choice ]] && apply_theme "$choice"
+}
+
+main() {
+  local -a positional=()
+  local arg
+  for arg in "$@"; do
+    case "$arg" in
+      --no-bg) SKIP_BG=1 ;;
+      -h|--help) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+      *) positional+=("$arg") ;;
+    esac
+  done
+
+  local cmd="${positional[0]:-list}"
+  case "$cmd" in
+    list)    cmd_list ;;
+    current) current_theme || fail "aktif tema yok" ;;
+    set)     apply_theme "${positional[1]:?tema adı gerekli}" ;;
+    next)    cmd_next ;;
+    bg)      cmd_bg ;;
+    menu)    cmd_menu ;;
+    reapply) apply_theme "$(current_theme || echo tokyo-night)" ;;
+    *)       fail "bilinmeyen komut: $cmd" ;;
+  esac
+}
+
+main "$@"
