@@ -1,0 +1,110 @@
+/* Catppuccin Mocha — Plasma (CatppuccinMochaMauve) ile ayni palet */
+@define-color base     #1e1e2e;
+@define-color mantle   #181825;
+@define-color surface0 #313244;
+@define-color surface1 #45475a;
+@define-color text     #cdd6f4;
+@define-color subtext  #a6adc8;
+@define-color overlay  #6c7086;
+@define-color mauve    #cba6f7;
+@define-color blue     #89b4fa;
+@define-color sapphire #74c7ec;
+@define-color green    #a6e3a1;
+@define-color yellow   #f9e2af;
+@define-color peach    #fab387;
+@define-color red      #f38ba8;
+
+* {
+  font-family: "JetBrainsMono Nerd Font";
+  font-size: 13px;
+  border: none;
+  border-radius: 0;
+  min-height: 0;
+}
+
+window#waybar {
+  background: transparent;
+  color: @text;
+}
+
+/* Dikey ekrandaki cubuk biraz daha kucuk yazi kullansin */
+window#waybar.side * { font-size: 12px; }
+
+/* Ada (island) gorunumu — Plasma'daki Panel Colorizer duzenine yakin */
+.modules-left, .modules-center, .modules-right {
+  background: alpha(@base, 0.85);
+  border: 1px solid alpha(@surface0, 0.9);
+  border-radius: 12px;
+  padding: 0 6px;
+}
+
+#workspaces button {
+  padding: 0 9px;
+  margin: 4px 2px;
+  color: @overlay;
+  background: transparent;
+  border-radius: 8px;
+  transition: all 200ms ease;
+}
+#workspaces button:hover  { color: @text; background: alpha(@surface0, 0.8); }
+/* Bos ama kalici workspace'ler: gorunur kalsin ama one cikmasin */
+#workspaces button.empty   { color: @surface1; }
+#workspaces button.visible { color: @subtext; background: alpha(@surface0, 0.5); }
+#workspaces button.active { color: @base; background: @mauve; font-weight: bold; }
+#workspaces button.urgent { color: @base; background: @red; }
+
+#window { color: @subtext; padding: 0 10px; }
+window#waybar.empty .modules-center { background: transparent; border: none; }
+
+#clock, #cpu, #memory, #temperature, #network, #pulseaudio,
+#tray, #custom-vm, #custom-notification, #custom-power,
+#custom-launcher, #custom-ai, #custom-logi {
+  padding: 0 10px;
+  margin: 4px 1px;
+  border-radius: 8px;
+  color: @text;
+}
+
+#clock              { color: @mauve; font-weight: bold; }
+#cpu                { color: @blue; }
+#memory             { color: @sapphire; }
+#temperature        { color: @green; }
+#temperature.critical { color: @base; background: @red; }
+#network            { color: @yellow; }
+#network.disconnected { color: @base; background: @red; }
+#pulseaudio         { color: @peach; }
+#pulseaudio.muted   { color: @overlay; }
+#custom-notification{ color: @text; }
+#custom-power       { color: @red; padding: 0 12px; }
+#custom-power:hover { color: @base; background: @red; }
+
+/* Baslat dugmesi */
+#custom-launcher       { color: @blue; font-size: 16px; padding: 0 12px; }
+#custom-launcher:hover { color: @base; background: @blue; }
+
+/* Logitech batarya (G502 X PLUS vb.) */
+#custom-logi      { color: @green; }
+#custom-logi.warn { color: @yellow; }
+#custom-logi.crit { color: @base; background: @red; }
+
+/* AI kullanim gostergesi (Claude + Codex) */
+#custom-ai      { color: @sapphire; }
+#custom-ai.warn { color: @yellow; }
+#custom-ai.crit { color: @base; background: @red; }
+#custom-ai.err  { color: @overlay; }
+
+/* Windows VM gostergesi */
+#custom-vm.vm-running { color: @green; }
+#custom-vm.vm-paused  { color: @yellow; }
+#custom-vm.vm-off     { color: @overlay; }
+#custom-vm.vm-unknown { color: @red; }
+
+#tray { padding: 0 8px; }
+#tray menu { background: @base; color: @text; border: 1px solid @surface0; border-radius: 8px; }
+
+tooltip {
+  background: @mantle;
+  border: 1px solid @surface0;
+  border-radius: 10px;
+}
+tooltip label { color: @text; padding: 4px; }

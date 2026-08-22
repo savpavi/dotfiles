@@ -1,0 +1,4 @@
+# Çalışma zamanı / üretilen dosyalar
+*.log
+*.tmp
+.cache/

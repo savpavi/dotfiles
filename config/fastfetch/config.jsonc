@@ -1,0 +1,59 @@
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "source": "fedora",
+        "padding": {
+            "top": 1,
+            "right": 4
+        }
+    },
+    "display": {
+        "separator": " 󰑃 ",
+        "key": {
+            "width": 15
+        }
+    },
+    "modules": [
+        "break",
+        { "type": "os",       "key": " SİSTEM",  "keyColor": "yellow" },
+        { "type": "kernel",   "key": "│ ├",       "keyColor": "yellow", "format": "{release}" },
+        { "type": "packages", "key": "│ ├󰏖",       "keyColor": "yellow" },
+        {
+            "type": "command",
+            "key": "│ ├",
+            "keyColor": "yellow",
+            "text": "b=$(stat -c %W /); n=$(date +%s); s=$((n-b)); d=$((s/86400)); h=$((s%86400/3600)); m=$(date -d @$b +%m); case $m in 01) ay=Ocak;; 02) ay=Şubat;; 03) ay=Mart;; 04) ay=Nisan;; 05) ay=Mayıs;; 06) ay=Haziran;; 07) ay=Temmuz;; 08) ay=Ağustos;; 09) ay=Eylül;; 10) ay=Ekim;; 11) ay=Kasım;; 12) ay=Aralık;; esac; printf '%s %s %s (%d gün %d saat)' \"$(date -d @$b +%d)\" \"$ay\" \"$(date -d @$b +%Y)\" $d $h"
+        },
+        { "type": "shell",    "key": "│ └",       "keyColor": "yellow" },
+
+        { "type": "wm",       "key": " MASAÜSTÜ", "keyColor": "blue" },
+        { "type": "wmtheme",  "key": "│ ├󰉼",       "keyColor": "blue" },
+        { "type": "icons",    "key": "│ ├󰀻",       "keyColor": "blue" },
+        { "type": "cursor",   "key": "│ ├",       "keyColor": "blue" },
+        { "type": "terminal", "key": "│ └",       "keyColor": "blue" },
+
+        { "type": "cpu",      "key": "󰌢 DONANIM",  "keyColor": "green", "showPeCoreCount": true },
+        { "type": "gpu",      "key": "│ ├󰻑",       "keyColor": "green", "format": "{2}" },
+        {
+            "type": "display",
+            "key": "│ ├󰍹",
+            "keyColor": "green",
+            "compactType": "original-with-refresh-rate"
+        },
+        { "type": "memory",   "key": "│ ├󰾆",       "keyColor": "green" },
+        { "type": "swap",     "key": "│ ├󰓡",       "keyColor": "green" },
+        { "type": "uptime",   "key": "│ └󰅐",       "keyColor": "green" },
+
+        { "type": "disk",     "key": "󰋊 Samsung",  "keyColor": "cyan", "folders": "/" },
+        { "type": "disk",     "key": "│ ├ Lexar",   "keyColor": "cyan", "folders": "/srv/lexar" },
+        { "type": "disk",     "key": "│ └ Arşiv",   "keyColor": "cyan", "folders": "/srv/storage" },
+
+        { "type": "media",    "key": "󰝚 MEDYA",    "keyColor": "magenta" },
+        { "type": "locale",   "key": "󰗊 YEREL",    "keyColor": "magenta" },
+        {
+            "type": "custom",
+            "format": "\u001b[90m  \u001b[31m  \u001b[32m  \u001b[33m  \u001b[34m  \u001b[35m  \u001b[36m  \u001b[37m  \u001b[38m  \u001b[39m  \u001b[39m    \u001b[38m  \u001b[37m  \u001b[36m  \u001b[35m  \u001b[34m  \u001b[33m  \u001b[32m  \u001b[31m  \u001b[90m "
+        },
+        "break"
+    ]
+}

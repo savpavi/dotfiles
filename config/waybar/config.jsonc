@@ -1,0 +1,150 @@
+// Iki cubuk: DP-1 (genis, 2560x1440) ve DP-3 (dar, dikey 1080 genislik).
+[
+  {
+    "name": "main",
+    "output": "DP-1",
+    "layer": "top",
+    "position": "top",
+    "height": 38,
+    "spacing": 6,
+    "margin-top": 6,
+    "margin-left": 12,
+    "margin-right": 12,
+
+    "modules-left":   ["custom/launcher", "hyprland/workspaces", "hyprland/submap", "hyprland/window"],
+    "modules-center": ["clock"],
+    "modules-right":  ["custom/ai", "tray", "custom/vm", "custom/logi", "pulseaudio", "network", "cpu", "memory", "temperature", "custom/notification", "custom/power"],
+
+    // "Başlat" düğmesi — sol tık uygulama menüsü, sağ tık oturum menüsü
+    "custom/launcher": {
+      "format": "",
+      "tooltip": false,
+      "on-click": "hyprlauncher",
+      "on-click-right": "wlogout"
+    },
+
+    // Claude + Codex kullanım yüzdeleri (CodexBar CLI) — tıklayınca anında yeniler
+    "custom/ai": {
+      "exec": "~/.config/waybar/scripts/ai-usage.sh",
+      "return-type": "json",
+      "interval": 300,
+      "signal": 8,
+      "on-click": "pkill -RTMIN+8 waybar"
+    },
+
+    "hyprland/workspaces": {
+      "format": "{icon}",
+      "sort-by": "number",
+      // Bos olsalar da 1-5 hep gorunur -> tiklayarak gecilebilir
+      "persistent-workspaces": { "DP-1": [1, 2, 3, 4, 5] },
+      "format-icons": { "1":"1","2":"2","3":"3","4":"4","5":"5","6":"6","7":"7","8":"8","9":"9","10":"10" }
+    },
+    "hyprland/window": { "format": "{}", "max-length": 70, "separate-outputs": true },
+
+    "clock": {
+      "format": "  {:%H:%M}",
+      "format-alt": "  {:%d %B %Y, %A}",
+      "tooltip-format": "<tt>{calendar}</tt>",
+      "calendar": { "mode": "month", "weeks-pos": "right" }
+    },
+
+    "cpu":    { "format": "  {usage}%", "interval": 3, "on-click": "kitty -e btop" },
+    "memory": { "format": "  {percentage}%", "interval": 5, "tooltip-format": "{used:0.1f}G / {total:0.1f}G" },
+    "temperature": {
+      // k10temp (Ryzen 9800X3D). PCI yolu sabit, hwmonN degisebilir --
+      // hwmon-path-abs ust dizini alir, waybar icindekini kendi bulur.
+      "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:18.3/hwmon",
+      "input-filename": "temp1_input",
+      "critical-threshold": 85,
+      "format": " {temperatureC}°C",
+      "format-critical": " {temperatureC}°C"
+    },
+
+    "network": {
+      "format-wifi": "  {essid}",
+      "format-ethernet": "  {bandwidthDownBits}",
+      "format-disconnected": "  bağlı değil",
+      "tooltip-format": "{ifname} · {ipaddr}",
+      "interval": 3
+    },
+
+    "pulseaudio": {
+      "format": "{icon}  {volume}%",
+      "format-muted": "  sessiz",
+      "format-icons": { "default": ["", "", ""] },
+      "on-click": "pavucontrol || plasma-systemmonitor",
+      "scroll-step": 5
+    },
+
+    "tray": { "icon-size": 16, "spacing": 8 },
+
+    // Windows VM'in canli durumu — Looking Glass'a tek tikla
+    "custom/vm": {
+      "exec": "~/.config/waybar/scripts/vm-status.sh",
+      "return-type": "json",
+      "interval": 5,
+      "on-click": "~/.local/bin/start-windows-looking-glass"
+    },
+
+    // Logitech cihaz bataryalari (UPower/hidpp) — cihaz kapaliyken gizlenir, tiklayinca yeniler
+    "custom/logi": {
+      "exec": "~/.config/waybar/scripts/logi-battery.sh",
+      "return-type": "json",
+      "interval": 60,
+      "signal": 9,
+      "on-click": "pkill -RTMIN+9 waybar"
+    },
+
+    "custom/notification": {
+      "tooltip": false,
+      "format": "{icon}",
+      "format-icons": { "notification": "<span foreground='#f38ba8'></span>", "none": "", "dnd-notification": "<span foreground='#f38ba8'></span>", "dnd-none": "" },
+      "return-type": "json",
+      "exec": "swaync-client -swb",
+      "on-click": "swaync-client -t -sw",
+      "on-click-right": "swaync-client -d -sw",
+      "escape": true
+    },
+
+    "custom/power": { "format": "", "tooltip": false, "on-click": "wlogout" }
+  },
+
+  {
+    "name": "side",
+    "output": "DP-3",
+    "layer": "top",
+    "position": "top",
+    "height": 34,
+    "spacing": 5,
+    "margin-top": 6,
+    "margin-left": 8,
+    "margin-right": 8,
+
+    // Dikey ekran sadece 1080 genisliginde — modul seti bilerek dar tutuldu
+    "modules-left":   ["hyprland/workspaces"],
+    "modules-center": ["clock"],
+    "modules-right":  ["pulseaudio", "custom/notification"],
+
+    "hyprland/workspaces": {
+      "format": "{icon}",
+      "sort-by": "number",
+      "persistent-workspaces": { "DP-3": [6, 7, 8, 9, 10] }
+    },
+    "clock": { "format": "{:%H:%M}", "tooltip-format": "<tt>{calendar}</tt>" },
+    "pulseaudio": {
+      "format": "{icon}",
+      "format-muted": "",
+      "format-icons": { "default": ["", "", ""] },
+      "scroll-step": 5
+    },
+    "custom/notification": {
+      "tooltip": false,
+      "format": "{icon}",
+      "format-icons": { "notification": "<span foreground='#f38ba8'></span>", "none": "", "dnd-notification": "<span foreground='#f38ba8'></span>", "dnd-none": "" },
+      "return-type": "json",
+      "exec": "swaync-client -swb",
+      "on-click": "swaync-client -t -sw",
+      "escape": true
+    }
+  }
+]
