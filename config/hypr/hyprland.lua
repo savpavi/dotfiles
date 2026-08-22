@@ -432,3 +432,12 @@ hl.window_rule({
     move  = "20 monitor_h-120",
     float = true,
 })
+
+
+------------------
+----  TEMA    ----
+------------------
+
+-- dot-theme tarafından üretilen kenarlık renkleri.
+-- Sonda olduğu için yukarıdaki general.col ayarlarını ezer.
+require("hyprland-theme")

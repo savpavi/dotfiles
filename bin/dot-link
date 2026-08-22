@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# ~/.config altındaki hedefleri dotfiles reposuna symlink'ler.
+# Mevcut gerçek dosyalar önce yedeklenir, sonra symlink konur.
+set -euo pipefail
+
+DOT="${DOT_DIR:-$HOME/dotfiles}"
+SRC="$DOT/config"
+DEST="${XDG_CONFIG_HOME:-$HOME/.config}"
+BACKUP_ROOT="$HOME/.local/share/dotfiles-backup"
+MODE="link"
+DRY=0
+
+usage() {
+  cat <<'USAGE'
+Kullanım: dot-link [--unlink] [--dry-run]
+
+  (varsayılan)  config/ altındaki her girdiyi ~/.config'e symlink eder
+  --unlink      symlink'leri kaldırıp repodaki içeriği geri kopyalar
+  --dry-run     hiçbir şeye dokunmadan ne yapacağını yazar
+USAGE
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    --unlink) MODE="unlink" ;;
+    --dry-run|-n) DRY=1 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "bilinmeyen seçenek: $arg" >&2; usage >&2; exit 1 ;;
+  esac
+done
+
+run() {
+  if (( DRY )); then
+    echo "  [dry] $*"
+  else
+    "$@"
+  fi
+}
+
+[[ -d $SRC ]] || { echo "$SRC yok" >&2; exit 1; }
+
+backup_dir=""
+ensure_backup_dir() {
+  [[ -n $backup_dir ]] && return
+  backup_dir="$BACKUP_ROOT/$(date +%Y%m%d-%H%M%S)"
+  run mkdir -p "$backup_dir"
+  echo "Yedek dizini: $backup_dir"
+}
+
+link_one() {
+  local name="$1"
+  local src="$SRC/$name"
+  local dst="$DEST/$name"
+
+  # Zaten doğru yere bakan symlink
+  if [[ -L $dst && $(readlink -f "$dst") == "$(readlink -f "$src")" ]]; then
+    echo "= $name (zaten bağlı)"
+    return
+  fi
+
+  if [[ -e $dst || -L $dst ]]; then
+    ensure_backup_dir
+    run mv "$dst" "$backup_dir/$name"
+    echo "→ $name yedeklendi"
+  fi
+
+  run mkdir -p "$(dirname "$dst")"
+  run ln -s "$src" "$dst"
+  echo "+ $name bağlandı"
+}
+
+unlink_one() {
+  local name="$1"
+  local src="$SRC/$name"
+  local dst="$DEST/$name"
+
+  if [[ ! -L $dst ]]; then
+    echo "= $name (symlink değil, dokunulmadı)"
+    return
+  fi
+  if [[ $(readlink -f "$dst") != "$(readlink -f "$src")" ]]; then
+    echo "= $name (başka yere bakıyor, dokunulmadı)"
+    return
+  fi
+
+  run rm "$dst"
+  run cp -a "$src" "$dst"
+  echo "- $name çözüldü (içerik kopyalandı)"
+}
+
+shopt -s nullglob dotglob
+for path in "$SRC"/*; do
+  name="$(basename "$path")"
+  case "$MODE" in
+    link) link_one "$name" ;;
+    unlink) unlink_one "$name" ;;
+  esac
+done
