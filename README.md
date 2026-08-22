@@ -36,6 +36,16 @@ dot-theme set X --no-bg # duvar kağıdına dokunma
 
 Kısayollar: `SUPER+SHIFT+T` tema menüsü, `SUPER+CTRL+SHIFT+T` duvar kağıdı.
 
+## Kısayol rehberi
+
+```bash
+dot-keys           # rofi ile aranabilir liste
+dot-keys --text    # terminale yazdır
+```
+
+`SUPER+K` de aynısını açar. Kaynak: `docs/hyprland-cheatsheet.md`
+(`~/hyprland-cheatsheet.md` buraya symlink).
+
 ### Neyi boyuyor
 
 | Uygulama | Üretilen dosya | Bağlantı |

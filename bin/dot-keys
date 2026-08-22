@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Kısayol rehberini aranabilir bir listede gösterir.
+#
+#   dot-keys           rofi ile aranabilir liste (SUPER + K)
+#   dot-keys --text    terminale yazdır
+#
+# Kaynak: docs/hyprland-cheatsheet.md içindeki markdown tabloları.
+set -uo pipefail
+
+DOT="${DOT_DIR:-$HOME/dotfiles}"
+SHEET="$DOT/docs/hyprland-cheatsheet.md"
+CFG="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+[[ -f $SHEET ]] || { echo "rehber bulunamadı: $SHEET" >&2; exit 1; }
+
+# Markdown tablolarını "Bölüm │ Kısayol │ İşlev" satırlarına çevir
+flatten() {
+  awk -F'|' '
+    /^## / { section = substr($0, 4); next }
+    /^\|[[:space:]]*-+/ { next }                     # ayırıcı satır
+    /^\|/ {
+      key = $2; desc = $3
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", key)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", desc)
+      gsub(/`/, "", key); gsub(/`/, "", desc)
+      if (key == "" || key == "Kısayol" || key == "Tuş") next
+      printf "%-22s  %-46s  %s\n", key, desc, section
+    }
+  ' "$SHEET"
+}
+
+if [[ ${1:-} == "--text" ]]; then
+  flatten
+  exit 0
+fi
+
+if command -v rofi >/dev/null; then
+  flatten | rofi -dmenu -i -p "Kısayol" \
+      -theme "$CFG/rofi/config-short.rasi" >/dev/null 2>&1 \
+    || flatten | rofi -dmenu -i -p "Kısayol" >/dev/null
+else
+  flatten | less -R
+fi
