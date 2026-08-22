@@ -434,6 +434,14 @@ hl.window_rule({
 })
 
 
+
+------------------
+---- PENCERE  ----
+------------------
+
+-- omarchy'den uyarlanan pencere kuralları (varsayılan saydamlık + PiP).
+require("windows")
+
 ------------------
 ----  TEMA    ----
 ------------------
