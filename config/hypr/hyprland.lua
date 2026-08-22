@@ -441,3 +441,7 @@ hl.window_rule({
 -- dot-theme tarafından üretilen kenarlık renkleri.
 -- Sonda olduğu için yukarıdaki general.col ayarlarını ezer.
 require("hyprland-theme")
+
+-- Tema kısayolları
+hl.bind(mainMod .. " + SHIFT + T",        hl.dsp.exec_cmd("$HOME/dotfiles/bin/dot-theme menu"))
+hl.bind(mainMod .. " + CTRL + SHIFT + T", hl.dsp.exec_cmd("$HOME/dotfiles/bin/dot-theme bg"))
