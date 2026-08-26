@@ -6,9 +6,12 @@
 
 | Kısayol | İşlev |
 |---|---|
-| `SUPER + Q` | Kitty terminali aç |
+| `SUPER + Q` | Ghostty terminali aç |
 | `SUPER + E` | Dolphin dosya yöneticisini aç |
 | `Alt + Space` | Hyprlauncher uygulama menüsünü aç |
+| `Alt + Space` sonra `=` | Hesap makinesi — sonuç panoya kopyalanır |
+| `Alt + Space` sonra `u:` | Unicode karakter ara, seçilen panoya |
+| `Alt + Space` sonra `f:` | Font ara, seçilen ad panoya |
 | `SUPER + B` | Brave'i aç |
 | `SUPER + W` | Windows VM'yi Looking Glass ile aç |
 | `SUPER + S` | Spotify'ı aç |
@@ -89,12 +92,16 @@ scratchpad hep açık duran yardımcı pencere (terminal, not defteri) için.
 
 | Kısayol | İşlev |
 |---|---|
-| `SUPER + Shift + T` | Tema menüsünü aç (rofi) |
-| `SUPER + Ctrl + Shift + T` | Aynı temanın sıradaki duvar kağıdına geç |
+| `SUPER + Shift + T` | Tema menüsünü aç (hyprlauncher) |
+| `SUPER + Ctrl + Shift + T` | Arşivden rastgele duvar kağıdına geç (iki ekran) |
+| `SUPER + Shift + W` | Duvar kağıdı GUI'si (waypaper, iki ekran) |
 
 Terminalden: `dot-theme list`, `dot-theme set gruvbox`, `dot-theme next`.
-22 tema var; kitty, ghostty, waybar, rofi, swaync, wlogout, btop, hyprlock ve
-pencere kenarlıkları birlikte değişir.
+22 tema var; kitty, ghostty, waybar, rofi, swaync, wlogout, btop, hyprlock,
+hyprlauncher ve pencere kenarlıkları birlikte değişir.
+
+Seçici olarak hyprlauncher kullanılıyor (`SUPER + K` kısayol listesi de aynısını
+kullanır). Eski davranış için: `DOT_MENU=rofi dot-theme menu`.
 
 ## Sistem
 

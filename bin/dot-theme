@@ -5,22 +5,31 @@
 #   dot-theme current        aktif temayı yaz
 #   dot-theme set <isim>     temayı uygula
 #   dot-theme next           sıradaki temaya geç
-#   dot-theme bg             aktif temanın sıradaki duvar kağıdına geç
-#   dot-theme menu           rofi ile tema seç
+#   dot-theme bg             arşivden rastgele duvar kağıdına geç
+#   dot-theme menu           menüden tema seç (hyprlauncher, DOT_MENU=rofi ile rofi)
+#   dot-theme wallpaper <yol> [monitör|All]  görseli duvar kağıdı yap (waypaper köprüsü)
 #   dot-theme reapply        aktif temayı yeniden uygula (oturum açılışı için)
 #
-# Seçenekler: --no-bg (duvar kağıdına dokunma)
+# Seçenekler: --bg (temanın kendi duvar kağıdını da uygula)
+#            --no-bg (varsayılan: tema değişimi duvar kağıdına dokunmaz)
 set -uo pipefail
 
 DOT="${DOT_DIR:-$HOME/dotfiles}"
 THEMES_DIR="$DOT/themes"
 STATE="${DOT_STATE:-$HOME/.local/state/dotfiles}/theme"
 WALLPAPERS="${DOT_WALLPAPERS:-$THEMES_DIR}"
+# Duvar kağıdı arşivi: "dot-theme bg" buradan rastgele seçer. Tema
+# görselleri de dahil (omarchy -> dotfiles/themes symlink'i üzerinden).
+ARCHIVE="${DOT_WALLPAPER_DIR:-$HOME/Pictures/wallpapers}"
 CFG="${XDG_CONFIG_HOME:-$HOME/.config}"
-# Duvar kağıdı uygulanacak monitörler (dikey DP-3 varsayılan olarak hariç)
-MONITORS="${DOT_THEME_MONITORS:-DP-1}"
+# Duvar kağıdı uygulanacak monitörler. DP-3 dikey (transform=1, 1080x1920);
+# tema görsellerinin tamamı yatay olduğu için orada cover ile ortadan dar bir
+# şerit görünür. Bilinçli tercih: iki ekran birlikte değişsin.
+MONITORS="${DOT_THEME_MONITORS:-DP-1 DP-3}"
 
-SKIP_BG=0
+# Tema değişimi varsayılan olarak duvar kağıdına dokunmaz: arşivden seçilen
+# duvar kağıdı tema değişince kaybolmasın diye. --bg ile eski davranış.
+SKIP_BG=1
 
 fail() { echo "dot-theme: $1" >&2; exit 1; }
 have() { command -v "$1" >/dev/null 2>&1; }
@@ -45,6 +54,14 @@ theme_backgrounds() {
   find -L "$WALLPAPERS/$theme/backgrounds" -maxdepth 1 -type f \
     \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.bmp' \) \
     | sort
+}
+
+# Arşivdeki tüm duvar kağıtları (alt klasörler ve symlink'ler dahil).
+archive_backgrounds() {
+  [[ -d $ARCHIVE ]] || return 0
+  find -L "$ARCHIVE" -type f \
+    \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.bmp' \) \
+    2>/dev/null
 }
 
 # Temanın duvar kağıtlarından sıradakini seçer (yoksa ilkini).
@@ -99,6 +116,11 @@ apply_background() {
     done
     hyprctl hyprpaper unload unused >/dev/null 2>&1
   fi
+
+  # Canlı uygulama best-effort: hyprpaper 0.8.x'te preload/unload "invalid
+  # request" döndürüyor, ama asıl iş (conf'a kalıcı yazım + wallpaper komutu)
+  # yapıldı. Son hyprctl'in çıkış kodunu sonuç sanma.
+  return 0
 }
 
 # ------------------------------------------------------------------ uygulama
@@ -122,6 +144,11 @@ reload_apps() {
 
   # hyprland
   have hyprctl && hyprctl reload >/dev/null 2>&1
+
+  # hyprlauncher config'i yalnızca açılışta okur; çalışan instance'ı kapat,
+  # bir sonraki ALT+SPACE yeni temayla açılsın. Yeniden BAŞLATMA: arta kalan
+  # bir instance "--dmenu" modunu bozuyor (dot-keys / dot-theme menu).
+  pkill -x hyprlauncher 2>/dev/null
 
   # swayosd: sunucu style.css'i yalnızca açılışta okur; çalışıyorsa yeniden başlat
   if pgrep -x swayosd-server >/dev/null 2>&1; then
@@ -154,6 +181,7 @@ apply_theme() {
   install_file "$staging/wlogout-colors.css"  "$CFG/wlogout/colors.css"
   install_file "$staging/hypr-theme.conf"     "$CFG/hypr/hypr-theme.conf"
   install_file "$staging/hyprland-theme.lua"  "$CFG/hypr/hyprland-theme.lua"
+  install_file "$staging/hyprtoolkit.conf"    "$CFG/hypr/hyprtoolkit.conf"
   install_file "$staging/swayosd.css"          "$CFG/swayosd/style.css"
 
   cp "$colors" "$STATE/colors.toml"
@@ -198,20 +226,90 @@ cmd_next() {
   apply_theme "${names[$(( (index + 1) % ${#names[@]} ))]}"
 }
 
+# Arşivden rastgele bir duvar kağıdına geçer. Havuz 2000+ dosya olduğu için
+# alfabetik "sıradaki" anlamsız kalıyordu: hep aynı klasörün içinde ilerliyordu.
 cmd_bg() {
-  local theme
-  theme=$(current_theme) || fail "aktif tema yok"
-  [[ -n $theme ]] || fail "aktif tema yok"
-  local image
-  image=$(pick_background "$theme" 1) || fail "$theme için duvar kağıdı yok"
-  apply_background "$image" && echo "Duvar kağıdı: $(basename "$image")"
+  local -a pool
+  mapfile -t pool < <(archive_backgrounds)
+  (( ${#pool[@]} )) || fail "arşivde duvar kağıdı yok: $ARCHIVE"
+
+  local current image i
+  current=$(readlink "$STATE/background" 2>/dev/null || true)
+  # Aynısını arka arkaya seçmemek için birkaç deneme; tek görselli havuzda döner.
+  for i in 1 2 3 4 5; do
+    image="${pool[RANDOM % ${#pool[@]}]}"
+    [[ $image != "$current" ]] && break
+  done
+
+  mkdir -p "$STATE"
+  apply_background "$image" && echo "Duvar kağıdı: $(basename "$image") ($MONITORS)"
+}
+
+# Verilen görseli duvar kağıdı yapar. waypaper post_command köprüsü buradan geçer;
+# böylece GUI'den seçilen duvar kağıdı hem canlı uygulanır hem hyprpaper.conf'a
+# kalıcı yazılır ve dot-theme state'i tutarlı kalır.
+cmd_wallpaper() {
+  local image="${1:-}" target="${2:-}"
+  [[ -n $image ]] || fail "görsel yolu gerekli"
+  # waypaper post_command'da boşlukları "\ " diye escape eder; tırnak içinde
+  # geldiğinde bu literal kalır. Dosya bulunamazsa escape'i geri al.
+  [[ -f $image ]] || image="${image//\\ / }"
+  image=$(readlink -f "$image") || fail "yol çözülemedi: $1"
+  [[ -f $image ]] || fail "görsel yok: $image"
+
+  # İkinci argüman monitör seçer. "All" -> Hyprland'in bildirdiği tüm monitörler.
+  if [[ -n $target ]]; then
+    if [[ $target == All ]]; then
+      MONITORS=$(hyprctl monitors 2>/dev/null \
+        | sed -n 's/^Monitor \([^ ]*\) .*/\1/p' | tr '\n' ' ')
+      [[ -n ${MONITORS// /} ]] || fail "monitör listesi alınamadı"
+    else
+      MONITORS="$target"
+    fi
+  fi
+
+  mkdir -p "$STATE"
+  apply_background "$image" || fail "duvar kağıdı uygulanamadı: $image"
+  echo "Duvar kağıdı: $(basename "$image") ($MONITORS)"
+}
+
+# Seçici çalıştırır: stdin'den satır listesi alır, seçilen satırı yazar.
+# DOT_MENU=rofi ile eski davranışa dönülür.
+menu_pick() {
+  local prompt="$1"
+  local engine="${DOT_MENU:-hyprlauncher}"
+
+  if [[ $engine == hyprlauncher ]] && have hyprlauncher; then
+    # Arta kalan bir instance --dmenu modunu bozuyor: yeni çağrı menüyü hiç
+    # açmadan anında "Exited without selection" dönüyor, seçim boş kalır ve
+    # tema sessizce uygulanmaz. Önce temizle, kapanmasını bekle.
+    if pgrep -x hyprlauncher >/dev/null; then
+      pkill -x hyprlauncher 2>/dev/null
+      local i
+      for i in 1 2 3 4 5 6 7 8 9 10; do
+        pgrep -x hyprlauncher >/dev/null || break
+        sleep 0.1
+      done
+    fi
+
+    # hyprlauncher --dmenu seçimi stdout'a yazar, ama debug log'unu da
+    # oraya basıyor (--quiet bunu susturmuyor). Gürültüyü ayıkla.
+    # "Exited without selection" iptal demek, seçim değil — o da elenmeli.
+    hyprlauncher --dmenu --quiet 2>/dev/null \
+      | grep -avE 'DEBUG|TRACE|\[hw\]|Exited without selection' \
+      | grep -av '^[[:space:]]*$' \
+      | tail -n1
+    return
+  fi
+
+  have rofi || fail "seçici yok (hyprlauncher veya rofi gerekli)"
+  rofi -dmenu -i -p "$prompt" -config "$CFG/rofi/config-short.rasi" 2>/dev/null \
+    || rofi -dmenu -i -p "$prompt"
 }
 
 cmd_menu() {
-  have rofi || fail "rofi kurulu değil"
   local choice
-  choice=$(theme_names | rofi -dmenu -i -p "Tema" -config "$CFG/rofi/config-short.rasi" 2>/dev/null) \
-    || choice=$(theme_names | rofi -dmenu -i -p "Tema")
+  choice=$(theme_names | menu_pick "Tema")
   [[ -n $choice ]] && apply_theme "$choice"
 }
 
@@ -220,8 +318,9 @@ main() {
   local arg
   for arg in "$@"; do
     case "$arg" in
+      --bg) SKIP_BG=0 ;;
       --no-bg) SKIP_BG=1 ;;
-      -h|--help) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+      -h|--help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
       *) positional+=("$arg") ;;
     esac
   done
@@ -234,6 +333,7 @@ main() {
     next)    cmd_next ;;
     bg)      cmd_bg ;;
     menu)    cmd_menu ;;
+    wallpaper) cmd_wallpaper "${positional[1]:-}" "${positional[2]:-}" ;;
     reapply) apply_theme "$(current_theme || echo tokyo-night)" ;;
     *)       fail "bilinmeyen komut: $cmd" ;;
   esac
