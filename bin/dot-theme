@@ -123,6 +123,12 @@ reload_apps() {
   # hyprland
   have hyprctl && hyprctl reload >/dev/null 2>&1
 
+  # swayosd: sunucu style.css'i yalnızca açılışta okur; çalışıyorsa yeniden başlat
+  if pgrep -x swayosd-server >/dev/null 2>&1; then
+    pkill -x swayosd-server 2>/dev/null
+    have swayosd-server && (setsid swayosd-server >/dev/null 2>&1 &)
+  fi
+
   # btop çalışıyorsa yeni temayı ancak yeniden başlatınca alır
   return 0
 }
@@ -148,6 +154,7 @@ apply_theme() {
   install_file "$staging/wlogout-colors.css"  "$CFG/wlogout/colors.css"
   install_file "$staging/hypr-theme.conf"     "$CFG/hypr/hypr-theme.conf"
   install_file "$staging/hyprland-theme.lua"  "$CFG/hypr/hyprland-theme.lua"
+  install_file "$staging/swayosd.css"          "$CFG/swayosd/style.css"
 
   cp "$colors" "$STATE/colors.toml"
   echo "$theme" >"$STATE/name"
