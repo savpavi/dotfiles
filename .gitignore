@@ -14,3 +14,4 @@ config/swaync/colors.css
 config/wlogout/colors.css
 config/hypr/hypr-theme.conf
 config/hypr/hyprland-theme.lua
+config/swayosd/style.css

@@ -1,0 +1,14 @@
+# SwayOSD kullanıcı ayarları. Renkler burada DEĞİL — style.css'te ve o dosya
+# dot-theme tarafından templates/swayosd.css.tpl'den üretiliyor (gitignore'da).
+
+[server]
+# Ekranın altından yükseklik oranı (0.85 = alta yakın).
+top_margin = 0.85
+
+# Bind'ler zaten --max-volume 100 geçiyor; burası sunucu tarafı tavan.
+max_volume = 100
+
+show_percentage = true
+
+# OSD ekranda kalma süresi (ms).
+duration = 1000
