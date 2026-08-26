@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Kısayol rehberini aranabilir bir listede gösterir.
 #
-#   dot-keys           rofi ile aranabilir liste (SUPER + K)
+#   dot-keys           hyprlauncher ile aranabilir liste (SUPER + K)
 #   dot-keys --text    terminale yazdır
 #
 # Kaynak: docs/hyprland-cheatsheet.md içindeki markdown tabloları.
@@ -34,7 +34,13 @@ if [[ ${1:-} == "--text" ]]; then
   exit 0
 fi
 
-if command -v rofi >/dev/null; then
+# Burada seçim sonucu kullanılmıyor; liste yalnızca aranabilir şekilde gösteriliyor.
+# DOT_MENU=rofi ile eski davranışa dönülür.
+ENGINE="${DOT_MENU:-hyprlauncher}"
+
+if [[ $ENGINE == hyprlauncher ]] && command -v hyprlauncher >/dev/null; then
+  flatten | hyprlauncher --dmenu --quiet >/dev/null 2>&1
+elif command -v rofi >/dev/null; then
   flatten | rofi -dmenu -i -p "Kısayol" \
       -theme "$CFG/rofi/config-short.rasi" >/dev/null 2>&1 \
     || flatten | rofi -dmenu -i -p "Kısayol" >/dev/null

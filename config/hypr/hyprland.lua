@@ -55,7 +55,7 @@ hl.workspace_rule({ workspace = "10", monitor = "DP-3" })
 ---------------------
 
 -- Set programs that you use
-local terminal    = "kitty"
+local terminal    = "ghostty"
 local fileManager = "dolphin"
 local menu        = "hyprlauncher"
 
@@ -84,6 +84,9 @@ hl.on("hyprland.start", function ()
   hl.exec_cmd("hyprpaper")
   hl.exec_cmd("wl-paste --type text --watch cliphist store")
   hl.exec_cmd("wl-paste --type image --watch cliphist store")
+  -- hyprlauncher --daemon BILEREK baslatilmiyor: daemon calisirken "--dmenu"
+  -- modu hic pencere acmadan cikiyor (dot-keys / dot-theme menu onu kullaniyor).
+  -- Soguk acilis zaten ~175 ms, daemon'in getirisi bu maliyete degmiyor.
   hl.exec_cmd("solaar --window=hide")  -- fare DPI/tekerlek ayarlari; Plasma'da xdg autostart yapiyor, Hyprland'da elle
 end)
 
@@ -155,6 +158,10 @@ hl.config({
     decoration = {
         rounding       = 9,
         rounding_power = 2,
+
+        -- dim_around layer_rule'u kullanan katmanlarda (hyprlauncher) arka planın
+        -- ne kadar karartılacağı. Varsayılan 0.4; launcher biraz daha öne çıksın.
+        dim_around     = 0.45,
 
         -- Change transparency of focused and unfocused windows
         active_opacity   = 1.0,
@@ -454,16 +461,6 @@ hl.window_rule({
 -- })
 -- overlayLayerRule:set_enabled(false)
 
--- SwayOSD (ses/parlaklik gostergesi): saydam arka plani bulaniklastir.
--- dim_around YOK -- her ses tusunda ekrani karartmak istemiyoruz.
--- Renkler ~/.config/swayosd/style.css, dot-theme uretiyor.
-hl.layer_rule({
-    name       = "swayosd-blur",
-    match      = { namespace = "^swayosd$" },
-    blur       = true,
-    ignore_alpha = 0.2,
-})
-
 -- Hyprland-run windowrule
 hl.window_rule({
     name  = "move-hyprland-run",
@@ -497,3 +494,32 @@ require("hyprland-theme")
 hl.bind(mainMod .. " + K",                hl.dsp.exec_cmd("$HOME/dotfiles/bin/dot-keys"))
 hl.bind(mainMod .. " + SHIFT + T",        hl.dsp.exec_cmd("$HOME/dotfiles/bin/dot-theme menu"))
 hl.bind(mainMod .. " + CTRL + SHIFT + T", hl.dsp.exec_cmd("$HOME/dotfiles/bin/dot-theme bg"))
+
+-- Duvar kağıdı GUI'si (waypaper). --monitor All: dot-theme de her iki ekrana
+-- birden yazıyor, GUI'nin farklı davranması tutarsızlık yaratırdı.
+-- Seçim post_command üzerinden dot-theme'e geçer, hyprpaper.conf'a kalıcı yazılır.
+hl.bind(mainMod .. " + SHIFT + W",        hl.dsp.exec_cmd("waypaper --monitor All"))
+
+------------------
+---- LAUNCHER ----
+------------------
+
+-- hyprlauncher (ALT+SPACE): saydam arka planı bulanıklaştır ve arkasını karart.
+-- Renkler/yuvarlaklık ~/.config/hypr/hyprtoolkit.conf, boyut hyprlauncher.conf.
+hl.layer_rule({
+    name       = "hyprlauncher-blur",
+    match      = { namespace = "^hyprlauncher$" },
+    blur       = true,
+    ignore_alpha = 0.2,
+    dim_around = true,
+})
+
+-- SwayOSD (ses/parlaklik gostergesi): saydam arka plani bulaniklastir.
+-- dim_around YOK -- her ses tusunda ekrani karartmak istemiyoruz.
+-- Renkler ~/.config/swayosd/style.css, dot-theme uretiyor.
+hl.layer_rule({
+    name       = "swayosd-blur",
+    match      = { namespace = "^swayosd$" },
+    blur       = true,
+    ignore_alpha = 0.2,
+})
