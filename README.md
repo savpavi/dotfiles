@@ -9,6 +9,7 @@ config/     -> ~/.config/<isim> olarak symlink edilir
 bin/        -> yardımcı script'ler (PATH'e eklenir)
 themes/     -> renk temaları (omarchy'den uyarlandı)
 templates/  -> tema şablonları (*.tpl)
+shell/      -> bash parçaları -> ~/.bashrc.d/ altına symlink edilir
 ```
 
 ## Kurulum / geri yükleme
@@ -27,6 +28,7 @@ Ayrıca elle bağlanması gerekenler (repo dışında kalan üç şey):
 ln -s ~/dotfiles/docs/hyprland-cheatsheet.md ~/hyprland-cheatsheet.md
 ln -sfn ~/dotfiles/themes ~/Pictures/wallpapers/omarchy
 echo 'export PATH="$HOME/dotfiles/bin:$PATH"' >> ~/.zshrc
+ln -s ~/dotfiles/shell/50-tools.sh ~/.bashrc.d/50-tools.sh
 ```
 
 `dot-link`, `~/.config` altındaki mevcut dosyaları
