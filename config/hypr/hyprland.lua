@@ -149,8 +149,11 @@ hl.config({
         -- Set to true to enable resizing windows by clicking and dragging on borders and gaps
         resize_on_border = false,
 
-        -- Please see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Tearing/ before you turn this on
-        allow_tearing = false,
+        -- end-4 (28.08.2026): true yalnızca `immediate` window rule'u olan pencerelerde (oyunlar, extras.lua) devreye girer.
+        allow_tearing = true,
+
+        -- Pencereyi sürüklerken kenarlara/pencerelere yapışma (end-4)
+        snap = { enabled = true, window_gap = 6, monitor_gap = 12, respect_gaps = true },
 
         layout = "dwindle",
     },
@@ -166,6 +169,10 @@ hl.config({
         -- Change transparency of focused and unfocused windows
         active_opacity   = 1.0,
         inactive_opacity = 1.0,
+
+        -- Odaksız pencereyi hafifçe karart (end-4: 0.05)
+        dim_inactive = true,
+        dim_strength = 0.05,
 
         shadow = {
             enabled      = true,
@@ -340,7 +347,7 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind("ALT + SPACE", hl.dsp.exec_cmd(menu))
 hl.bind("CTRL + X", hl.dsp.exec_cmd("cliphist list | rofi -dmenu -p 'Pano geçmişi' | cliphist decode | wl-copy"))
-hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("brave-origin"))
+hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("firefox"))
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("/home/savpavi/.local/bin/start-windows-looking-glass"))
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("flatpak run com.spotify.Client"))
 hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("flatpak run org.telegram.desktop"))
@@ -357,8 +364,13 @@ hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
 hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("pkill -x waybar; waybar"))
 
-hl.bind("Print", hl.dsp.exec_cmd([[mkdir -p "$HOME/Pictures/Screenshots" && grim "$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"]]))
-hl.bind("SHIFT + Print", hl.dsp.exec_cmd([[geometry="$(slurp)" && [ -n "$geometry" ] && mkdir -p "$HOME/Pictures/Screenshots" && grim -g "$geometry" "$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png"]]))
+-- Ekran goruntusu (28.08.2026): eskiden grim sessizce dosyaya yaziyordu, pano/bildirim yoktu.
+-- Print        : tum ekran -> dosya + pano + bildirim
+-- SHIFT+Print  : bolge sec (slurp) -> satty (Flameshot benzeri: ok/kutu/blur; Enter=kopyala, Ctrl+S=kaydet)
+-- CTRL+Print   : bolge sec -> dogrudan pano + dosya, satty acilmaz
+hl.bind("Print", hl.dsp.exec_cmd([[d="$HOME/Pictures/Screenshots"; mkdir -p "$d"; f="$d/$(date +%Y%m%d-%H%M%S).png"; grim "$f" && wl-copy < "$f" && notify-send -i "$f" "Ekran görüntüsü" "Panoya kopyalandı: $(basename "$f")"]]))
+hl.bind("SHIFT + Print", hl.dsp.exec_cmd([[mkdir -p "$HOME/Pictures/Screenshots"; grim -g "$(slurp)" - | satty --filename - --output-filename "$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png" --copy-command wl-copy --early-exit]]))
+hl.bind("CTRL + Print", hl.dsp.exec_cmd([[g="$(slurp)" && [ -n "$g" ] && d="$HOME/Pictures/Screenshots" && mkdir -p "$d" && f="$d/$(date +%Y%m%d-%H%M%S).png" && grim -g "$g" "$f" && wl-copy < "$f" && notify-send -i "$f" "Ekran görüntüsü" "Panoya kopyalandı: $(basename "$f")"]]))
 
 -- Renk secici (omarchy bindings/utilities.lua). Calisiyorsa kapatir, degilse acar.
 hl.bind("SUPER + Print", hl.dsp.exec_cmd("pkill hyprpicker || hyprpicker -a"))
@@ -481,6 +493,7 @@ require("windows")
 
 -- omarchy tiling.lua'nin cakismayan kismi: gruplar, scratchpad, ALT+TAB dongusu.
 require("tiling")
+require("extras")   -- end-4/dots-hyprland uyarlamaları
 
 ------------------
 ----  TEMA    ----

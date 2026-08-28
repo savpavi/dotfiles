@@ -12,7 +12,7 @@
 | `Alt + Space` sonra `=` | Hesap makinesi — sonuç panoya kopyalanır |
 | `Alt + Space` sonra `u:` | Unicode karakter ara, seçilen panoya |
 | `Alt + Space` sonra `f:` | Font ara, seçilen ad panoya |
-| `SUPER + B` | Brave'i aç |
+| `SUPER + B` | Firefox'u aç |
 | `SUPER + W` | Windows VM'yi Looking Glass ile aç |
 | `SUPER + S` | Spotify'ı aç |
 | `SUPER + T` | Telegram'ı aç |
@@ -112,11 +112,29 @@ kullanır). Eski davranış için: `DOT_MENU=rofi dot-theme menu`.
 | `SUPER + Escape` | Çıkış menüsünü aç |
 | `SUPER + M` | Hyprland kapatma/çıkış işlemini başlat |
 | `SUPER + Shift + B` | Waybar'ı yeniden başlat |
-| `Print Screen` | Tüm ekranın görüntüsünü kaydet |
-| `Shift + Print Screen` | Seçilen bölgenin görüntüsünü kaydet |
+| `Print Screen` | Tüm ekran → dosya + pano + bildirim |
+| `Shift + Print Screen` | Bölge seç → satty'de düzenle (Enter kopyala, Ctrl+S kaydet) |
+| `Ctrl + Print Screen` | Bölge seç → doğrudan pano + dosya |
 | `SUPER + Print Screen` | Renk seçici (hyprpicker) — tekrar basınca kapanır |
 
 Ekran görüntüleri `~/Pictures/Screenshots/` klasörüne zaman damgalı PNG olarak kaydedilir.
+
+## Araçlar (end-4 uyarlamaları, 28.08.2026)
+
+| Kısayol | İşlev |
+|---|---|
+| `SUPER + SHIFT + X` | OCR: bölge seç → metin panoya (tesseract, tr+eng) |
+| `SUPER + SHIFT + R` | Ekran kaydı: bölge seç; tekrar basınca durur (`~/Videos/Recordings`) |
+| `CTRL + ALT + R` | Ekran kaydı: aktif monitör |
+| `SUPER + SHIFT + ALT + R` | Ekran kaydı: aktif monitör + sistem sesi |
+| `SUPER + SHIFT + P` | Pencereyi sabitle (pin) — her workspace'te görünür |
+| `SUPER + SHIFT + F` | Maximize (bar görünür kalır; `SUPER+F` tam ekran) |
+| `SUPER + ş` / `SUPER + i` | Bölme oranı -/+ (US düzende `;` / `'`) |
+| `SUPER + Numpad -` / `Numpad +` | Ekran zoom -/+ (en fazla 3x) |
+| `SUPER + Numpad *` | Zoom sıfırla |
+| `ALT + F4` | Kapatmaz; hatırlatma bildirimi (VM içinde normal çalışır) |
+
+Otomatik kurallar: dosya aç/kaydet diyalogları yüzer+ortada, "is sharing your screen" çubuğu alt ortada sabit, `steam_app`/`.exe` için tearing, tile pencerelerde gölge yok, odaksız pencere %5 karartma, sürüklerken yapışma (snap). Kaynak: `~/.config/hypr/extras.lua`.
 
 ## Medya Tuşları
 

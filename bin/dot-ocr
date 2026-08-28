@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# dot-ocr — bölge seç, tesseract ile metni oku, panoya kopyala.
+# end-4/dots-hyprland keybinds.lua OCR bind'ının uyarlaması (28.08.2026).
+# Gerekli: grim slurp tesseract tesseract-langpack-tur tesseract-langpack-eng wl-clipboard
+set -u
+tmp="$(mktemp --suffix=.png)"
+trap 'rm -f "$tmp"' EXIT
+command -v tesseract >/dev/null || { notify-send -a OCR "OCR" "tesseract kurulu değil"; exit 1; }
+geom="$(slurp)" || exit 1
+grim -g "$geom" "$tmp" || exit 1
+langs="$(tesseract --list-langs 2>/dev/null | awk 'NR>1' | tr '\n' '+' | sed 's/+$//')"
+[ -z "$langs" ] && langs=eng
+text="$(tesseract "$tmp" stdout -l "$langs" 2>/dev/null)"
+if [ -z "${text//[[:space:]]/}" ]; then
+    notify-send -a OCR "OCR" "Metin bulunamadı"; exit 1
+fi
+printf '%s' "$text" | wl-copy
+notify-send -a OCR "OCR → pano" "$(printf '%s' "$text" | head -c 200)"
