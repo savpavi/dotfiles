@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# dot-record — wf-recorder ile ekran kaydı; tekrar çağrılınca durdurur.
+# end-4/dots-hyprland quickshell/ii/scripts/videos/record.sh uyarlaması (28.08.2026).
+#   dot-record               bölge seç, sessiz
+#   dot-record --fullscreen  aktif monitör
+#   dot-record --sound       sistem sesi (monitor source) ile
+# Gerekli: wf-recorder slurp jq wireplumber(pactl) libnotify
+set -u
+dir="${DOT_RECORD_DIR:-$HOME/Videos/Recordings}"
+mkdir -p "$dir"
+sound=0; full=0
+for a in "$@"; do case "$a" in --sound) sound=1;; --fullscreen) full=1;; esac; done
+if pgrep -x wf-recorder >/dev/null; then
+    pkill -INT -x wf-recorder
+    notify-send -a Kayıt "Kayıt durduruldu" "$dir"
+    exit 0
+fi
+command -v wf-recorder >/dev/null || { notify-send -a Kayıt "Kayıt" "wf-recorder kurulu değil"; exit 1; }
+file="$dir/recording_$(date '+%Y-%m-%d_%H.%M.%S').mp4"
+# libx264: mp4 içinde her yerde oynar (varsayılan VP9 Telegram/QuickTime'da sorunlu). AMD donanım için: DOT_RECORD_CODEC=h264_vaapi
+args=(-c "${DOT_RECORD_CODEC:-libx264}" --pixel-format yuv420p -f "$file")
+if [ "$sound" = 1 ]; then
+    src="$(pactl list sources 2>/dev/null | awk '/Name:.*monitor/{print $2; exit}')"
+    [ -n "$src" ] && args+=(--audio="$src")
+fi
+if [ "$full" = 1 ]; then
+    mon="$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')"
+    args+=(-o "$mon")
+else
+    geom="$(slurp)" || { notify-send -a Kayıt "Kayıt iptal" "Bölge seçilmedi"; exit 1; }
+    args+=(--geometry "$geom")
+fi
+notify-send -a Kayıt "Kayıt başladı" "$(basename "$file") — durdurmak için aynı tuş"
+exec wf-recorder "${args[@]}"
