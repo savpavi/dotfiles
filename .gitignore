@@ -16,3 +16,6 @@ config/hypr/hypr-theme.conf
 config/hypr/hyprland-theme.lua
 config/hypr/hyprtoolkit.conf
 config/swayosd/style.css
+
+# Niri yerel yedekleri
+config/niri/*.bak*
