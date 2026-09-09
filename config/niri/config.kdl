@@ -1,0 +1,140 @@
+// Fedora 44 — sıfırdan Niri / Noctalia yapılandırması, 2026-09-06.
+input {
+    keyboard {
+        xkb { layout "tr,us"; options "grp:win_space_toggle"; }
+        repeat-delay 250
+        repeat-rate 35
+        numlock
+    }
+    touchpad { tap; natural-scroll; }
+    focus-follows-mouse max-scroll-amount="0%"
+}
+output "DP-1" {
+    mode "2560x1440@179.999"
+    scale 1
+    position x=0 y=0
+}
+output "DP-3" {
+    mode "1920x1080@119.982"
+    scale 1
+    transform "normal"
+    position x=2560 y=180
+}
+layout {
+    gaps 12
+    center-focused-column "on-overflow"
+    preset-column-widths { proportion 0.33333; proportion 0.5; proportion 0.66667; }
+    default-column-width { proportion 0.5; }
+    focus-ring { off; }
+    border {
+        width 2
+        active-gradient from="#cba6f7" to="#89b4fa" angle=45
+        inactive-color "#313244"
+        urgent-color "#f38ba8"
+    }
+    shadow { on; softness 20; spread 2; offset x=0 y=4; color "#00000066"; }
+    background-color "#1e1e2e"
+}
+cursor { xcursor-theme "Adwaita"; xcursor-size 24; }
+environment {
+    QT_QPA_PLATFORMTHEME "qt6ct"
+    QT_WAYLAND_DISABLE_WINDOWDECORATION "1"
+}
+prefer-no-csd
+window-rule {
+    open-maximized true
+    geometry-corner-radius 9
+    clip-to-geometry true
+}
+window-rule {
+    match app-id="^looking-glass-client$"
+    open-on-output "DP-3"
+    open-fullscreen true
+}
+spawn-at-startup "noctalia"
+spawn-at-startup "systemctl" "--user" "start" "hyprpolkitagent.service"
+spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
+spawn-at-startup "wl-paste" "--type" "image" "--watch" "cliphist" "store"
+spawn-at-startup "solaar" "--window=hide"
+hotkey-overlay { skip-at-startup; }
+workspace "1" { open-on-output "DP-1"; }
+workspace "2" { open-on-output "DP-1"; }
+workspace "3" { open-on-output "DP-1"; }
+workspace "4" { open-on-output "DP-1"; }
+workspace "5" { open-on-output "DP-1"; }
+workspace "6" { open-on-output "DP-3"; }
+workspace "7" { open-on-output "DP-3"; }
+workspace "8" { open-on-output "DP-3"; }
+workspace "9" { open-on-output "DP-3"; }
+workspace "10" { open-on-output "DP-3"; }
+
+binds {
+    Mod+W { spawn "/home/savpavi/.local/bin/start-windows-looking-glass"; }
+    Mod+Q { spawn "ghostty"; }
+    Mod+C { close-window; }
+    Mod+E { spawn "dolphin"; }
+    Alt+Space { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+L { spawn "noctalia" "msg" "session" "lock"; }
+    Mod+Escape allow-inhibiting=false { spawn "noctalia" "msg" "panel-toggle" "session"; }
+    Mod+Comma { spawn "noctalia" "msg" "settings-toggle"; }
+    Mod+Shift+B { spawn "noctalia" "msg" "bar-toggle"; }
+    Mod+Shift+W { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }
+    Mod+B { spawn "brave-origin"; }
+    Mod+Z { spawn "zed"; }
+    Mod+S { spawn "flatpak" "run" "com.spotify.Client"; }
+    Mod+T { spawn "flatpak" "run" "org.telegram.desktop"; }
+    Mod+D { spawn "flatpak" "run" "com.discordapp.Discord"; }
+    Mod+O { spawn "flatpak" "run" "md.obsidian.Obsidian"; }
+    Mod+V { toggle-window-floating; }
+    Mod+F { fullscreen-window; }
+    Mod+R { switch-preset-column-width; }
+    Mod+Shift+F { maximize-column; }
+    Mod+Tab { toggle-overview; }
+    Mod+Left { focus-column-left; }
+    Mod+Right { focus-column-right; }
+    Mod+Up { focus-window-up; }
+    Mod+Down { focus-window-down; }
+    Mod+Ctrl+Left { move-column-left; }
+    Mod+Ctrl+Right { move-column-right; }
+    Mod+Ctrl+Up { move-window-up; }
+    Mod+Ctrl+Down { move-window-down; }
+    Mod+Shift+Left { move-column-to-monitor-left; }
+    Mod+Shift+Right { move-column-to-monitor-right; }
+    Mod+Page_Up { focus-workspace-up; }
+    Mod+Page_Down { focus-workspace-down; }
+    Mod+BracketLeft { consume-or-expel-window-left; }
+    Mod+BracketRight { consume-or-expel-window-right; }
+    Print { screenshot-screen; }
+    Shift+Print { screenshot; }
+    Alt+Print { screenshot-window; }
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-up" "5"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-down" "5"; }
+    XF86AudioMute allow-when-locked=true { spawn "noctalia" "msg" "volume-mute"; }
+    XF86AudioMicMute allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+    XF86AudioPlay { spawn "playerctl" "play-pause"; }
+    XF86AudioNext { spawn "playerctl" "next"; }
+    XF86AudioPrev { spawn "playerctl" "previous"; }
+    Mod+Shift+Slash { show-hotkey-overlay; }
+    Mod+Shift+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+    Mod+Shift+E { quit; }
+    Mod+1 { focus-workspace "1"; }
+    Mod+Shift+1 { move-column-to-workspace "1"; }
+    Mod+2 { focus-workspace "2"; }
+    Mod+Shift+2 { move-column-to-workspace "2"; }
+    Mod+3 { focus-workspace "3"; }
+    Mod+Shift+3 { move-column-to-workspace "3"; }
+    Mod+4 { focus-workspace "4"; }
+    Mod+Shift+4 { move-column-to-workspace "4"; }
+    Mod+5 { focus-workspace "5"; }
+    Mod+Shift+5 { move-column-to-workspace "5"; }
+    Mod+6 { focus-workspace "6"; }
+    Mod+Shift+6 { move-column-to-workspace "6"; }
+    Mod+7 { focus-workspace "7"; }
+    Mod+Shift+7 { move-column-to-workspace "7"; }
+    Mod+8 { focus-workspace "8"; }
+    Mod+Shift+8 { move-column-to-workspace "8"; }
+    Mod+9 { focus-workspace "9"; }
+    Mod+Shift+9 { move-column-to-workspace "9"; }
+    Mod+0 { focus-workspace "10"; }
+    Mod+Shift+0 { move-column-to-workspace "10"; }
+}

@@ -1,6 +1,7 @@
 # dotfiles
 
-Fedora 44 + Hyprland masaüstü yapılandırması.
+Fedora 44 masaüstü yapılandırması. Güncel oturum: **Niri + Noctalia**;
+önceki Hyprland yapılandırması ve tema araçları da korunur.
 
 ## Yapı
 
@@ -11,6 +12,16 @@ themes/     -> renk temaları (omarchy'den uyarlandı)
 templates/  -> tema şablonları (*.tpl)
 shell/      -> bash parçaları -> ~/.bashrc.d/ altına symlink edilir
 ```
+
+## Niri
+
+Güncel yapılandırma `config/niri/config.kdl` içindedir. Ekranlar, 10 çalışma
+alanı, tam genişlikte açılan pencereler, Looking Glass pencere kuralı ve
+uygulama kısayollarını içerir.
+
+Bağımlılıklar, yalnız Niri kurulumu ve kısayollar: [Niri rehberi](docs/niri.md).
+`dot-link` Niri klasörünü de bağlar. Aşağıdaki genel kurulum ve tema bölümleri
+Hyprland araçlarını da kapsar; `dot-theme` Niri renklerini değiştirmez.
 
 ## Kurulum / geri yükleme
 
@@ -47,9 +58,9 @@ dot-theme reapply       # aktif temayı yeniden uygula
 dot-theme set X --no-bg # duvar kağıdına dokunma
 ```
 
-Kısayollar: `SUPER+SHIFT+T` tema menüsü, `SUPER+CTRL+SHIFT+T` duvar kağıdı.
+Hyprland kısayolları: `SUPER+SHIFT+T` tema menüsü, `SUPER+CTRL+SHIFT+T` duvar kağıdı.
 
-## Kısayol rehberi
+## Hyprland kısayol rehberi
 
 ```bash
 dot-keys           # rofi ile aranabilir liste
