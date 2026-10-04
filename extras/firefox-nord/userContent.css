@@ -1,0 +1,18 @@
+/* Nord yalnız Firefox'un kendi yeni sekme/ana sayfasına uygulanır. */
+@-moz-document url("about:newtab"), url("about:home"), url("about:blank") {
+  :root {
+    --newtab-background-color: #2e3440 !important;
+    --newtab-background-color-secondary: #3b4252 !important;
+    --newtab-text-primary-color: #eceff4 !important;
+    --newtab-text-secondary-color: #d8dee9 !important;
+    --newtab-primary-action-background: #88c0d0 !important;
+    --newtab-primary-element-text-color: #2e3440 !important;
+    --newtab-element-hover-color: #434c5e !important;
+  }
+
+  html,
+  body {
+    background: #2e3440 !important;
+    color: #eceff4 !important;
+  }
+}

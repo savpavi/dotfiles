@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Claude
+Exec=brave-origin "--app=https://claude.ai/"
+Icon=brave-browser
+Terminal=false
+Categories=Network;
+StartupNotify=true

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Masaüstü Ayarları
+Comment=Ekran düzeni ve varsayılan uygulamalar
+Exec=/home/savpavi/dotfiles/bin/dot-settings
+Icon=preferences-system
+Terminal=false
+Categories=Settings;DesktopSettings;

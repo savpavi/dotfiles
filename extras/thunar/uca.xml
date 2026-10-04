@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+<action>
+	<icon>utilities-terminal</icon>
+	<name>Ghostty ile aç</name>
+	<submenu></submenu>
+	<unique-id>1788019763204830-1</unique-id>
+	<command>ghostty --working-directory=%f</command>
+	<description>Seçilen klasörde Ghostty terminalini aç</description>
+	<range></range>
+	<patterns>*</patterns>
+	<startup-notify/>
+	<directories/>
+</action>
+  <action>
+    <icon>image-x-generic</icon>
+    <name>Resize Image</name>
+    <submenu></submenu>
+    <unique-id>thunar-image-resize</unique-id>
+    <command>"/home/savpavi/.local/bin/resize-selected" %F</command>
+    <description>Resize selected image files while preserving aspect ratio.</description>
+    <patterns>*</patterns>
+    <startup-notify/>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
+  </action>
+  <action>
+    <icon>image-x-generic</icon>
+    <name>Upscale Image (Real-ESRGAN)</name>
+    <submenu></submenu>
+    <unique-id>thunar-image-upscale</unique-id>
+    <command>"/home/savpavi/.local/bin/upscale-selected" %F</command>
+    <description>Upscale selected image files with Real-ESRGAN.</description>
+    <patterns>*</patterns>
+    <startup-notify/>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
+  </action>
+  <action>
+    <icon>image-x-generic</icon>
+    <name>Convert to WebP</name>
+    <submenu></submenu>
+    <unique-id>thunar-webp-convert</unique-id>
+    <command>"/home/savpavi/.local/bin/convert-to-webp" %F</command>
+    <description>Convert selected image files to WebP using your config settings.</description>
+    <patterns>*</patterns>
+    <startup-notify/>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
+  </action>
+  <action>
+    <icon>edit-copy</icon>
+    <name>Copy Image to Clipboard</name>
+    <submenu></submenu>
+    <unique-id>thunar-image-copy-clipboard</unique-id>
+    <command>"/home/savpavi/.local/bin/copy-selected" %F</command>
+    <description>Copy selected image content to the clipboard (X11 or Wayland).</description>
+    <patterns>*</patterns>
+    <startup-notify/>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
+  </action>
+  <action>
+    <icon>dev.zed.Zed</icon>
+    <name>Zed ile aç</name>
+    <unique-id>thunar-open-zed</unique-id>
+    <command>/home/savpavi/.local/bin/zed %F</command>
+    <description>Seçilen dosya veya klasörleri Zed ile aç</description>
+    <patterns>*</patterns>
+    <startup-notify/>
+    <directories/>
+    <text-files/>
+    <other-files/>
+  </action>
+  <action>
+    <icon>video-x-generic</icon>
+    <name>Resolve için sesi hazırla</name>
+    <unique-id>desktop-resolve-audio</unique-id>
+    <command>/home/savpavi/dotfiles/bin/dot-desktop resolve %F</command>
+    <description>Görüntüyü kopyalar, sesi PCM yapar; ayrı MOV oluşturur</description>
+    <patterns>*.mp4;*.mkv;*.mov;*.avi;*.MP4;*.MKV;*.MOV;*.AVI</patterns>
+    <video-files/>
+  </action>
+</actions>

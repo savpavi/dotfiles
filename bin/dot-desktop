@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+"""Noctalia servis/yedek göstergeleri ve günlük araç menüleri."""
+import datetime,fcntl,json,os,re,subprocess as sp,sys,tempfile,time,tomllib
+from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'lib'))
+from desktop_panels import backup_status,save_note,convert_resolve
+HOME=Path.home()
+STATE=HOME/'.local/state/desktop-panels'
+VAULT=HOME/'Documents/Obsidian/Aktif Kasa'
+BACKUPS={'archive-critical-backup':('Kritik arşiv',30*3600),'vault-git-backup':('Obsidian Git',9*3600)}
+CMD=str(HOME/'dotfiles/bin/dot-desktop')
+
+def run(args,**kw):return sp.run(args,capture_output=True,text=True,timeout=kw.pop('timeout',10),**kw)
+def notify(title,body):run(['notify-send','-a','Masaüstü araçları',title,body])
+def choose(prompt,items):
+    if not items:return None
+    r=run(['noctalia','dmenu','-p',prompt],input='\n'.join(items)+'\n',timeout=None)
+    value=r.stdout.strip()
+    return value if r.returncode==0 and value in items else None
+
+def show(title,text):
+    run(['zenity','--text-info','--title='+title,'--width=780','--height=520','--no-markup'],input=text,timeout=None)
+
+def faults():
+    rows=[]
+    for user in (False,True):
+        scope=['--user'] if user else []
+        r=run(['systemctl',*scope,'list-units','--all','--state=failed,auto-restart','--output=json','--no-pager'])
+        if r.returncode:rows.append({'unit':'UNKNOWN','scope':'user' if user else 'system','sub':'okunamadı'})
+        else:
+            for v in json.loads(r.stdout):rows.append({'unit':v['unit'],'scope':'user' if user else 'system','sub':v.get('sub','failed')})
+    return rows
+
+def backup_rows():
+    rows=[]
+    for name,(label,max_age) in BACKUPS.items():
+        r=run(['systemctl','--user','show',name+'.service','-p','Result','-p','ActiveState','-p','LoadState'])
+        fields=dict(line.split('=',1) for line in r.stdout.splitlines() if '=' in line)
+        timer=run(['systemctl','--user','is-active',name+'.timer']).returncode==0
+        success=None
+        journal=run(['journalctl','--user','-u',name+'.service','--since=-14days','-n','100','-o','json','--no-pager'])
+        if journal.returncode==0:
+            for line in journal.stdout.splitlines():
+                try:
+                    d=json.loads(line)
+                    if d.get('SYSLOG_IDENTIFIER')=='systemd' and d.get('MESSAGE','').startswith('Finished '):
+                        success=max(success or 0,int(d['__REALTIME_TIMESTAMP'])/1e6)
+                except (ValueError,KeyError):pass
+        # Journal rotasyonu eski basarilari silebilir; kalici script kaydi da kanittir.
+        status_path=(HOME/'.local/state/archive-critical-backup/status.txt' if name=='archive-critical-backup' else HOME/'vm-setup/vault-git-backup-status.txt')
+        try:
+            status_text=status_path.read_text().strip()
+            match=re.search(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4})$',status_text)
+            if status_text.startswith('SUCCESS ') and match:
+                stamp=datetime.datetime.strptime(match.group(1),'%Y-%m-%d %H:%M:%S %z').timestamp()
+                success=max(success or 0,stamp)
+        except (OSError,ValueError):pass
+        timerinfo=''
+        upcoming=run(['systemctl','--user','list-timers',name+'.timer','--all','--output=json','--no-pager'])
+        if upcoming.returncode==0:
+            entries=json.loads(upcoming.stdout)
+            if entries and isinstance(entries[0].get('next'),int) and 0<entries[0]['next']<253402300799000000:
+                timerinfo=datetime.datetime.fromtimestamp(entries[0]['next']/1e6).strftime('%d.%m %H:%M')
+        status=backup_status(fields,timer,success,time.time(),max_age) if r.returncode==0 else 'UNKNOWN'
+        rows.append({'name':name,'label':label,'status':status,'last':datetime.datetime.fromtimestamp(success).strftime('%d.%m %H:%M') if success else 'Başarı kaydı bulunamadı','next':timerinfo or 'Planlı zaman yok'})
+    return rows
+
+def tails():
+    r=run(['tailscale','status','--json'])
+    if r.returncode:return {'BackendState':'UNKNOWN','Peer':{}}
+    return json.loads(r.stdout)
+
+def refresh():
+    STATE.mkdir(parents=True,exist_ok=True,mode=0o700)
+    issues=faults();backups=backup_rows();ts=tails()
+    snapshot={'faults':issues,'backups':backups,'tailscale':ts.get('BackendState','UNKNOWN'),'time':time.strftime('%H:%M:%S')}
+    (STATE/'status.json').write_text(json.dumps(snapshot,ensure_ascii=False))
+    config=tomllib.loads((HOME/'.config/noctalia/config.toml').read_text())
+    owned={'service_health','backup_health','tailnet','quick_note','presenter'}
+    end=[x for x in config['bar']['default']['end'] if x not in owned]
+    pos=end.index('tray') if 'tray' in end else 0
+    end[pos:pos]=(['service_health'] if issues else [])+['backup_health','tailnet','quick_note','presenter']
+    q=lambda x:json.dumps(x,ensure_ascii=False)
+    content='[bar.default]\nend = '+q(end)+'\n'
+    def widget(name,glyph,label,tooltip,action,color='secondary'):
+        nonlocal content
+        content+=f'\n[widget.{name}]\ntype = "custom_button"\nglyph = {q(glyph)}\nlabel = {q(label)}\ntooltip = {q(tooltip)}\ncolor = {q(color)}\n[widget.{name}.actions]\nleft = {q("exec "+CMD+" "+action)}\n'
+    if issues:widget('service_health','alert-triangle',str(len(issues)),'Servis sorunu / okunamayan durum\n'+ '\n'.join(x['scope']+': '+x['unit']+' '+x['sub'] for x in issues),'faults','error')
+    bad=sum(x['status'] not in ('OK','RUNNING') for x in backups)
+    widget('backup_health','database','!' if bad else '', '\n'.join(x['label']+': '+x['status']+' · '+x['last'] for x in backups),'backups','error' if bad else 'secondary')
+    peers=ts.get('Peer') or {};online=sum(bool(x.get('Online')) for x in peers.values())
+    widget('tailnet','network',str(online),'Tailscale: '+ts.get('BackendState','UNKNOWN')+'\nÇevrimiçi eş: '+str(online),'tailscale')
+    widget('quick_note','notes','','Mevcut Obsidian notunu seç ve düzenle','note')
+    widget('presenter','pencil','','Canlı çizim · Super+Alt+D\nSpotlight · Super+Alt+P','presenter')
+    dest=HOME/'.config/noctalia/zz-desktop-tools.toml'
+    if not dest.exists() or dest.read_text()!=content:
+        tmp=dest.with_suffix('.tmp');tmp.write_text(content);os.replace(tmp,dest)
+    return snapshot
+
+def fault_panel():
+    rows=faults()
+    if not rows:show('Servis durumu','Sistem ve kullanıcı yöneticisinde failed/auto-restart birim yok.');return
+    choices={x['scope']+' · '+x['unit']+' · '+x['sub']:x for x in rows}
+    selected=choose('Servis günlüğünü aç',list(choices))
+    if selected:
+        x=choices[selected]
+        if x['unit']=='UNKNOWN':show('Servis durumu','Bu yöneticinin durumu okunamadı.');return
+        args=['journalctl']+(['--user'] if x['scope']=='user' else [])+['-u',x['unit'],'-n','60','--no-pager']
+        r=run(args);show(x['unit'],r.stdout or r.stderr)
+
+def backups_panel():
+    rows=backup_rows();show('Yedek durumu','\n\n'.join(x['label']+' — '+x['status']+'\nSon başarı: '+x['last']+'\nSonraki: '+x['next']+'\nServis: '+x['name']+'.service' for x in rows)+'\n\nBu panel servis sonuçlarını gösterir; yedeğin geri yüklenebilirliğini kanıtlamaz.\nUNKNOWN: günlükte veya kalıcı durum dosyasında başarı kanıtı yok.\nTimer kapalıysa burada otomatik başlatılmaz.')
+
+def note_panel():
+    names=[]
+    for directory,dirs,files in os.walk(VAULT):
+        dirs[:]=[d for d in dirs if not d.startswith('.') and not d.startswith('My-Brain-Is-Full-Crew') and d!='blog' and not (Path(directory)/d).is_symlink()]
+        for name in files:
+            path=Path(directory)/name
+            if name.endswith('.md') and not path.is_symlink():names.append(str(path.relative_to(VAULT)))
+    selected=choose('Obsidian notu ara',sorted(names))
+    if not selected:return
+    path=VAULT/selected
+    if not path.resolve().is_relative_to(VAULT.resolve()):raise RuntimeError('Vault dışındaki dosya açılamaz')
+    original=path.read_bytes()
+    if len(original)>2_000_000:raise RuntimeError('Bu not hızlı editör için çok büyük; Obsidian ile açın.')
+    fd,tmp=tempfile.mkstemp(prefix='quick-note-',suffix='.md')
+    try:
+        with os.fdopen(fd,'wb') as f:f.write(original)
+        r=run(['zenity','--text-info','--editable','--filename='+tmp,'--title='+path.stem,'--width=900','--height=650','--ok-label=Kaydet','--cancel-label=Vazgeç'],timeout=None)
+        if r.returncode==0 and r.stdout.encode()!=original:
+            save_note(path,original,r.stdout.encode());notify('Not kaydedildi',path.name)
+    finally:Path(tmp).unlink(missing_ok=True)
+
+def tails_panel():
+    data=tails()
+    if data.get('BackendState')!='Running':show('Tailscale', 'Durum: '+data.get('BackendState','UNKNOWN')+'\nBu panel ağı otomatik açıp kapatmaz.');return
+    entries={}
+    for peer in (data.get('Peer') or {}).values():
+        ips=peer.get('TailscaleIPs') or []
+        if ips:entries[peer.get('HostName','Cihaz')+' · '+ips[0]+' · '+('çevrimiçi' if peer.get('Online') else 'çevrimdışı')]=peer
+    selected=choose('Tailscale cihazı',list(entries))
+    if not selected:return
+    peer=entries[selected];ip=peer['TailscaleIPs'][0]
+    actions=['IP adresini kopyala','DNS adını kopyala']
+    if peer.get('Online') and peer.get('TaildropTarget')==1:actions.append('Taildrop ile dosya gönder')
+    action=choose('Tailscale işlemi',actions)
+    if not action:return
+    if action.startswith('IP'):run(['wl-copy'],input=ip)
+    elif action.startswith('DNS'):run(['wl-copy'],input=peer.get('DNSName','').rstrip('.'))
+    else:
+        selected_file=run(['zenity','--file-selection','--title=Gönderilecek dosyayı seç'],timeout=None)
+        if selected_file.returncode:return
+        path=Path(selected_file.stdout.rstrip('\n'))
+        if not path.is_file():raise RuntimeError('Normal bir dosya seçin')
+        confirm=run(['zenity','--question','--default-cancel','--title=Dosya gönder','--text='+path.name+'\nHedef: '+peer.get('HostName',ip)+'\nDosya bu cihaza gönderilsin mi?'],timeout=None)
+        if confirm.returncode:return
+        r=run(['tailscale','file','cp',str(path),ip+':'],timeout=None)
+        if r.returncode:raise RuntimeError(r.stderr)
+        notify('Dosya gönderildi',path.name)
+
+def resolve_files(files):
+    if not files:
+        r=run(['zenity','--file-selection','--title=Resolve için video seç'],timeout=None)
+        if r.returncode:return
+        files=[r.stdout.rstrip('\n')]
+    results=[]
+    for path in files:
+        try:results.append('OK: '+str(convert_resolve(path)))
+        except (RuntimeError,OSError,sp.CalledProcessError) as error:results.append('HATA: '+str(error))
+    show('Resolve hazırlama sonucu','\n'.join(results)+'\n\nGörüntü akışı kopyalandı; ses PCM. Orijinal dosyalar korunur.\nVideo codec desteği ayrıca Resolve sürümüne bağlıdır.')
+
+def main():
+    command=sys.argv[1] if len(sys.argv)>1 else 'refresh'
+    if command=='watch':
+        STATE.mkdir(parents=True,exist_ok=True,mode=0o700)
+        with (STATE/'watch.lock').open('w') as lock:
+            fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            while True:
+                try:refresh()
+                except Exception as error:print(type(error).__name__+': '+str(error),file=sys.stderr,flush=True)
+                time.sleep(30)
+    elif command=='refresh':print(json.dumps(refresh(),ensure_ascii=False))
+    elif command=='faults':fault_panel()
+    elif command=='backups':backups_panel()
+    elif command=='note':note_panel()
+    elif command=='tailscale':tails_panel()
+    elif command=='resolve':resolve_files(sys.argv[2:])
+    elif command=='presenter':sp.run([str(HOME/'dotfiles/bin/dot-presenter')],check=True)
+    else:raise RuntimeError('Bilinmeyen işlem')
+if __name__=='__main__':
+    try:main()
+    except BlockingIOError:pass
+    except Exception as error:
+        print(str(error),file=sys.stderr)
+        try:notify('Masaüstü aracı hatası',str(error))
+        except Exception:pass
+        raise SystemExit(1)

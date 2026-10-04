@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""Masaüstü sağlık özeti; yalnız okur. Onarım veya servis yeniden başlatma yapmaz."""
+import shutil
+import subprocess as sp
+
+def check(label, args):
+    try:
+        r = sp.run(args, capture_output=True, text=True, timeout=8)
+        ok = r.returncode == 0
+        text = (r.stdout or r.stderr).strip().splitlines()
+        print(f'{"OK" if ok else "KONTROL" :8} {label}: '+ (' · '.join(text[:2])[:160] or ('hazır' if ok else 'yanıt yok')))
+        return ok
+    except (OSError, sp.TimeoutExpired) as e:
+        print(f'UNKNOWN  {label}: {e}')
+        return False
+
+print('Masaüstü sağlık kontrolü — salt okunur\n')
+checks = [
+ ('Niri config', ['niri', 'validate']),
+ ('Niri IPC', ['niri', 'msg', 'version']),
+ ('Noctalia IPC', ['noctalia', 'msg', 'status']),
+ ('Dinamik yerleşim', ['systemctl', '--user', 'is-active', 'niri-dynamic-layout.service']),
+ ('PipeWire', ['systemctl', '--user', 'is-active', 'pipewire.service']),
+ ('WirePlumber', ['systemctl', '--user', 'is-active', 'wireplumber.service']),
+ ('Masaüstü portalı', ['systemctl', '--user', 'is-active', 'xdg-desktop-portal.service']),
+ ('GNOME portalı', ['systemctl', '--user', 'is-active', 'xdg-desktop-portal-gnome.service']),
+ ('Ses çıkışı', ['wpctl', 'get-volume', '@DEFAULT_AUDIO_SINK@']),
+ ('Ghostty config', ['ghostty', '+validate-config']),
+ ('Kayıt durumu', ['dot-record', '--status']),
+]
+results = [check(label,args) for label,args in checks]
+for name in ('satty','slurp','wf-recorder','ffprobe','lazygit','brave-origin'):
+    path=shutil.which(name)
+    print(f'{"OK" if path else "EKSİK":8} {name}: {path or "bulunamadı"}')
+    results.append(bool(path))
+print('\nBaşarısız kullanıcı servisleri:')
+try:
+    failed = sp.run(['systemctl','--user','--failed','--no-legend','--no-pager'], capture_output=True, text=True, timeout=8)
+    if failed.returncode or failed.stdout.strip():
+        print('KONTROL  '+(failed.stdout or failed.stderr).strip())
+        results.append(False)
+    else:
+        print('OK       Başarısız servis yok')
+except (OSError, sp.TimeoutExpired) as error:
+    print('UNKNOWN  '+str(error))
+    results.append(False)
+print('\nBu sonuç yakalama, ses kaydı veya portal paylaşımının görsel testi değildir.')
+raise SystemExit(0 if all(results) else 1)

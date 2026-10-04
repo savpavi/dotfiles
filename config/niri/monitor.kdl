@@ -1,0 +1,11 @@
+output "DP-1" {
+    mode "2560x1440@179.999"
+    scale 1
+    position x=0 y=0
+}
+output "DP-3" {
+    mode "1920x1080@119.982"
+    scale 1
+    transform "normal"
+    position x=2560 y=180
+}

@@ -1,0 +1,3 @@
+#!/bin/sh
+# sudo -A için Zenity; parola yalnız stdout üzerinden çağırana döner.
+exec zenity --password --title="${1:-Yetkilendirme}"

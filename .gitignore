@@ -19,3 +19,7 @@ config/swayosd/style.css
 
 # Niri yerel yedekleri
 config/niri/*.bak*
+
+# Python test önbelleği
+__pycache__/
+*.pyc

@@ -1,0 +1,10 @@
+// Sabit Nord paleti; geometri ve yerleşim ana Niri config'inde kalır.
+layout {
+    border {
+        active-gradient from="#88c0d0" to="#81a1c1" angle=45
+        inactive-color "#3b4252"
+        urgent-color "#bf616a"
+    }
+    background-color "#2e3440"
+    insert-hint { color "#88c0d080"; }
+}

@@ -1,0 +1,4 @@
+# Mevcut AI Usage widget instance: bar
+[widget.bar]
+type = "felipeartur/ai-usagebar:bar"
+vendor = "openai"
