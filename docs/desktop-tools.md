@@ -4,7 +4,6 @@
 
 | Kısayol | İşlev |
 |---|---|
-| Super+A | ChatGPT uygulamasını aç |
 | Print | Odaklı monitörü Satty'de düzenle |
 | Shift+Print | Bölge seç, Satty'de düzenle |
 | Alt+Print | Niri ile pencere görüntüsünü kaydet |

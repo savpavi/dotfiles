@@ -1,102 +1,62 @@
 # dotfiles
 
-Fedora 44 masaüstü yapılandırması. Güncel oturum: **Niri + Noctalia**;
-önceki Hyprland yapılandırması ve tema araçları da korunur.
+My Fedora 44 Wayland desktop: Hyprland with the Noctalia shell as the daily driver, a Niri configuration kept alongside it, a theme switcher that recolours a dozen apps at once, and a set of small desktop tools.
 
-## Yapı
+These are personal configs. Monitor names (`DP-1`, `DP-3`), paths and app choices fit my machine, so read before you copy.
 
-```
-config/     -> ~/.config/<isim> olarak symlink edilir
-bin/        -> yardımcı script'ler (PATH'e eklenir)
-themes/     -> renk temaları (omarchy'den uyarlandı)
-templates/  -> tema şablonları (*.tpl)
-shell/      -> bash parçaları -> ~/.bashrc.d/ altına symlink edilir
-```
+## Layout
 
-## Niri
+| Path | What it holds |
+|---|---|
+| `config/` | App configs, symlinked into `~/.config/<name>` by `dot-link` (Niri, Hyprland, Ghostty, Kitty, Alacritty, Waybar, Rofi, SwayNC, btop, fastfetch, Starship, …) |
+| `bin/` | `dot-*` helper scripts (add to `PATH`) |
+| `themes/` | 22 colour themes adapted from Omarchy |
+| `templates/` | `*.tpl` files rendered per theme |
+| `lib/`, `tests/` | Python modules behind the desktop tools, with unit tests |
+| `extras/` | Pieces installed by hand: Noctalia snippets, Firefox Nord theme, `.desktop` launchers, systemd user units, Thunar actions, presenter overlay |
+| `shell/` | Bash snippets for `~/.bashrc.d/` |
+| `docs/` | Niri guide, desktop tools, Hyprland cheatsheet (mostly in Turkish) |
 
-Güncel yapılandırma `config/niri/config.kdl` içindedir. Ekranlar, 10 çalışma
-alanı, tam genişlikte açılan pencereler, Looking Glass pencere kuralı ve
-uygulama kısayollarını içerir.
-
-Bağımlılıklar, yalnız Niri kurulumu ve kısayollar: [Niri rehberi](docs/niri.md).
-`dot-link` Niri klasörünü de bağlar. Aşağıdaki genel kurulum ve tema bölümleri
-Hyprland araçlarını da kapsar; `dot-theme` Niri renklerini değiştirmez.
-
-## Kurulum / geri yükleme
-
-Yedek: <https://github.com/savpavi/dotfiles> (private).
+## Install
 
 ```bash
-git clone git@github.com:savpavi/dotfiles.git ~/dotfiles
-~/dotfiles/bin/dot-link          # önce --dry-run ile bak
-~/dotfiles/bin/dot-theme reapply # temayı uygula
+git clone https://github.com/savpavi/dotfiles.git ~/dotfiles
+~/dotfiles/bin/dot-link --dry-run   # see what would change
+~/dotfiles/bin/dot-link             # back up existing configs, then symlink
+export PATH="$HOME/dotfiles/bin:$PATH"
 ```
 
-Ayrıca elle bağlanması gerekenler (repo dışında kalan üç şey):
+`dot-link` moves anything already in `~/.config` to `~/.local/share/dotfiles-backup/<date>/` before linking. `dot-link --unlink` removes the links and copies the repo content back.
+
+## Themes
 
 ```bash
-ln -s ~/dotfiles/docs/hyprland-cheatsheet.md ~/hyprland-cheatsheet.md
-ln -sfn ~/dotfiles/themes ~/Pictures/wallpapers/omarchy
-echo 'export PATH="$HOME/dotfiles/bin:$PATH"' >> ~/.zshrc
-ln -s ~/dotfiles/shell/50-tools.sh ~/.bashrc.d/50-tools.sh
+dot-theme list            # available themes, active one marked
+dot-theme set gruvbox     # apply a theme
+dot-theme next            # cycle
+dot-theme menu            # pick with rofi
+dot-theme reapply         # re-render the active theme
 ```
 
-`dot-link`, `~/.config` altındaki mevcut dosyaları
-`~/.local/share/dotfiles-backup/<tarih>/` içine taşır, yerlerine symlink koyar.
-Geri almak için: `dot-link --unlink` sonra yedekten kopyala.
+`dot-theme` renders `templates/` with the theme's `colors.toml` and writes the result for Kitty, Ghostty, Alacritty, btop, Rofi, SwayNC, wlogout, Hyprlock and Hyprland. It does not touch Niri; Niri colours come from Noctalia templates (see `docs/desktop-tools.md`). Wallpapers are not stored here.
 
-## Tema değiştirme
+## Desktop tools
 
-```bash
-dot-theme list          # temalar (aktif olan * ile)
-dot-theme set gruvbox   # temayı uygula
-dot-theme next          # sıradaki temaya geç
-dot-theme bg            # aktif temanın sıradaki duvar kağıdı
-dot-theme menu          # rofi ile seç
-dot-theme reapply       # aktif temayı yeniden uygula
-dot-theme set X --no-bg # duvar kağıdına dokunma
-```
+| Command | Does |
+|---|---|
+| `dot-settings` | GTK settings centre (built for the Niri session) |
+| `dot-desktop` | Noctalia service/backup indicators and tool menus |
+| `dot-health` | Read-only desktop health report; never restarts or repairs anything |
+| `dot-record` | Screen recording via Niri IPC + wf-recorder; the same command starts and stops |
+| `dot-presenter` | Toggle a drawing/spotlight overlay on the focused monitor |
+| `dot-ocr` | Select a region, OCR it with Tesseract, copy the text |
+| `dot-webapp Name https://url` | Create a Brave web-app launcher (never overwrites) |
+| `dot-keys` | Searchable keybinding list |
+| `dot-askpass` | Zenity askpass helper for `sudo -A` |
 
-Hyprland kısayolları: `SUPER+SHIFT+T` tema menüsü, `SUPER+CTRL+SHIFT+T` duvar kağıdı.
+Run the tests with `python3 -m unittest discover -s tests`.
 
-## Hyprland kısayol rehberi
+## Credits
 
-```bash
-dot-keys           # rofi ile aranabilir liste
-dot-keys --text    # terminale yazdır
-```
-
-`SUPER+K` de aynısını açar. Kaynak: `docs/hyprland-cheatsheet.md`
-(`~/hyprland-cheatsheet.md` buraya symlink).
-
-### Neyi boyuyor
-
-| Uygulama | Üretilen dosya | Bağlantı |
-|---|---|---|
-| kitty | `kitty/active-theme.conf` | `include active-theme.conf` (mevcuttu) |
-| ghostty | `ghostty/theme.conf` | `config-file = theme.conf` (config sonunda) |
-| alacritty | `alacritty/active-theme.toml` | `import` (mevcuttu) |
-| btop | `btop/themes/dot-theme.theme` | `color_theme = "dot-theme"` |
-| rofi | `rofi/colors.rasi` | `@theme` (mevcuttu) |
-| swaync | `swaync/colors.css` | `@import` (mevcuttu) |
-| wlogout | `wlogout/colors.css` | `@import` (mevcuttu) |
-| hyprlock | `hypr/hypr-theme.conf` | `source =` |
-| hyprland | `hypr/hyprland-theme.lua` | `require("hyprland-theme")` |
-| **waybar** | `waybar/colors.css` | **henüz bağlı değil** |
-| hyprpaper | `hyprpaper.conf` DP-1 path | doğrudan yazılır |
-
-Waybar'ı bağlamak için `waybar/style.css` başındaki `@define-color` bloğunu
-silip yerine tek satır koy:
-
-```css
-@import "colors.css";
-```
-
-Duvar kağıdı yalnızca `DOT_THEME_MONITORS` (varsayılan `DP-1`) monitörlerine
-uygulanır — DP-3 dikey olduğu için manzara görselleri oraya oturmuyor.
-
-## Kaynak
-
-Tema sistemi [basecamp/omarchy](https://github.com/basecamp/omarchy)
-(MIT) projesinden uyarlandı. Bkz. `themes/UPSTREAM.md`.
+- Theme system and colour schemes: [basecamp/omarchy](https://github.com/basecamp/omarchy), MIT © David Heinemeier Hansson (see `themes/UPSTREAM.md`).
+- Presenter overlay components: [andreas-bylund/presenter-overlay](https://github.com/andreas-bylund/presenter-overlay), MIT (see `extras/presenter/LICENSE.upstream`).

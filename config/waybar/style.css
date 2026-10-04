@@ -74,7 +74,7 @@ window#waybar.empty .modules-center { background: transparent; border: none; }
 #custom-logi.warn { color: @yellow; }
 #custom-logi.crit { color: @base; background: @red; }
 
-/* AI kullanim gostergesi (Claude + Codex) */
+/* AI kullanim gostergesi (Claude) */
 #custom-ai      { color: @sapphire; }
 #custom-ai.warn { color: @yellow; }
 #custom-ai.crit { color: @base; background: @red; }
