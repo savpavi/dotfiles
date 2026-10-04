@@ -1,0 +1,21 @@
+[Default Applications]
+image/png=org.gnome.Loupe.desktop
+image/jpeg=org.gnome.Loupe.desktop
+image/webp=org.gnome.Loupe.desktop
+image/gif=org.gnome.Loupe.desktop
+image/bmp=org.gnome.Loupe.desktop
+image/tiff=org.gnome.Loupe.desktop
+image/svg+xml=org.gnome.Loupe.desktop
+image/avif=org.gnome.Loupe.desktop
+application/pdf=org.gnome.Papers.desktop
+image/heif=org.gnome.Loupe.desktop
+application/x-cbz=org.gnome.Papers.desktop
+application/x-cbr=org.gnome.Papers.desktop
+application/zip=org.gnome.FileRoller.desktop
+application/x-tar=org.gnome.FileRoller.desktop
+application/gzip=org.gnome.FileRoller.desktop
+application/x-7z-compressed=org.gnome.FileRoller.desktop
+application/vnd.rar=org.gnome.FileRoller.desktop
+application/x-bzip2=org.gnome.FileRoller.desktop
+application/x-xz=org.gnome.FileRoller.desktop
+application/zstd=org.gnome.FileRoller.desktop

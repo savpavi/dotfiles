@@ -1,59 +1,97 @@
 {
-    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
-    "logo": {
-        "source": "fedora",
-        "padding": {
-            "top": 1,
-            "right": 4
-        }
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "logo": {
+    "type": "kitty-direct",
+    "source": "/home/savpavi/.config/noctalia/assets/eb-logo-nord.png",
+    "width": 24,
+    "height": 12,
+    "padding": {
+      "top": 2,
+      "right": 4
+    }
+  },
+  "display": {
+    "separator": "",
+    "size": {
+      "ndigits": 1
+    }
+  },
+  "modules": [
+    { "type": "custom", "key": "╭──────────────╮", "keyColor": "yellow", "format": "" },
+    { "type": "os", "key": "│ 󰣇  Dağıtım   │ ", "keyColor": "yellow", "format": "{name} {version-id} {arch}" },
+    { "type": "command", "key": "│ 󰧨  Oturum    │ ", "keyColor": "magenta", "text": "printf '%s' \"${XDG_CURRENT_DESKTOP:-N/A}\"" },
+    { "type": "wm", "key": "│   WM        │ ", "keyColor": "yellow" },
+    { "type": "lm", "key": "│ 󰧨  LM        │ ", "keyColor": "yellow" },
+    { "type": "kernel", "key": "│   Çekirdek  │ ", "keyColor": "yellow", "format": "{sysname} {release}" },
+    { "type": "bootmgr", "key": "│ 󰘳  BootMgr   │ ", "keyColor": "yellow" },
+    { "type": "terminal", "key": "│   Terminal  │ ", "keyColor": "yellow" },
+    { "type": "terminalfont", "key": "│   TermFont  │ ", "keyColor": "yellow" },
+    { "type": "shell", "key": "│   Kabuk     │ ", "keyColor": "yellow" },
+    { "type": "packages", "key": "│ 󰏖  Paketler  │ ", "keyColor": "yellow" },
+    { "type": "uptime", "key": "│ 󰅐  Açık      │ ", "keyColor": "yellow" },
+    {
+      "type": "command",
+      "key": "│ 󰍹  VM        │ ",
+      "keyColor": "cyan",
+      "text": "state=$(LC_ALL=C timeout 2s virsh -c qemu:///system domstate EGE-Windows11 2>/dev/null) || { printf 'Bilinmiyor'; exit 0; }; case \"$state\" in running) printf 'Açık';; \"shut off\") printf 'Kapalı';; paused) printf 'Duraklatılmış';; pmsuspended) printf 'Askıda';; *) printf 'Bilinmiyor';; esac"
     },
-    "display": {
-        "separator": " 󰑃 ",
-        "key": {
-            "width": 15
-        }
+    {
+      "type": "command",
+      "key": "│ 󰙅  Syncthing │ ",
+      "keyColor": "cyan",
+      "text": "state=$(LC_ALL=C timeout 2s systemctl --user is-active syncthing.service 2>/dev/null); case \"$state\" in active) printf 'Çalışıyor';; inactive) printf 'Kapalı';; failed) printf 'Hata';; activating) printf 'Başlatılıyor';; deactivating) printf 'Durduruluyor';; *) printf 'Bilinmiyor';; esac"
     },
-    "modules": [
-        "break",
-        { "type": "os",       "key": " SİSTEM",  "keyColor": "yellow" },
-        { "type": "kernel",   "key": "│ ├",       "keyColor": "yellow", "format": "{release}" },
-        { "type": "packages", "key": "│ ├󰏖",       "keyColor": "yellow" },
-        {
-            "type": "command",
-            "key": "│ ├",
-            "keyColor": "yellow",
-            "text": "b=$(stat -c %W /); n=$(date +%s); s=$((n-b)); d=$((s/86400)); h=$((s%86400/3600)); m=$(date -d @$b +%m); case $m in 01) ay=Ocak;; 02) ay=Şubat;; 03) ay=Mart;; 04) ay=Nisan;; 05) ay=Mayıs;; 06) ay=Haziran;; 07) ay=Temmuz;; 08) ay=Ağustos;; 09) ay=Eylül;; 10) ay=Ekim;; 11) ay=Kasım;; 12) ay=Aralık;; esac; printf '%s %s %s (%d gün %d saat)' \"$(date -d @$b +%d)\" \"$ay\" \"$(date -d @$b +%Y)\" $d $h"
-        },
-        { "type": "shell",    "key": "│ └",       "keyColor": "yellow" },
-
-        { "type": "wm",       "key": " MASAÜSTÜ", "keyColor": "blue" },
-        { "type": "wmtheme",  "key": "│ ├󰉼",       "keyColor": "blue" },
-        { "type": "icons",    "key": "│ ├󰀻",       "keyColor": "blue" },
-        { "type": "cursor",   "key": "│ ├",       "keyColor": "blue" },
-        { "type": "terminal", "key": "│ └",       "keyColor": "blue" },
-
-        { "type": "cpu",      "key": "󰌢 DONANIM",  "keyColor": "green", "showPeCoreCount": true },
-        { "type": "gpu",      "key": "│ ├󰻑",       "keyColor": "green", "format": "{2}" },
-        {
-            "type": "display",
-            "key": "│ ├󰍹",
-            "keyColor": "green",
-            "compactType": "original-with-refresh-rate"
-        },
-        { "type": "memory",   "key": "│ ├󰾆",       "keyColor": "green" },
-        { "type": "swap",     "key": "│ ├󰓡",       "keyColor": "green" },
-        { "type": "uptime",   "key": "│ └󰅐",       "keyColor": "green" },
-
-        { "type": "disk",     "key": "󰋊 Samsung",  "keyColor": "cyan", "folders": "/" },
-        { "type": "disk",     "key": "│ ├ Lexar",   "keyColor": "cyan", "folders": "/srv/lexar" },
-        { "type": "disk",     "key": "│ └ Arşiv",   "keyColor": "cyan", "folders": "/srv/storage" },
-
-        { "type": "media",    "key": "󰝚 MEDYA",    "keyColor": "magenta" },
-        { "type": "locale",   "key": "󰗊 YEREL",    "keyColor": "magenta" },
-        {
-            "type": "custom",
-            "format": "\u001b[90m  \u001b[31m  \u001b[32m  \u001b[33m  \u001b[34m  \u001b[35m  \u001b[36m  \u001b[37m  \u001b[38m  \u001b[39m  \u001b[39m    \u001b[38m  \u001b[37m  \u001b[36m  \u001b[35m  \u001b[34m  \u001b[33m  \u001b[32m  \u001b[31m  \u001b[90m "
-        },
-        "break"
-    ]
+    {
+      "type": "command",
+      "key": "│ 󰖟  Tailscale │ ",
+      "keyColor": "cyan",
+      "text": "timeout 2s tailscale status --json 2>/dev/null | python3 -c 'import json,sys\ntry:\n d=json.load(sys.stdin); s=d.get(\"BackendState\"); print({\"Running\":\"Çalışıyor\", \"Stopped\":\"VPN kapalı\", \"NeedsLogin\":\"Oturum gerekli\", \"Starting\":\"Başlatılıyor\", \"NeedsMachineAuth\":\"Onay gerekli\"}.get(s,\"Bilinmiyor\"))\nexcept Exception:\n print(\"Bilinmiyor\")'"
+    },
+    { "type": "custom", "key": "├──────────────┤", "keyColor": "yellow", "format": "" },
+    { "type": "bios", "key": "│ 󰍛  BIOS      │ ", "keyColor": "yellow" },
+    { "type": "cpu", "key": "│   CPU       │ ", "keyColor": "yellow" },
+    { "type": "cpuusage", "key": "│ 󰓅  CPU Use   │ ", "keyColor": "yellow" },
+    { "type": "gpu", "key": "│ 󰢮  GPU       │ ", "keyColor": "yellow" },
+    { "type": "vulkan", "key": "│   Vulkan    │ ", "keyColor": "yellow" },
+    {
+      "type": "display",
+      "key": "│ 󰍹  Monitör   │ ",
+      "keyColor": "yellow",
+      "format": "{width}x{height}{?refresh-rate} @ {refresh-rate} Hz{?}{?physical-width} - {physical-width}x{physical-height} mm ({inch} inç, {ppi} ppi){?}"
+    },
+    { "type": "memory", "key": "│ 󰘚  Bellek    │ ", "keyColor": "yellow" },
+    { "type": "swap", "key": "│ 󰓡  Swap      │ ", "keyColor": "yellow" },
+    { "type": "custom", "key": "├──────────────┤", "keyColor": "yellow", "format": "" },
+    {
+      "type": "disk",
+      "key": "│   Sistem    │ ",
+      "keyColor": "yellow",
+      "folders": "/",
+      "format": "{size-used} / {size-total} ({size-percentage}) - {filesystem}"
+    },
+    {
+      "type": "disk",
+      "key": "│   Lexar     │ ",
+      "keyColor": "yellow",
+      "folders": "/srv/lexar",
+      "format": "{size-used} / {size-total} ({size-percentage}) - {filesystem}"
+    },
+    {
+      "type": "disk",
+      "key": "│   Arşiv     │ ",
+      "keyColor": "yellow",
+      "folders": "/srv/storage",
+      "format": "{size-used} / {size-total} ({size-percentage}) - {filesystem}"
+    },
+    { "type": "custom", "key": "├──────────────┤", "keyColor": "yellow", "format": "" },
+    { "type": "sound", "key": "│   Ses       │ ", "keyColor": "yellow" },
+    { "type": "media", "key": "│ 󰝚  Çalıyor   │ ", "keyColor": "yellow", "format": "{?artist}{artist} - {?}{title}" },
+    { "type": "custom", "key": "├──────────────┤", "keyColor": "yellow", "format": "" },
+    { "type": "weather", "key": "│ 󰖐  Hava      │ ", "keyColor": "yellow", "location": "Eskişehir", "timeout": 1000 },
+    { "type": "datetime", "key": "│ 󰃰  Tarih/Saat│ ", "keyColor": "yellow" },
+    { "type": "custom", "key": "├──────────────┤", "keyColor": "yellow", "format": "" },
+    { "type": "colors", "key": "│ 󰏘  Renkler   │ ", "keyColor": "yellow", "symbol": "circle" },
+    { "type": "custom", "key": "╰──────────────╯", "keyColor": "yellow", "format": "" },
+    "break"
+  ]
 }

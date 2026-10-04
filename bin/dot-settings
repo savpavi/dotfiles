@@ -1,0 +1,85 @@
+#!/usr/bin/python3
+"""Niri masaüstü için grafik ayar merkezi."""
+import os,subprocess,sys
+from pathlib import Path
+os.environ['GDK_BACKEND']='wayland'
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'lib'))
+from settings_store import Store
+from settings_pages import Pages
+import gi
+gi.require_version('Gtk','3.0')
+from gi.repository import Gtk,Gio
+
+CATEGORIES=[
+ ('Web tarayıcısı',['x-scheme-handler/https','x-scheme-handler/http','text/html']),
+ ('E-posta',['x-scheme-handler/mailto']),
+ ('Dosya yöneticisi',['inode/directory']),
+ ('PDF',['application/pdf']),
+ ('Metin dosyaları',['text/plain']),
+ ('Görseller (PNG / JPEG / WebP)',['image/png','image/jpeg','image/webp']),
+ ('Videolar (MP4 / MKV / WebM)',['video/mp4','video/x-matroska','video/webm']),
+ ('Müzik (MP3 / FLAC / Ogg)',['audio/mpeg','audio/flac','audio/ogg'])]
+
+class Settings(Gtk.Application):
+ def __init__(self):
+  super().__init__(application_id='me.egebostanci.DesktopSettings')
+  self.window=None
+ def do_activate(self):
+  if self.window:self.window.present();return
+  self.window=Gtk.ApplicationWindow(application=self,title='Masaüstü Ayarları')
+  self.window.set_default_size(820,600)
+  header=Gtk.HeaderBar(title='Masaüstü Ayarları',subtitle='Ekranlar ve uygulama tercihleri',show_close_button=True)
+  self.window.set_titlebar(header)
+  outer=Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=20,margin=20)
+  stack=Gtk.Stack(transition_type=Gtk.StackTransitionType.CROSSFADE)
+  sidebar=Gtk.StackSidebar(stack=stack);sidebar.set_size_request(175,-1)
+  outer.pack_start(sidebar,False,False,0);outer.pack_start(stack,True,True,0)
+  self.window.add(outer)
+  displays=self.page('Ekran düzeni','Monitörleri sürükleyerek yerleştir; çözünürlük, yenileme hızı, ölçek ve dönüşü ayarla.')
+  b=Gtk.Button(label='Ekranları düzenle');b.connect('clicked',lambda _:self.launch([str(Path.home()/'.local/bin/nwg-displays')]))
+  displays.pack_start(b,False,False,8)
+  stack.add_titled(displays,'displays','Ekranlar')
+  defaults=self.page('Varsayılan uygulamalar','Bir kategori seç ve açılan listeden uygulamayı belirle. Seçim onaylandığında kaydedilir.')
+  for title,types in CATEGORIES:
+   row=Gtk.Box(spacing=12)
+   label=Gtk.Label(label=title,xalign=0);row.pack_start(label,True,True,0)
+   button=Gtk.Button();self.update_button(button,types);button.connect('clicked',self.choose_app,title,types)
+   row.pack_end(button,False,False,0);defaults.pack_start(row,False,False,3)
+  stack.add_titled(defaults,'defaults','Varsayılan uygulamalar')
+  appearance=self.page('Masaüstü ve panel','Tema, duvar kâğıdı, panel ve bildirim tercihlerini Noctalia üzerinden düzenle.')
+  b=Gtk.Button(label='Noctalia ayarlarını aç');b.connect('clicked',lambda _:self.launch(['noctalia','msg','settings-toggle']))
+  appearance.pack_start(b,False,False,8);stack.add_titled(appearance,'appearance','Görünüm ve panel')
+  self.pages=Pages(self,stack)
+  self.window.show_all()
+ def page(self,title,description):
+  box=Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=10)
+  t=Gtk.Label(xalign=0);t.set_markup('<big><b>'+title+'</b></big>');box.pack_start(t,False,False,0)
+  d=Gtk.Label(label=description,xalign=0,wrap=True,max_width_chars=58);box.pack_start(d,False,False,6)
+  return box
+ def update_button(self,button,types):
+  apps=[Gio.AppInfo.get_default_for_type(t,False) for t in types]
+  ids={a.get_id() if a else None for a in apps}
+  button.set_label((apps[0].get_display_name() if apps[0] else 'Seç…') if len(ids)==1 else 'Farklı uygulamalar…')
+ def choose_app(self,button,title,types):
+  dialog=Gtk.AppChooserDialog(content_type=types[0],transient_for=self.window,modal=True)
+  dialog.set_title(title);dialog.get_widget().set_show_all(True)
+  if dialog.run()==Gtk.ResponseType.OK:
+   app=dialog.get_app_info()
+   if app:
+    try:
+     Store().snapshot('Varsayılan uygulama öncesi')
+     for mime in types:
+      if not app.set_as_default_for_type(mime):raise RuntimeError(mime+' için kaydedilemedi')
+    except Exception as e:self.error(str(e))
+    self.update_button(button,types)
+  dialog.destroy()
+ def launch(self,args):
+  try:
+   if args[0].endswith('nwg-displays') or args[:2]==['noctalia','msg']:Store().snapshot('Harici ayar penceresi öncesi')
+   subprocess.Popen(args,env=dict(os.environ,GDK_BACKEND='wayland'))
+  except OSError as e:self.error(str(e))
+ def error(self,text):
+  d=Gtk.MessageDialog(transient_for=self.window,modal=True,message_type=Gtk.MessageType.ERROR,buttons=Gtk.ButtonsType.CLOSE,text=text)
+  d.run();d.destroy()
+
+if __name__=='__main__':Settings().run(None)

@@ -1,0 +1,11 @@
+# Mevcut ~/.config/noctalia/config.toml dosyasina birlestir.
+# Kategori seridini, alt aciklamalari ve paket kaynagi rozetlerini gizler;
+# ikonlari ve kullanim sikligina gore siralamayi korur.
+[shell.launcher]
+app_grid = false
+categories = false
+compact = true
+show_app_actions = false
+show_app_origin_indicator = false
+show_icons = true
+sort_by_usage = true

@@ -1,0 +1,65 @@
+[ui]
+primary = "openai"
+
+[anthropic]
+enabled = false
+
+[anthropic_api]
+enabled = false
+
+[openai]
+enabled = true
+
+[copilot]
+enabled = false
+
+[zai]
+enabled = false
+
+[openrouter]
+enabled = false
+
+[deepseek]
+enabled = false
+
+[kimi]
+enabled = false
+
+[kilo]
+enabled = false
+
+[novita]
+enabled = false
+
+[moonshot]
+enabled = false
+
+[grok]
+enabled = false
+
+[supergrok]
+enabled = false
+
+[antigravity]
+enabled = false
+
+[cursor]
+enabled = false
+
+[minimax]
+enabled = false
+
+[kiro]
+enabled = false
+
+[nous]
+enabled = false
+
+[opencode-go]
+enabled = false
+
+[commandcode]
+enabled = false
+
+[ollama]
+enabled = false

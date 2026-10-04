@@ -1,0 +1,100 @@
+/* Nord Frost: Firefox arayüz renkleri. Yerleşim ve web sayfaları değişmez. */
+:root,
+#main-window {
+  --lwt-accent-color: #2e3440 !important;
+  --lwt-text-color: #eceff4 !important;
+  --toolbar-bgcolor: #2e3440 !important;
+  --toolbar-color: #eceff4 !important;
+  --toolbar-field-background-color: #3b4252 !important;
+  --toolbar-field-background-color-focus: #3b4252 !important;
+  --toolbar-field-border-color: #4c566a !important;
+  --toolbar-field-border-color-focus: #88c0d0 !important;
+  --toolbar-field-text-color: #eceff4 !important;
+  --toolbar-field-text-color-focus: #eceff4 !important;
+  --urlbar-background-color: #3b4252 !important;
+  --urlbar-background-color-focus: #3b4252 !important;
+  --urlbarview-background-color-hover: #434c5e !important;
+  --urlbarview-background-color-selected: #81a1c1 !important;
+  --urlbarview-text-color-selected: #2e3440 !important;
+  --urlbarview-text-color-secondary: #d8dee9 !important;
+  --sidebar-background-color: #2e3440 !important;
+  --sidebar-text-color: #eceff4 !important;
+  --sidebar-border-color: #4c566a !important;
+  --lwt-selected-tab-background-color: #434c5e !important;
+  --lwt-sidebar-background-color: #2e3440 !important;
+  --lwt-sidebar-text-color: #eceff4 !important;
+  --lwt-sidebar-highlight-background-color: #81a1c1 !important;
+  --lwt-sidebar-highlight-text-color: #2e3440 !important;
+  --arrowpanel-background: #3b4252 !important;
+  --arrowpanel-color: #eceff4 !important;
+  --panel-separator-color: #4c566a !important;
+}
+
+#navigator-toolbox,
+#TabsToolbar,
+#nav-bar,
+#PersonalToolbar,
+#sidebar-main,
+#sidebar-box {
+  background-color: #2e3440 !important;
+  color: #eceff4 !important;
+}
+
+#navigator-toolbox {
+  border-bottom-color: #4c566a !important;
+}
+
+#urlbar,
+#searchbar {
+  color: #eceff4 !important;
+  color-scheme: dark !important;
+}
+
+.urlbar-background,
+#urlbar-background {
+  background-color: #3b4252 !important;
+  border-color: #4c566a !important;
+}
+
+#urlbar:is([focused], [open]) > .urlbar-background,
+#urlbar[focused] > #urlbar-background,
+#searchbar:focus-within > .urlbar-background {
+  background-color: #3b4252 !important;
+  border-color: #88c0d0 !important;
+  box-shadow: 0 0 0 1px #88c0d0 !important;
+}
+
+#urlbar[open] > .urlbarView,
+#urlbar[open] > .urlbarView > .urlbarView-body-outer,
+#urlbar[open] > .urlbarView > .urlbarView-body-outer > .urlbarView-body-inner,
+#PopupSearchAutoComplete {
+  --panel-background-color: #3b4252 !important;
+  --panel-text-color: #eceff4 !important;
+  background-color: #3b4252 !important;
+  color: #eceff4 !important;
+  color-scheme: dark !important;
+}
+
+#sidebar-main,
+#sidebar-box,
+#sidebar {
+  background-color: #2e3440 !important;
+  color: #eceff4 !important;
+  border-color: #4c566a !important;
+}
+
+.tabbrowser-tab[selected] .tab-background {
+  background-color: #434c5e !important;
+  box-shadow: inset 3px 0 #88c0d0 !important;
+}
+
+.tabbrowser-tab:not([selected]):hover .tab-background,
+toolbarbutton:hover > .toolbarbutton-icon,
+toolbarbutton:hover > .toolbarbutton-badge-stack {
+  background-color: #434c5e !important;
+}
+
+menupopup {
+  --panel-background: #3b4252 !important;
+  --panel-color: #eceff4 !important;
+}

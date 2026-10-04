@@ -1,0 +1,9 @@
+[Unit]
+Description=Noctalia desktop status widgets
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/home/savpavi/dotfiles/bin/dot-desktop watch
+Restart=on-failure
+RestartSec=10

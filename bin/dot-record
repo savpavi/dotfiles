@@ -1,34 +1,97 @@
-#!/usr/bin/env bash
-# dot-record — wf-recorder ile ekran kaydı; tekrar çağrılınca durdurur.
-# end-4/dots-hyprland quickshell/ii/scripts/videos/record.sh uyarlaması (28.08.2026).
-#   dot-record               bölge seç, sessiz
-#   dot-record --fullscreen  aktif monitör
-#   dot-record --sound       sistem sesi (monitor source) ile
-# Gerekli: wf-recorder slurp jq wireplumber(pactl) libnotify
-set -u
-dir="${DOT_RECORD_DIR:-$HOME/Videos/Recordings}"
-mkdir -p "$dir"
-sound=0; full=0
-for a in "$@"; do case "$a" in --sound) sound=1;; --fullscreen) full=1;; esac; done
-if pgrep -x wf-recorder >/dev/null; then
-    pkill -INT -x wf-recorder
-    notify-send -a Kayıt "Kayıt durduruldu" "$dir"
-    exit 0
-fi
-command -v wf-recorder >/dev/null || { notify-send -a Kayıt "Kayıt" "wf-recorder kurulu değil"; exit 1; }
-file="$dir/recording_$(date '+%Y-%m-%d_%H.%M.%S').mp4"
-# libx264: mp4 içinde her yerde oynar (varsayılan VP9 Telegram/QuickTime'da sorunlu). AMD donanım için: DOT_RECORD_CODEC=h264_vaapi
-args=(-c "${DOT_RECORD_CODEC:-libx264}" --pixel-format yuv420p -f "$file")
-if [ "$sound" = 1 ]; then
-    src="$(pactl list sources 2>/dev/null | awk '/Name:.*monitor/{print $2; exit}')"
-    [ -n "$src" ] && args+=(--audio="$src")
-fi
-if [ "$full" = 1 ]; then
-    mon="$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')"
-    args+=(-o "$mon")
-else
-    geom="$(slurp)" || { notify-send -a Kayıt "Kayıt iptal" "Bölge seçilmedi"; exit 1; }
-    args+=(--geometry "$geom")
-fi
-notify-send -a Kayıt "Kayıt başladı" "$(basename "$file") — durdurmak için aynı tuş"
-exec wf-recorder "${args[@]}"
+#!/usr/bin/env python3
+"""Niri ekran kaydı: aynı komut başlatır/durdurur; yalnız kendi systemd birimini yönetir."""
+import argparse
+import fcntl
+import json
+import os
+from pathlib import Path
+import re
+import subprocess as sp
+import time
+
+UNIT = 'dot-record.service'
+def run(*args, **kwargs):
+    return sp.run(args, text=True, capture_output=True, timeout=kwargs.pop("timeout", 30), **kwargs)
+def notify(title, body):
+    run('notify-send', '-a', 'Ekran kaydı', title, body)
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--stop', action='store_true')
+    p.add_argument('--status', action='store_true')
+    p.add_argument('--fullscreen', action='store_true', help='Odaklı monitörü kaydet')
+    p.add_argument('--sound', action='store_true', help='Varsayılan çıkışın sistem sesi')
+    p.add_argument('--microphone', action='store_true', help='Varsayılan mikrofon')
+    p.add_argument('--menu', action='store_true', help='Alan ve ses seçimi')
+    p.add_argument('--geometry', help='x,y WxH; belirtilmezse bölge seçilir')
+    a = p.parse_args()
+    if a.geometry and not re.fullmatch(r'-?\d+,-?\d+ [1-9]\d*x[1-9]\d*', a.geometry):
+        p.error('geometry: x,y WxH bekleniyor')
+    if a.sound and a.microphone:
+        p.error('Sistem sesi veya mikrofon seçeneklerinden birini seçin')
+    state = Path(os.environ.get('XDG_STATE_HOME', str(Path.home()/'.local/state'))) / 'dot-record'
+    runtime = Path(os.environ['XDG_RUNTIME_DIR'])
+    with (runtime/'dot-record.lock').open('w') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        active = run('systemctl', '--user', 'is-active', UNIT).stdout.strip()
+        if a.status:
+            print('Kayıt sürüyor' if active == 'active' else 'Kayıt kapalı')
+            return
+        if active in ('active', 'activating'):
+            result = run('systemctl', '--user', 'stop', UNIT)
+            if result.returncode: raise RuntimeError(result.stderr)
+            last = state/'last-file'
+            notify('Kayıt durduruldu', last.read_text().strip() if last.exists() else 'Dosya kapatıldı')
+            return
+        if a.stop: return
+        if a.menu:
+            choice = run('zenity', '--list', '--title=Ekran kaydı', '--column=Alan', '--column=Ses',
+                         '--print-column=ALL', '--separator=|',
+                         'Bölge', 'Sessiz', 'Bölge', 'Sistem sesi', 'Bölge', 'Mikrofon',
+                         'Monitör', 'Sessiz', 'Monitör', 'Sistem sesi', 'Monitör', 'Mikrofon', timeout=None)
+            if choice.returncode: return
+            area, audio = choice.stdout.strip().split('|')
+            a.fullscreen = area == 'Monitör'
+            a.sound, a.microphone = audio == 'Sistem sesi', audio == 'Mikrofon'
+        args = ['wf-recorder', '-r', '30', '-c', 'libopenh264', '-p', 'b=8000000', '-x', 'yuv420p']
+        if a.fullscreen:
+            result = run('niri', 'msg', '-j', 'focused-output')
+            if result.returncode: raise RuntimeError(result.stderr)
+            args += ['-o', json.loads(result.stdout)['name']]
+        else:
+            geometry = a.geometry
+            if not geometry:
+                result = run('slurp', timeout=None)
+                if result.returncode: return
+                geometry = result.stdout.strip()
+            if not geometry: return
+            args += ['-g', geometry]
+        if a.sound or a.microphone:
+            source = run('pactl', 'get-default-sink' if a.sound else 'get-default-source')
+            if source.returncode: raise RuntimeError(source.stderr)
+            name = source.stdout.strip() + ('.monitor' if a.sound else '')
+            args += ['--audio='+name, '-C', 'aac']
+        folder = Path(os.environ.get('DOT_RECORD_DIR', str(Path.home()/'Videos/Recordings')))
+        folder.mkdir(parents=True, exist_ok=True)
+        filename = folder/f'recording_{time.strftime("%Y-%m-%d_%H.%M.%S")}_{time.time_ns()%1000000:06d}.mp4'
+        args += ['-f', str(filename)]
+        run('systemctl', '--user', 'reset-failed', UNIT)
+        result = run('systemd-run', '--user', '--collect', '--unit='+UNIT, '--service-type=exec',
+                     '--property=KillSignal=SIGINT', '--property=TimeoutStopSec=20',
+                     '--setenv=WAYLAND_DISPLAY='+os.environ['WAYLAND_DISPLAY'],
+                     '--setenv=XDG_RUNTIME_DIR='+str(runtime), '--', *args)
+        if result.returncode: raise RuntimeError(result.stderr)
+        time.sleep(0.7)
+        if run('systemctl', '--user', 'is-active', UNIT).returncode:
+            raise RuntimeError('Kayıt başlayamadı: journalctl --user -u dot-record.service -n 20')
+        state.mkdir(parents=True, exist_ok=True)
+        (state/'last-file').write_text(str(filename)+'\n')
+        notify('Kayıt başladı', 'Durdur: Ctrl+Tab · '+filename.name)
+
+if __name__ == '__main__':
+    try: main()
+    except BlockingIOError: pass
+    except (RuntimeError, OSError, KeyError, ValueError, sp.TimeoutExpired) as error:
+        print(str(error), file=__import__('sys').stderr)
+        try: notify('Kayıt hatası', str(error))
+        except Exception: pass
+        raise SystemExit(1)

@@ -9,17 +9,7 @@ input {
     touchpad { tap; natural-scroll; }
     focus-follows-mouse max-scroll-amount="0%"
 }
-output "DP-1" {
-    mode "2560x1440@179.999"
-    scale 1
-    position x=0 y=0
-}
-output "DP-3" {
-    mode "1920x1080@119.982"
-    scale 1
-    transform "normal"
-    position x=2560 y=180
-}
+include "monitor.kdl"
 layout {
     gaps 12
     center-focused-column "on-overflow"
@@ -28,17 +18,21 @@ layout {
     focus-ring { off; }
     border {
         width 2
-        active-gradient from="#cba6f7" to="#89b4fa" angle=45
-        inactive-color "#313244"
-        urgent-color "#f38ba8"
+        active-gradient from="#88c0d0" to="#81a1c1" angle=45
+        inactive-color "#3b4252"
+        urgent-color "#bf616a"
     }
     shadow { on; softness 20; spread 2; offset x=0 y=4; color "#00000066"; }
-    background-color "#1e1e2e"
+    background-color "#2e3440"
 }
-cursor { xcursor-theme "Adwaita"; xcursor-size 24; }
+cursor { xcursor-theme "Nordzy-cursors-white"; xcursor-size 24; }
 environment {
+    SSH_ASKPASS "/usr/libexec/openssh/gnome-ssh-askpass"
+    SUDO_ASKPASS "/home/savpavi/.local/bin/dot-askpass"
     QT_QPA_PLATFORMTHEME "qt6ct"
     QT_WAYLAND_DISABLE_WINDOWDECORATION "1"
+    XCURSOR_THEME "Nordzy-cursors-white"
+    XCURSOR_SIZE "24"
 }
 prefer-no-csd
 window-rule {
@@ -52,6 +46,7 @@ window-rule {
     open-fullscreen true
 }
 spawn-at-startup "noctalia"
+spawn-at-startup "systemctl" "--user" "start" "desktop-panels.service"
 spawn-at-startup "systemctl" "--user" "start" "hyprpolkitagent.service"
 spawn-at-startup "wl-paste" "--type" "text" "--watch" "cliphist" "store"
 spawn-at-startup "wl-paste" "--type" "image" "--watch" "cliphist" "store"
@@ -69,72 +64,91 @@ workspace "9" { open-on-output "DP-3"; }
 workspace "10" { open-on-output "DP-3"; }
 
 binds {
-    Mod+W { spawn "/home/savpavi/.local/bin/start-windows-looking-glass"; }
-    Mod+Q { spawn "ghostty"; }
-    Mod+C { close-window; }
-    Mod+E { spawn "dolphin"; }
-    Alt+Space { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
-    Mod+L { spawn "noctalia" "msg" "session" "lock"; }
-    Mod+Escape allow-inhibiting=false { spawn "noctalia" "msg" "panel-toggle" "session"; }
-    Mod+Comma { spawn "noctalia" "msg" "settings-toggle"; }
-    Mod+Shift+B { spawn "noctalia" "msg" "bar-toggle"; }
-    Mod+Shift+W { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }
-    Mod+B { spawn "brave-origin"; }
-    Mod+Z { spawn "zed"; }
-    Mod+S { spawn "flatpak" "run" "com.spotify.Client"; }
-    Mod+T { spawn "flatpak" "run" "org.telegram.desktop"; }
-    Mod+D { spawn "flatpak" "run" "com.discordapp.Discord"; }
-    Mod+O { spawn "flatpak" "run" "md.obsidian.Obsidian"; }
-    Mod+V { toggle-window-floating; }
-    Mod+F { fullscreen-window; }
-    Mod+R { switch-preset-column-width; }
-    Mod+Shift+F { maximize-column; }
-    Mod+Tab { toggle-overview; }
-    Mod+Left { focus-column-left; }
-    Mod+Right { focus-column-right; }
-    Mod+Up { focus-window-up; }
-    Mod+Down { focus-window-down; }
-    Mod+Ctrl+Left { move-column-left; }
-    Mod+Ctrl+Right { move-column-right; }
-    Mod+Ctrl+Up { move-window-up; }
-    Mod+Ctrl+Down { move-window-down; }
-    Mod+Shift+Left { move-column-to-monitor-left; }
-    Mod+Shift+Right { move-column-to-monitor-right; }
-    Mod+Page_Up { focus-workspace-up; }
-    Mod+Page_Down { focus-workspace-down; }
-    Mod+BracketLeft { consume-or-expel-window-left; }
-    Mod+BracketRight { consume-or-expel-window-right; }
-    Print { screenshot-screen; }
-    Shift+Print { screenshot; }
-    Alt+Print { screenshot-window; }
-    XF86AudioRaiseVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-up" "5"; }
-    XF86AudioLowerVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-down" "5"; }
-    XF86AudioMute allow-when-locked=true { spawn "noctalia" "msg" "volume-mute"; }
-    XF86AudioMicMute allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
-    XF86AudioPlay { spawn "playerctl" "play-pause"; }
-    XF86AudioNext { spawn "playerctl" "next"; }
-    XF86AudioPrev { spawn "playerctl" "previous"; }
-    Mod+Shift+Slash { show-hotkey-overlay; }
-    Mod+Shift+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
-    Mod+Shift+E { quit; }
+    XF86Calculator hotkey-overlay-title="Qalculate! hesap makinesi" { spawn "qalculate-gtk"; }
+    Mod+Alt+D repeat=false hotkey-overlay-title="Ekrana çiz / kapat (Esc)" { spawn "/home/savpavi/dotfiles/bin/dot-presenter"; }
+    Mod+Alt+P repeat=false hotkey-overlay-title="Sunum spot ışığı (Esc ile çık)" { spawn "/home/savpavi/dotfiles/bin/dot-presenter" "--spotlight"; }
+    Mod+Alt+N repeat=false hotkey-overlay-title="Mevcut Obsidian notunu seç ve düzenle" { spawn "/home/savpavi/dotfiles/bin/dot-desktop" "note"; }
+    Mod+A hotkey-overlay-title="ChatGPT uygulaması" { spawn "chatgpt"; }
+    Ctrl+Tab repeat=false hotkey-overlay-title="Kayıt başlat / durdur (sessiz bölge)" { spawn "/home/savpavi/dotfiles/bin/dot-record"; }
+    Mod+Ctrl+Print repeat=false hotkey-overlay-title="Kayıt seçenekleri / durdur" { spawn "/home/savpavi/dotfiles/bin/dot-record" "--menu"; }
+    Mod+Ctrl+H hotkey-overlay-title="Masaüstü sağlık kontrolü" { spawn "ghostty" "-e" "sh" "-c" "dot-health; printf '\nKapatmak için Enter...'; read answer"; }
+    Mod+Ctrl+G hotkey-overlay-title="Dotfiles reposunu Lazygit ile aç" { spawn "ghostty" "--working-directory=/home/savpavi/Projects/dotfiles" "-e" "lazygit"; }
+    Mod+W hotkey-overlay-title="Windows / Looking Glass" { spawn "/home/savpavi/.local/bin/start-windows-looking-glass"; }
+    Mod+Q hotkey-overlay-title="Ghostty terminal" { spawn "ghostty"; }
+    Mod+C hotkey-overlay-title="Pencereyi kapat" { close-window; }
+    Mod+E hotkey-overlay-title="Thunar dosya yöneticisi" { spawn "thunar"; }
+    Alt+Space hotkey-overlay-title="Uygulama menüsü" { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+    Mod+L hotkey-overlay-title="Ekranı kilitle" { spawn "noctalia" "msg" "session" "lock"; }
+    Mod+Escape allow-inhibiting=false hotkey-overlay-title="Oturum menüsü" { spawn "noctalia" "msg" "panel-toggle" "session"; }
+    Mod+P hotkey-overlay-title="Masaüstü ayar merkezi" { spawn "/home/savpavi/dotfiles/bin/dot-settings"; }
+    Mod+Shift+B hotkey-overlay-title="Paneli göster / gizle" { spawn "noctalia" "msg" "bar-toggle"; }
+    Mod+Shift+W hotkey-overlay-title="Duvar kâğıdı seç" { spawn "noctalia" "msg" "panel-toggle" "wallpaper"; }
+    Mod+B hotkey-overlay-title="Zen tarayıcı" { spawn "flatpak" "run" "app.zen_browser.zen"; }
+    Mod+Z hotkey-overlay-title="Zed editör" { spawn "zed"; }
+    Mod+S hotkey-overlay-title="Spotify" { spawn "flatpak" "run" "com.spotify.Client"; }
+    Mod+T hotkey-overlay-title="Telegram" { spawn "flatpak" "run" "org.telegram.desktop"; }
+    Mod+D hotkey-overlay-title="Discord" { spawn "flatpak" "run" "com.discordapp.Discord"; }
+    Mod+O hotkey-overlay-title="Obsidian" { spawn "flatpak" "run" "md.obsidian.Obsidian"; }
+    Mod+V hotkey-overlay-title="Pencereyi yüzen / döşeli yap" { toggle-window-floating; }
+    Mod+F hotkey-overlay-title="Tam ekran" { fullscreen-window; }
+    Mod+R hotkey-overlay-title="Sütun genişliğini değiştir" { switch-preset-column-width; }
+    Mod+Shift+F hotkey-overlay-title="Sütunu tam genişlet" { maximize-column; }
+    Mod+Tab hotkey-overlay-title="Pencerelere genel bakış" { toggle-overview; }
+    Mod+Left hotkey-overlay-title="Sol pencereye odaklan" { focus-column-left; }
+    Mod+Right hotkey-overlay-title="Sağ pencereye odaklan" { focus-column-right; }
+    Mod+Up hotkey-overlay-title="Üst pencereye odaklan" { focus-window-up; }
+    Mod+Down hotkey-overlay-title="Alt pencereye odaklan" { focus-window-down; }
+    Mod+Ctrl+Left hotkey-overlay-title="Sütunu sola taşı" { move-column-left; }
+    Mod+Ctrl+Right hotkey-overlay-title="Sütunu sağa taşı" { move-column-right; }
+    Mod+Ctrl+Up hotkey-overlay-title="Pencereyi yukarı taşı" { move-window-up; }
+    Mod+Ctrl+Down hotkey-overlay-title="Pencereyi aşağı taşı" { move-window-down; }
+    Mod+Shift+Left hotkey-overlay-title="Sütunu soldaki monitöre taşı" { move-column-to-monitor-left; }
+    Mod+Shift+Right hotkey-overlay-title="Sütunu sağdaki monitöre taşı" { move-column-to-monitor-right; }
+    Mod+Page_Up hotkey-overlay-title="Önceki çalışma alanı" { focus-workspace-up; }
+    Mod+Page_Down hotkey-overlay-title="Sonraki çalışma alanı" { focus-workspace-down; }
+    Mod+BracketLeft hotkey-overlay-title="Soldaki sütuna kat / ayır" { consume-or-expel-window-left; }
+    Mod+BracketRight hotkey-overlay-title="Sağdaki sütuna kat / ayır" { consume-or-expel-window-right; }
+    Print hotkey-overlay-title="Monitör görüntüsü → Satty" { spawn "noctalia" "msg" "screenshot-fullscreen"; }
+    Shift+Print hotkey-overlay-title="Bölge seç → Satty" { spawn "noctalia" "msg" "screenshot-region"; }
+    Alt+Print hotkey-overlay-title="Pencere görüntüsünü kaydet" { screenshot-window; }
+    XF86AudioRaiseVolume allow-when-locked=true hotkey-overlay-title="Sesi artır" { spawn "noctalia" "msg" "volume-up" "5"; }
+    XF86AudioLowerVolume allow-when-locked=true hotkey-overlay-title="Sesi azalt" { spawn "noctalia" "msg" "volume-down" "5"; }
+    XF86AudioMute allow-when-locked=true hotkey-overlay-title="Sesi aç / kapat" { spawn "noctalia" "msg" "volume-mute"; }
+    XF86AudioMicMute allow-when-locked=true hotkey-overlay-title="Mikrofonu aç / kapat" { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+    XF86AudioPlay hotkey-overlay-title="Oynat / duraklat" { spawn "playerctl" "play-pause"; }
+    XF86AudioNext hotkey-overlay-title="Sonraki parça" { spawn "playerctl" "next"; }
+    XF86AudioPrev hotkey-overlay-title="Önceki parça" { spawn "playerctl" "previous"; }
+    Mod+Shift+S hotkey-overlay-title="Kısayol rehberi" { show-hotkey-overlay; }
+    Mod+Shift+Escape allow-inhibiting=false hotkey-overlay-title="Uygulamanın kısayol yakalamasını aç / kapat" { toggle-keyboard-shortcuts-inhibit; }
+    Mod+Shift+E hotkey-overlay-title="Niri oturumundan çık" { quit; }
     Mod+1 { focus-workspace "1"; }
-    Mod+Shift+1 { move-column-to-workspace "1"; }
+    Mod+Shift+1 hotkey-overlay-title="Sütunu çalışma alanı 1 içine taşı" { move-column-to-workspace "1"; }
     Mod+2 { focus-workspace "2"; }
-    Mod+Shift+2 { move-column-to-workspace "2"; }
+    Mod+Shift+2 hotkey-overlay-title="Sütunu çalışma alanı 2 içine taşı" { move-column-to-workspace "2"; }
     Mod+3 { focus-workspace "3"; }
-    Mod+Shift+3 { move-column-to-workspace "3"; }
+    Mod+Shift+3 hotkey-overlay-title="Sütunu çalışma alanı 3 içine taşı" { move-column-to-workspace "3"; }
     Mod+4 { focus-workspace "4"; }
-    Mod+Shift+4 { move-column-to-workspace "4"; }
+    Mod+Shift+4 hotkey-overlay-title="Sütunu çalışma alanı 4 içine taşı" { move-column-to-workspace "4"; }
     Mod+5 { focus-workspace "5"; }
-    Mod+Shift+5 { move-column-to-workspace "5"; }
+    Mod+Shift+5 hotkey-overlay-title="Sütunu çalışma alanı 5 içine taşı" { move-column-to-workspace "5"; }
     Mod+6 { focus-workspace "6"; }
-    Mod+Shift+6 { move-column-to-workspace "6"; }
+    Mod+Shift+6 hotkey-overlay-title="Sütunu çalışma alanı 6 içine taşı" { move-column-to-workspace "6"; }
     Mod+7 { focus-workspace "7"; }
-    Mod+Shift+7 { move-column-to-workspace "7"; }
+    Mod+Shift+7 hotkey-overlay-title="Sütunu çalışma alanı 7 içine taşı" { move-column-to-workspace "7"; }
     Mod+8 { focus-workspace "8"; }
-    Mod+Shift+8 { move-column-to-workspace "8"; }
+    Mod+Shift+8 hotkey-overlay-title="Sütunu çalışma alanı 8 içine taşı" { move-column-to-workspace "8"; }
     Mod+9 { focus-workspace "9"; }
-    Mod+Shift+9 { move-column-to-workspace "9"; }
+    Mod+Shift+9 hotkey-overlay-title="Sütunu çalışma alanı 9 içine taşı" { move-column-to-workspace "9"; }
     Mod+0 { focus-workspace "10"; }
-    Mod+Shift+0 { move-column-to-workspace "10"; }
+    Mod+Shift+0 hotkey-overlay-title="Sütunu çalışma alanı 10 içine taşı" { move-column-to-workspace "10"; }
+}
+
+include "noctalia.kdl"
+
+
+window-rule {
+    match app-id=r#"^(Dot-settings|dot-settings|me\.egebostanci\.DesktopSettings|Nwg-displays|nwg-displays)$"#
+    open-floating true
+    default-column-width { fixed 1100; }
+    default-window-height { fixed 760; }
 }

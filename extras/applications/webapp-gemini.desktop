@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Gemini
+Exec=brave-origin "--app=https://gemini.google.com/app"
+Icon=brave-browser
+Terminal=false
+Categories=Network;
+StartupNotify=true

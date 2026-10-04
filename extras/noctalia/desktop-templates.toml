@@ -1,0 +1,9 @@
+# Masaüstü uyarlaması — 11 Eylül 2026; mevcut palette otomatik eşitleme.
+[theme.templates.user.desktop_ghostty]
+input_path = "templates/ghostty.conf"
+output_path = "~/.config/ghostty/theme.conf"
+post_hook = "gdbus call --session --dest com.mitchellh.ghostty --object-path /com/mitchellh/ghostty --method org.gtk.Actions.Activate reload-config '[]' '{}' >/dev/null 2>&1 || true"
+
+[theme.templates.user.desktop_niri]
+input_path = "templates/niri.kdl"
+output_path = "~/.config/niri/noctalia.kdl"

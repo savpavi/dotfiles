@@ -1,7 +1,8 @@
 # Niri + Noctalia
 
 9 Eylül 2026 tarihinde etkin Fedora 44 / Niri 26.04 oturumundan alınan
-`config/niri/config.kdl`, kaynak dosyanın birebir kopyasıdır.
+`config/niri/config.kdl`, o tarihteki kaynak dosyanın birebir kopyasıdır.
+10 Eylül 2026 tarihinde `Super+E` dosya yöneticisi kısayolu Thunar olarak güncellendi.
 
 ## Yapılandırma
 
@@ -15,7 +16,7 @@ Başka bir makinede ekran adlarını, çözünürlükleri ve kişisel yolları u
 
 ## Bağımlılıklar
 
-Niri ve Noctalia yanında Ghostty, Dolphin, `hyprpolkitagent.service`,
+Niri ve Noctalia yanında Ghostty, Thunar, `hyprpolkitagent.service`,
 `wl-paste` (wl-clipboard), cliphist, Solaar, wpctl ve playerctl çağrılır.
 Uygulama kısayolları Brave Origin, Zed ve şu Flatpak kimliklerini kullanır:
 `com.spotify.Client`, `org.telegram.desktop`, `com.discordapp.Discord`,
@@ -50,7 +51,8 @@ Niri çalışan oturumda yapılandırma değişikliğini otomatik yükler. Genel
 
 | Kısayol | İşlem |
 |---|---|
-| Super+Q / Super+E | Ghostty / Dolphin |
+| Super+Q / Super+E | Ghostty / Thunar |
+| Super+B | Zen Browser (`flatpak run app.zen_browser.zen`) |
 | Alt+Space | Noctalia uygulama başlatıcısı |
 | Super+C | Pencereyi kapat |
 | Super+F / Super+Shift+F | Tam ekran / sütunu tam genişliğe getir |
@@ -75,3 +77,7 @@ niri validate --config config/niri/config.kdl
 git diff --check
 git diff -- config/niri/config.kdl
 ```
+
+## Günlük araçlar — 11 Eylül 2026
+
+Satty, kayıt, tema eşitleme, sağlık raporu, web uygulamaları ve Lazygit: [desktop-tools.md](desktop-tools.md).
