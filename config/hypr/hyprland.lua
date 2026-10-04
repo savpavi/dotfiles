@@ -69,8 +69,6 @@ hl.on("hyprland.start", function ()
   hl.exec_cmd("noctalia")
   hl.exec_cmd("systemctl --user start hyprpolkitagent")  -- parola/yetki pencereleri
   hl.exec_cmd("hypridle")
-  hl.exec_cmd("wl-paste --type text --watch cliphist store")
-  hl.exec_cmd("wl-paste --type image --watch cliphist store")
   hl.exec_cmd("solaar --window=hide")  -- fare DPI/tekerlek ayarlari; Plasma'da xdg autostart yapiyor, Hyprland'da elle
 end)
 
@@ -297,11 +295,12 @@ local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind("ALT + SPACE", hl.dsp.exec_cmd(menu))
-hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("cliphist list | rofi -no-config -theme ~/.config/rofi/config-cliphist.rasi -dmenu -p 'Pano geçmişi' | cliphist decode | wl-copy"))
+hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("noctalia msg panel-toggle clipboard"))  -- pano geçmişi Noctalia'da
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("gtk-launch app.zen_browser.zen"))
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("/home/savpavi/.local/bin/start-windows-looking-glass"))
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("flatpak run com.spotify.Client"))
 hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("flatpak run org.telegram.desktop"))
+hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("flatpak run org.mozilla.thunderbird_esr"))
 hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("flatpak run com.discordapp.Discord"))
 hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd("zed"))
 hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("flatpak run md.obsidian.Obsidian"))
