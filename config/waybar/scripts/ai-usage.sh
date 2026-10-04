@@ -1,9 +1,9 @@
 #!/bin/bash
-# Waybar modülü: CodexBar üzerinden Claude + Codex kullanım yüzdeleri.
+# Waybar modülü: CodexBar üzerinden Claude kullanım yüzdeleri.
 # Çıktı: {"text","tooltip","class"} — yüzdeler "kullanılan" orandır.
 set -o pipefail
 
-OUT=$(timeout 50 "$HOME/.local/bin/codexbar" usage --provider both --json 2>/dev/null)
+OUT=$(timeout 50 "$HOME/.local/bin/codexbar" usage --provider claude --json 2>/dev/null)
 if [ -z "$OUT" ]; then
   echo '{"text":"󰧑 —","tooltip":"codexbar yanıt vermedi","class":"err"}'
   exit 0
@@ -21,7 +21,7 @@ def pct(block):
 def fmt(value):
     return "—" if value is None else f"{value}%"
 
-claude_session = claude_week = codex_week = None
+claude_session = claude_week = None
 tooltip = []
 for entry in json.loads(os.environ["CODEXBAR_JSON"]):
     usage = entry.get("usage") or {}
@@ -33,17 +33,11 @@ for entry in json.loads(os.environ["CODEXBAR_JSON"]):
             if block:
                 reset = block.get("resetDescription", "")
                 tooltip.append(f"Claude {label}: %{pct(block)} kullanıldı · {reset}")
-    elif provider == "codex":
-        block = usage.get("secondary") or usage.get("primary")
-        codex_week = pct(block)
-        if block:
-            reset = block.get("resetDescription", "")
-            tooltip.append(f"Codex hafta: %{pct(block)} kullanıldı · {reset}")
 
-worst = max((v for v in (claude_session, claude_week, codex_week) if v is not None), default=0)
+worst = max((v for v in (claude_session, claude_week) if v is not None), default=0)
 css = "crit" if worst >= 95 else "warn" if worst >= 80 else "ok"
 
-text = f"󰧑 {fmt(claude_session)}·{fmt(claude_week)}  󰚩 {fmt(codex_week)}"
-tooltip.append("󰧑 Claude session·hafta  󰚩 Codex hafta — tıkla: yenile")
+text = f"󰧑 {fmt(claude_session)}·{fmt(claude_week)}"
+tooltip.append("󰧑 Claude session·hafta — tıkla: yenile")
 print(json.dumps({"text": text, "tooltip": "\n".join(tooltip), "class": css}))
 PY

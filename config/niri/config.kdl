@@ -68,7 +68,6 @@ binds {
     Mod+Alt+D repeat=false hotkey-overlay-title="Ekrana çiz / kapat (Esc)" { spawn "/home/savpavi/dotfiles/bin/dot-presenter"; }
     Mod+Alt+P repeat=false hotkey-overlay-title="Sunum spot ışığı (Esc ile çık)" { spawn "/home/savpavi/dotfiles/bin/dot-presenter" "--spotlight"; }
     Mod+Alt+N repeat=false hotkey-overlay-title="Mevcut Obsidian notunu seç ve düzenle" { spawn "/home/savpavi/dotfiles/bin/dot-desktop" "note"; }
-    Mod+A hotkey-overlay-title="ChatGPT uygulaması" { spawn "chatgpt"; }
     Ctrl+Tab repeat=false hotkey-overlay-title="Kayıt başlat / durdur (sessiz bölge)" { spawn "/home/savpavi/dotfiles/bin/dot-record"; }
     Mod+Ctrl+Print repeat=false hotkey-overlay-title="Kayıt seçenekleri / durdur" { spawn "/home/savpavi/dotfiles/bin/dot-record" "--menu"; }
     Mod+Ctrl+H hotkey-overlay-title="Masaüstü sağlık kontrolü" { spawn "ghostty" "-e" "sh" "-c" "dot-health; printf '\nKapatmak için Enter...'; read answer"; }

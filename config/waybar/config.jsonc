@@ -23,7 +23,7 @@
       "on-click-right": "wlogout"
     },
 
-    // Claude + Codex kullanım yüzdeleri (CodexBar CLI) — tıklayınca anında yeniler
+    // Claude kullanım yüzdeleri (CodexBar CLI) — tıklayınca anında yeniler
     "custom/ai": {
       "exec": "~/.config/waybar/scripts/ai-usage.sh",
       "return-type": "json",
