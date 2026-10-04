@@ -8,7 +8,7 @@ These are personal configs. Monitor names (`DP-1`, `DP-3`), paths and app choice
 
 | Path | What it holds |
 |---|---|
-| `config/` | App configs, symlinked into `~/.config/<name>` by `dot-link` (Niri, Hyprland, Ghostty, Kitty, Alacritty, Waybar, Rofi, SwayNC, btop, fastfetch, Starship, …) |
+| `config/` | App configs, symlinked into `~/.config/<name>` by `dot-link` (Hyprland, Niri, Kitty, Alacritty, Waybar, Rofi, SwayNC, btop, fastfetch, Starship, …) |
 | `bin/` | `dot-*` helper scripts (add to `PATH`) |
 | `themes/` | 22 colour themes adapted from Omarchy |
 | `templates/` | `*.tpl` files rendered per theme |
@@ -38,7 +38,7 @@ dot-theme menu            # pick with rofi
 dot-theme reapply         # re-render the active theme
 ```
 
-`dot-theme` renders `templates/` with the theme's `colors.toml` and writes the result for Kitty, Ghostty, Alacritty, btop, Rofi, SwayNC, wlogout, Hyprlock and Hyprland. It does not touch Niri; Niri colours come from Noctalia templates (see `docs/desktop-tools.md`). Wallpapers are not stored here.
+`dot-theme` renders `templates/` with the theme's `colors.toml` and writes the result for Kitty, Alacritty, btop, Rofi, SwayNC, wlogout, Hyprlock and Hyprland. It does not touch Niri; Niri colours come from Noctalia templates (see `docs/desktop-tools.md`). Wallpapers are not stored here.
 
 ## Desktop tools
 
