@@ -25,7 +25,6 @@ checks = [
  ('Masaüstü portalı', ['systemctl', '--user', 'is-active', 'xdg-desktop-portal.service']),
  ('GNOME portalı', ['systemctl', '--user', 'is-active', 'xdg-desktop-portal-gnome.service']),
  ('Ses çıkışı', ['wpctl', 'get-volume', '@DEFAULT_AUDIO_SINK@']),
- ('Ghostty config', ['ghostty', '+validate-config']),
  ('Kayıt durumu', ['dot-record', '--status']),
 ]
 results = [check(label,args) for label,args in checks]

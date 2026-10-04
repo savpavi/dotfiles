@@ -10,7 +10,7 @@
 | Ctrl+Tab | Sessiz bölge kaydı başlat; yeniden basınca durdur |
 | Super+Ctrl+Print | Bölge/monitör ve sessiz/sistem sesi/mikrofon seç; kayıt varsa durdur |
 | Super+Shift+S | Türkçe Niri kısayol rehberi |
-| Super+Ctrl+H | Ghostty'de salt okunur masaüstü sağlık raporu |
+| Super+Ctrl+H | Kitty'de salt okunur masaüstü sağlık raporu |
 | Super+Ctrl+G | Dotfiles reposunu Lazygit'te aç |
 | Alt+Space → Gemini / Claude | Brave uygulama penceresi aç |
 
@@ -40,7 +40,7 @@ Lazygit 0.65.0, resmî GitHub release SHA256 listesiyle doğrulanıp `~/.local/b
 
 Çalışan yardımcılar `~/dotfiles/bin/`; repo kaynakları `bin/`. Yalnız bu görevin değişiklikleri yedek repoya aktarıldı; repo ile canlı Niri düzeninin eski farkları tamamen eşitlenmiş sayılmaz.
 
-Kontroller: `python3 -m unittest discover -s tests -v`, `niri validate`, `ghostty +validate-config`, `desktop-file-validate`, `dot-health`, `git diff --check`. Fiziksel klavye kısayollarının kullanıcı deneyimi ve interaktif bölge/menü seçimi ayrıca denenmeli.
+Kontroller: `python3 -m unittest discover -s tests -v`, `niri validate`, `desktop-file-validate`, `dot-health`, `git diff --check`. Fiziksel klavye kısayollarının kullanıcı deneyimi ve interaktif bölge/menü seçimi ayrıca denenmeli.
 
 Önceki dosyalar: `~/.local/state/desktop-upgrade/20260911-085936/`. Geri dönüşte önce `dot-record --stop` çalıştır; yedek Noctalia config'ini geri koyarak şablonları kapat, sonra yedek Niri config ve Ghostty theme.conf dosyalarını geri koy. `niri validate`, `niri msg action load-config-file` ve Ghostty config reload uygula. Yedekler gerçek dosya içeriklerini taşır; mevcut Ghostty symlink'ini değiştirme. Eklenen Gemini/Claude başlatıcıları ve kullanıcı Lazygit binary'si ayrı kaldırılabilir. Kayıt videoları kullanıcı verisidir, geri dönüşte silinmez.
 

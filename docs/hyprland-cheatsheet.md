@@ -6,7 +6,7 @@
 
 | Kısayol | İşlev |
 |---|---|
-| `SUPER + Q` | Ghostty terminali aç |
+| `SUPER + Q` | Kitty terminali aç |
 | `SUPER + E` | Dolphin dosya yöneticisini aç |
 | `Alt + Space` | Hyprlauncher uygulama menüsünü aç |
 | `Alt + Space` sonra `=` | Hesap makinesi — sonuç panoya kopyalanır |
@@ -97,7 +97,7 @@ scratchpad hep açık duran yardımcı pencere (terminal, not defteri) için.
 | `SUPER + Shift + W` | Duvar kağıdı GUI'si (waypaper, iki ekran) |
 
 Terminalden: `dot-theme list`, `dot-theme set gruvbox`, `dot-theme next`.
-22 tema var; kitty, ghostty, waybar, rofi, swaync, wlogout, btop, hyprlock,
+22 tema var; kitty, waybar, rofi, swaync, wlogout, btop, hyprlock,
 hyprlauncher ve pencere kenarlıkları birlikte değişir.
 
 Seçici olarak hyprlauncher kullanılıyor (`SUPER + K` kısayol listesi de aynısını

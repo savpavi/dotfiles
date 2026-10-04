@@ -172,7 +172,6 @@ apply_theme() {
   "$DOT/bin/dot-theme-render" "$colors" "$staging" || fail "render başarısız"
 
   install_file "$staging/kitty.conf"          "$CFG/kitty/active-theme.conf"
-  install_file "$staging/ghostty.conf"        "$CFG/ghostty/theme.conf"
   install_file "$staging/alacritty.toml"      "$CFG/alacritty/active-theme.toml"
   install_file "$staging/btop.theme"          "$CFG/btop/themes/dot-theme.theme"
   install_file "$staging/waybar-colors.css"   "$CFG/waybar/colors.css"

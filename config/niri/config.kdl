@@ -70,10 +70,10 @@ binds {
     Mod+Alt+N repeat=false hotkey-overlay-title="Mevcut Obsidian notunu seç ve düzenle" { spawn "/home/savpavi/dotfiles/bin/dot-desktop" "note"; }
     Ctrl+Tab repeat=false hotkey-overlay-title="Kayıt başlat / durdur (sessiz bölge)" { spawn "/home/savpavi/dotfiles/bin/dot-record"; }
     Mod+Ctrl+Print repeat=false hotkey-overlay-title="Kayıt seçenekleri / durdur" { spawn "/home/savpavi/dotfiles/bin/dot-record" "--menu"; }
-    Mod+Ctrl+H hotkey-overlay-title="Masaüstü sağlık kontrolü" { spawn "ghostty" "-e" "sh" "-c" "dot-health; printf '\nKapatmak için Enter...'; read answer"; }
-    Mod+Ctrl+G hotkey-overlay-title="Dotfiles reposunu Lazygit ile aç" { spawn "ghostty" "--working-directory=/home/savpavi/Projects/dotfiles" "-e" "lazygit"; }
+    Mod+Ctrl+H hotkey-overlay-title="Masaüstü sağlık kontrolü" { spawn "kitty" "sh" "-c" "dot-health; printf '\nKapatmak için Enter...'; read answer"; }
+    Mod+Ctrl+G hotkey-overlay-title="Dotfiles reposunu Lazygit ile aç" { spawn "kitty" "--directory=/home/savpavi/dotfiles" "lazygit"; }
     Mod+W hotkey-overlay-title="Windows / Looking Glass" { spawn "/home/savpavi/.local/bin/start-windows-looking-glass"; }
-    Mod+Q hotkey-overlay-title="Ghostty terminal" { spawn "ghostty"; }
+    Mod+Q hotkey-overlay-title="Kitty terminal" { spawn "kitty"; }
     Mod+C hotkey-overlay-title="Pencereyi kapat" { close-window; }
     Mod+E hotkey-overlay-title="Thunar dosya yöneticisi" { spawn "thunar"; }
     Alt+Space hotkey-overlay-title="Uygulama menüsü" { spawn "noctalia" "msg" "panel-toggle" "launcher"; }

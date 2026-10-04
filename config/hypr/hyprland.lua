@@ -22,32 +22,28 @@
 
 -- See https://wiki.hypr.land/Configuring/Basics/Monitors/
 hl.monitor({
-    output   = "DP-1",
+    output   = "desc:ASUSTek COMPUTER INC XG27ACS",
     mode     = "2560x1440@180",
-    position = "0x285",
+    position = "0x0",
     scale    = 1,
 })
 
--- DP-3 fiziksel olarak 90 derece dondurulmus (KDE: rotation "Left").
--- transform = 1 ters gelirse 3 dene, sonra: hyprctl reload
+-- LG yatay kullaniliyor (transform 0). Dikey kullanilirsa transform = 1 (ters gelirse 3).
 hl.monitor({
-    output    = "DP-3",
+    output    = "desc:LG Electronics LG ULTRAGEAR",
     mode      = "1920x1080@119.98",
-    position  = "2560x0",
+    position  = "2560x180",
     scale     = 1,
-    transform = 1,          -- efektif alan: 1080x1920
+    transform = 0,          -- efektif alan: 1920x1080
 })
 
-hl.workspace_rule({ workspace = "1",  monitor = "DP-1", default = true })
-hl.workspace_rule({ workspace = "2",  monitor = "DP-1" })
-hl.workspace_rule({ workspace = "3",  monitor = "DP-1" })
-hl.workspace_rule({ workspace = "4",  monitor = "DP-1" })
-hl.workspace_rule({ workspace = "5",  monitor = "DP-1" })
-hl.workspace_rule({ workspace = "6",  monitor = "DP-3", default = true })
-hl.workspace_rule({ workspace = "7",  monitor = "DP-3" })
-hl.workspace_rule({ workspace = "8",  monitor = "DP-3" })
-hl.workspace_rule({ workspace = "9",  monitor = "DP-3" })
-hl.workspace_rule({ workspace = "10", monitor = "DP-3" })
+-- Her ekranda bagimsiz 1..9: ic kimlikler ASUS 1..9, LG 11..19.
+for i = 1, 9 do
+    hl.workspace_rule({ workspace = tostring(i), monitor = "desc:ASUSTek COMPUTER INC XG27ACS",
+        default = i == 1, persistent = true, default_name = tostring(i) .. "-ASUS" })
+    hl.workspace_rule({ workspace = tostring(i + 10), monitor = "desc:LG Electronics LG ULTRAGEAR",
+        default = i == 1, persistent = true, default_name = tostring(i) .. "-LG" })
+end
 
 
 ---------------------
@@ -55,9 +51,9 @@ hl.workspace_rule({ workspace = "10", monitor = "DP-3" })
 ---------------------
 
 -- Set programs that you use
-local terminal    = "ghostty"
-local fileManager = "dolphin"
-local menu        = "hyprlauncher"
+local terminal    = "kitty"
+local fileManager = "thunar"
+local menu        = "noctalia msg panel-toggle launcher"
 
 
 -------------------
@@ -70,23 +66,11 @@ local menu        = "hyprlauncher"
 -- Or execute your favorite apps at launch like this:
 --
 hl.on("hyprland.start", function ()
-  -- Oturum ortam degiskenlerini systemd user session ve dbus tarafina aktar.
-  -- Bunlar olmadan portal/dosya secici/flatpak uygulamalari yavas veya yanlis
-  -- ortamla aciliyor. (omarchy default/hypr/autostart.lua)
-  hl.exec_cmd("systemctl --user import-environment $(env | cut -d'=' -f 1)")
-  hl.exec_cmd("dbus-update-activation-environment --systemd --all")
-
-  hl.exec_cmd("waybar")
-  hl.exec_cmd("swaync")                                  -- mako degil: sistemde kurulu olan bu
-  hl.exec_cmd("swayosd-server")                          -- ses/parlaklik OSD; olmadan wpctl sessizce calisir
+  hl.exec_cmd("noctalia")
   hl.exec_cmd("systemctl --user start hyprpolkitagent")  -- parola/yetki pencereleri
   hl.exec_cmd("hypridle")
-  hl.exec_cmd("hyprpaper")
   hl.exec_cmd("wl-paste --type text --watch cliphist store")
   hl.exec_cmd("wl-paste --type image --watch cliphist store")
-  -- hyprlauncher --daemon BILEREK baslatilmiyor: daemon calisirken "--dmenu"
-  -- modu hic pencere acmadan cikiyor (dot-keys / dot-theme menu onu kullaniyor).
-  -- Soguk acilis zaten ~175 ms, daemon'in getirisi bu maliyete degmiyor.
   hl.exec_cmd("solaar --window=hide")  -- fare DPI/tekerlek ayarlari; Plasma'da xdg autostart yapiyor, Hyprland'da elle
 end)
 
@@ -99,13 +83,16 @@ end)
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
-hl.env("XCURSOR_THEME", "catppuccin-mocha-mauve-cursors")   -- Plasma'da aktif olan tema
-hl.env("HYPRCURSOR_THEME", "catppuccin-mocha-mauve-cursors")
+hl.env("XCURSOR_THEME", "Adwaita")   -- Plasma'da aktif olan tema
+hl.env("HYPRCURSOR_THEME", "Adwaita")
+-- Varsayilan terminal: Noctalia "terminalde ac" ve TERMINAL okuyan araclar icin.
+hl.env("TERMINAL", terminal)
 
--- Qt uygulamalari (Dolphin, Okular, Ark...) kdeglobals'i okusun.
--- Plasma oturumunda bu ortulu ayarli; Hyprland'de degil, o yuzden
--- Dolphin varsayilan beyaz Qt temasina dusuyordu. plasma-integration kurulu.
-hl.env("QT_QPA_PLATFORMTHEME", "kde")
+-- Qt uygulamalari (Dolphin, Okular, Ark...) renklerini qt6ct'den alir;
+-- qt6ct renk dosyasini Noctalia yazar (scripts/sync-app-appearance.py).
+-- Native Qt backend; UWSM de autostart oncesi export ediyor.
+hl.env("QT_QPA_PLATFORM", "wayland")
+hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 -- Pencere cercevesini Qt degil Hyprland cizsin (tiling'de cift baslik olmasin)
 hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
 
@@ -141,19 +128,14 @@ hl.config({
 
         border_size = 2,
 
-        col = {
-            active_border   = { colors = {"rgba(cba6f7ff)", "rgba(89b4faff)"}, angle = 45 },  -- mauve -> blue
-            inactive_border = "rgba(313244cc)",                                            -- surface0
-        },
+        -- Kenarlik renkleri burada degil: dosya sonundaki require("noctalia")
+        -- aktif Noctalia paletinden uygular (tema degisince otomatik).
 
         -- Set to true to enable resizing windows by clicking and dragging on borders and gaps
         resize_on_border = false,
 
-        -- end-4 (28.08.2026): true yalnızca `immediate` window rule'u olan pencerelerde (oyunlar, extras.lua) devreye girer.
-        allow_tearing = true,
-
-        -- Pencereyi sürüklerken kenarlara/pencerelere yapışma (end-4)
-        snap = { enabled = true, window_gap = 6, monitor_gap = 12, respect_gaps = true },
+        -- Please see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Tearing/ before you turn this on
+        allow_tearing = false,
 
         layout = "dwindle",
     },
@@ -162,17 +144,9 @@ hl.config({
         rounding       = 9,
         rounding_power = 2,
 
-        -- dim_around layer_rule'u kullanan katmanlarda (hyprlauncher) arka planın
-        -- ne kadar karartılacağı. Varsayılan 0.4; launcher biraz daha öne çıksın.
-        dim_around     = 0.45,
-
         -- Change transparency of focused and unfocused windows
         active_opacity   = 1.0,
         inactive_opacity = 1.0,
-
-        -- Odaksız pencereyi hafifçe karart (end-4: 0.05)
-        dim_inactive = true,
-        dim_strength = 0.05,
 
         shadow = {
             enabled      = true,
@@ -269,23 +243,6 @@ hl.config({
     misc = {
         force_default_wallpaper = 0,
         disable_hyprland_logo   = true,
-
-        -- omarchy default/hypr/looknfeel.lua'dan alinanlar
-        disable_splash_rendering   = true,
-        disable_scale_notification = true,
-        focus_on_activate          = true,  -- uygulama kendini one cagirinca odaklan
-        anr_missed_pings           = 3,     -- donmus uygulama uyarisi
-        on_focus_under_fullscreen  = 1,     -- tam ekranin altinda kalan pencereye odak
-        initial_workspace_tracking = 0,
-    },
-
-    cursor = {
-        hide_on_key_press        = true,  -- yazarken imlec kaybolur
-        warp_on_change_workspace = 1,     -- calisma alani degisince imlec takip eder
-    },
-
-    binds = {
-        hide_special_on_workspace_change = true,
     },
 })
 
@@ -324,12 +281,6 @@ hl.gesture({
     action = "workspace"
 })
 
--- Example per-device config
--- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Devices/ for more
-hl.device({
-    name        = "epic-mouse-v1",
-    sensitivity = -0.5,
-})
 
 
 ---------------------
@@ -342,38 +293,32 @@ local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 -- closeWindowBind:set_enabled(false)
-hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
+-- Super+M pencere duzeni: window-mode.lua; cikis Super+Escape menusunde.
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind("ALT + SPACE", hl.dsp.exec_cmd(menu))
-hl.bind("CTRL + X", hl.dsp.exec_cmd("cliphist list | rofi -dmenu -p 'Pano geçmişi' | cliphist decode | wl-copy"))
-hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("firefox"))
+hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("cliphist list | rofi -no-config -theme ~/.config/rofi/config-cliphist.rasi -dmenu -p 'Pano geçmişi' | cliphist decode | wl-copy"))
+hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("gtk-launch app.zen_browser.zen"))
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("/home/savpavi/.local/bin/start-windows-looking-glass"))
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("flatpak run com.spotify.Client"))
 hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("flatpak run org.telegram.desktop"))
 hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("flatpak run com.discordapp.Discord"))
 hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd("zed"))
 hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("flatpak run md.obsidian.Obsidian"))
-hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("flatpak run io.ente.auth"))
 hl.bind(mainMod .. " + N", hl.dsp.window.move({ workspace = "special:minimized" }))
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.workspace.toggle_special("minimized"))
-hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))
-hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
-hl.bind(mainMod .. " + escape", hl.dsp.exec_cmd("wlogout"))
+hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" }))
+hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("noctalia msg session lock"))
+hl.bind(mainMod .. " + escape", hl.dsp.exec_cmd("noctalia msg panel-toggle session"))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
-hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("pkill -x waybar; waybar"))
+hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("noctalia msg bar-toggle"))
 
--- Ekran goruntusu (28.08.2026): eskiden grim sessizce dosyaya yaziyordu, pano/bildirim yoktu.
--- Print        : tum ekran -> dosya + pano + bildirim
--- SHIFT+Print  : bolge sec (slurp) -> satty (Flameshot benzeri: ok/kutu/blur; Enter=kopyala, Ctrl+S=kaydet)
--- CTRL+Print   : bolge sec -> dogrudan pano + dosya, satty acilmaz
-hl.bind("Print", hl.dsp.exec_cmd([[d="$HOME/Pictures/Screenshots"; mkdir -p "$d"; f="$d/$(date +%Y%m%d-%H%M%S).png"; grim "$f" && wl-copy < "$f" && notify-send -i "$f" "Ekran görüntüsü" "Panoya kopyalandı: $(basename "$f")"]]))
-hl.bind("SHIFT + Print", hl.dsp.exec_cmd([[mkdir -p "$HOME/Pictures/Screenshots"; grim -g "$(slurp)" - | satty --filename - --output-filename "$HOME/Pictures/Screenshots/$(date +%Y%m%d-%H%M%S).png" --copy-command wl-copy --early-exit]]))
-hl.bind("CTRL + Print", hl.dsp.exec_cmd([[g="$(slurp)" && [ -n "$g" ] && d="$HOME/Pictures/Screenshots" && mkdir -p "$d" && f="$d/$(date +%Y%m%d-%H%M%S).png" && grim -g "$g" "$f" && wl-copy < "$f" && notify-send -i "$f" "Ekran görüntüsü" "Panoya kopyalandı: $(basename "$f")"]]))
-
--- Renk secici (omarchy bindings/utilities.lua). Calisiyorsa kapatir, degilse acar.
-hl.bind("SUPER + Print", hl.dsp.exec_cmd("pkill hyprpicker || hyprpicker -a"))
+-- Klavyede Print yok: Insert ekran goruntusu. Shift+Insert bos (terminal yapistirma).
+hl.bind("Insert", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))
+hl.bind("Print", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))
+hl.bind("SHIFT + Print", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))
 
 -- Move focus with mainMod + arrow keys
 hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
@@ -389,32 +334,22 @@ hl.bind(mainMod .. " + CTRL + right", hl.dsp.window.resize({ x = 40,  y = 0, rel
 hl.bind(mainMod .. " + CTRL + up",    hl.dsp.window.resize({ x = 0, y = 40,  relative = true }), { repeating = true })
 hl.bind(mainMod .. " + CTRL + down",  hl.dsp.window.resize({ x = 0, y = -40, relative = true }), { repeating = true })
 
--- Switch workspaces with mainMod + [0-9]
--- Move active window to a workspace with mainMod + SHIFT + [0-9]
-for i = 1, 10 do
-    local key = i % 10 -- 10 maps to key 0
-    hl.bind(mainMod .. " + " .. key,             hl.dsp.focus({ workspace = i}))
-    hl.bind(mainMod .. " + SHIFT + " .. key,     hl.dsp.window.move({ workspace = i }))
-end
-
--- Scroll through existing workspaces with mainMod + scroll
-hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
+-- Ekrana gore 1..9 ve Super+M davranisi ayri modulde.
+require("window-mode")
+-- Gruplar, scratchpad, Alt+Tab, Super+Tab, Super+-/= boyutlandirma.
+require("tiling")
 
 -- Move/resize windows with mainMod + LMB/RMB and dragging
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
--- Laptop multimedia keys for volume and LCD brightness
--- swayosd-client ekranda OSD cizer ve arkada wireplumber'a yazar; wpctl'in
--- gorsel geri bildirimi yoktu. Sunucu autostart'ta (`swayosd-server`).
--- --max-volume 100: eski `wpctl -l 1` limitinin karsiligi, %100 uzerine cikmaz.
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("swayosd-client --output-volume raise --max-volume 100"), { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("swayosd-client --output-volume lower"),                  { locked = true, repeating = true })
-hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("swayosd-client --output-volume mute-toggle"),            { locked = true, repeating = true })
-hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("swayosd-client --input-volume mute-toggle"),             { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("swayosd-client --brightness raise"),                     { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("swayosd-client --brightness lower"),                     { locked = true, repeating = true })
+-- Multimedya tuslari (ses, mikrofon, parlaklik)
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("noctalia msg volume-up 5"), { locked = true, repeating = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("noctalia msg volume-down 5"),      { locked = true, repeating = true })
+hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("noctalia msg volume-mute"),     { locked = true, repeating = true })
+hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),   { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"),                  { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"),                  { locked = true, repeating = true })
 
 -- Requires playerctl
 hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true })
@@ -441,13 +376,28 @@ local suppressMaximizeRule = hl.window_rule({
 })
 -- suppressMaximizeRule:set_enabled(false)
 
--- DP-3 artik dikey (1080x1920); VM 2560x1440 cikiyor.
--- client.ini de DP-1'e ayarli (position=0x285, size=2560x1440, fpsMin=180).
+-- Flameshot 13: span ASUS 2560x1440 + LG 1920x1080 at (2560,180).
 hl.window_rule({
-    name       = "looking-glass-on-main-monitor",
+    name = "flameshot-multi-display",
+    match = { class = "^flameshot$", title = "^flameshot$" },
+    float = true,
+    pin = true,
+    no_anim = true,
+    rounding = 0,
+    border_size = 0,
+    no_blur = true,
+    no_shadow = true,
+    fullscreen_state = "0 0",
+    monitor = "DP-1",
+    move = { 0, 0 },
+    size = { 4480, 1440 },
+})
+
+-- Looking Glass stays on the LG 1080p monitor; fullscreen is user-controlled.
+hl.window_rule({
+    name       = "looking-glass-on-lg",
     match      = { class = "looking-glass-client" },
-    monitor    = "DP-1",
-    fullscreen = true,
+    monitor    = "DP-3",
 })
 
 hl.window_rule({
@@ -482,57 +432,31 @@ hl.window_rule({
     float = true,
 })
 
+-- Tema ve duvar kagidi (Theme Switcher eklentisi): tema = palet + duvar kagidi + uygulama renkleri.
+-- Duvar kagidi kisayollari yalniz aktif temanin gorselleri arasinda dolasir.
+local themeIpc = "noctalia msg plugin theblackdon/theme-switcher:wallpaper-ipc all "
+hl.bind(mainMod .. " + CTRL + SHIFT + space", hl.dsp.exec_cmd("noctalia msg panel-toggle theblackdon/theme-switcher:carousel"))
+hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("noctalia msg panel-toggle theblackdon/theme-switcher:wallpapers"))
+hl.bind(mainMod .. " + CTRL + SHIFT + T", hl.dsp.exec_cmd(themeIpc .. "random"))
+hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd("noctalia msg settings-toggle"))
 
-
-------------------
----- PENCERE  ----
-------------------
-
--- omarchy'den uyarlanan pencere kuralları (varsayılan saydamlık + PiP).
-require("windows")
-
--- omarchy tiling.lua'nin cakismayan kismi: gruplar, scratchpad, ALT+TAB dongusu.
-require("tiling")
-require("extras")   -- end-4/dots-hyprland uyarlamaları
-
-------------------
-----  TEMA    ----
-------------------
-
--- dot-theme tarafından üretilen kenarlık renkleri.
--- Sonda olduğu için yukarıdaki general.col ayarlarını ezer.
-require("hyprland-theme")
-
--- Tema kısayolları
-hl.bind(mainMod .. " + K",                hl.dsp.exec_cmd("$HOME/dotfiles/bin/dot-keys"))
-hl.bind(mainMod .. " + SHIFT + T",        hl.dsp.exec_cmd("$HOME/dotfiles/bin/dot-theme menu"))
-hl.bind(mainMod .. " + CTRL + SHIFT + T", hl.dsp.exec_cmd("$HOME/dotfiles/bin/dot-theme bg"))
-
--- Duvar kağıdı GUI'si (waypaper). --monitor All: dot-theme de her iki ekrana
--- birden yazıyor, GUI'nin farklı davranması tutarsızlık yaratırdı.
--- Seçim post_command üzerinden dot-theme'e geçer, hyprpaper.conf'a kalıcı yazılır.
-hl.bind(mainMod .. " + SHIFT + W",        hl.dsp.exec_cmd("waypaper --monitor All"))
-
-------------------
----- LAUNCHER ----
-------------------
-
--- hyprlauncher (ALT+SPACE): saydam arka planı bulanıklaştır ve arkasını karart.
--- Renkler/yuvarlaklık ~/.config/hypr/hyprtoolkit.conf, boyut hyprlauncher.conf.
-hl.layer_rule({
-    name       = "hyprlauncher-blur",
-    match      = { namespace = "^hyprlauncher$" },
-    blur       = true,
-    ignore_alpha = 0.2,
-    dim_around = true,
+-- Hide the XWayland screen-sharing helper (Hyprland wiki recommendation).
+hl.window_rule({
+    name = "xwayland-video-bridge-fixes",
+    match = { class = "^xwaylandvideobridge$" },
+    no_initial_focus = true,
+    no_focus = true,
+    no_anim = true,
+    no_blur = true,
+    no_shadow = true,
+    border_size = 0,
+    max_size = {1, 1},
+    opacity = 0.0,
 })
 
--- SwayOSD (ses/parlaklik gostergesi): saydam arka plani bulaniklastir.
--- dim_around YOK -- her ses tusunda ekrani karartmak istemiyoruz.
--- Renkler ~/.config/swayosd/style.css, dot-theme uretiyor.
-hl.layer_rule({
-    name       = "swayosd-blur",
-    match      = { namespace = "^swayosd$" },
-    blur       = true,
-    ignore_alpha = 0.2,
-})
+-- Noctalia renk sablonu (hyprland builtin template): kenarlik + grup renkleri.
+-- Tema degisince Noctalia bu dosyayi yeniden yazar ve config'i reload eder.
+require("noctalia").apply_theme()
+
+-- Web uygulamasi ekle
+hl.bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd("/usr/bin/python3 /home/savpavi/.local/lib/webapp-maker/main.py"))

@@ -23,3 +23,11 @@ config/niri/*.bak*
 # Python test önbelleği
 __pycache__/
 *.pyc
+
+# Noctalia şablonlarının ürettiği dosyalar
+config/hypr/noctalia.lua
+config/kitty/themes/noctalia.conf
+config/btop/themes/noctalia.theme
+
+# Yerel yedekler
+*.bak-*

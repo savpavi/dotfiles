@@ -75,19 +75,19 @@ def refresh():
     issues=faults();backups=backup_rows();ts=tails()
     snapshot={'faults':issues,'backups':backups,'tailscale':ts.get('BackendState','UNKNOWN'),'time':time.strftime('%H:%M:%S')}
     (STATE/'status.json').write_text(json.dumps(snapshot,ensure_ascii=False))
-    config=tomllib.loads((HOME/'.config/noctalia/config.toml').read_text())
-    owned={'service_health','backup_health','tailnet','quick_note','presenter'}
-    end=[x for x in config['bar']['default']['end'] if x not in owned]
-    pos=end.index('tray') if 'tray' in end else 0
-    end[pos:pos]=(['service_health'] if issues else [])+['backup_health','tailnet','quick_note','presenter']
+    # Bar düzeni GUI'de (settings.toml); burada yalnız widget tanımları yazılır.
+    # Servis sorunları ayrı widget yerine backup_health üzerinde gösterilir.
     q=lambda x:json.dumps(x,ensure_ascii=False)
-    content='[bar.default]\nend = '+q(end)+'\n'
+    content='# Otomatik üretilir — dot-desktop watch (desktop-panels.service); elle düzenleme.\n'
     def widget(name,glyph,label,tooltip,action,color='secondary'):
         nonlocal content
         content+=f'\n[widget.{name}]\ntype = "custom_button"\nglyph = {q(glyph)}\nlabel = {q(label)}\ntooltip = {q(tooltip)}\ncolor = {q(color)}\n[widget.{name}.actions]\nleft = {q("exec "+CMD+" "+action)}\n'
-    if issues:widget('service_health','alert-triangle',str(len(issues)),'Servis sorunu / okunamayan durum\n'+ '\n'.join(x['scope']+': '+x['unit']+' '+x['sub'] for x in issues),'faults','error')
     bad=sum(x['status'] not in ('OK','RUNNING') for x in backups)
-    widget('backup_health','database','!' if bad else '', '\n'.join(x['label']+': '+x['status']+' · '+x['last'] for x in backups),'backups','error' if bad else 'secondary')
+    tip='\n'.join(x['label']+': '+x['status']+' · '+x['last'] for x in backups)
+    if issues:
+        tip+='\n\nServis sorunu ('+str(len(issues))+') · tıkla: ayrıntı\n'+'\n'.join(x['scope']+': '+x['unit']+' '+x['sub'] for x in issues)
+    label='!' if bad else (str(len(issues)) if issues else '')
+    widget('backup_health','alert-triangle' if issues else 'database',label,tip,'faults' if issues else 'backups','error' if bad or issues else 'secondary')
     peers=ts.get('Peer') or {};online=sum(bool(x.get('Online')) for x in peers.values())
     widget('tailnet','network',str(online),'Tailscale: '+ts.get('BackendState','UNKNOWN')+'\nÇevrimiçi eş: '+str(online),'tailscale')
     widget('quick_note','notes','','Mevcut Obsidian notunu seç ve düzenle','note')
