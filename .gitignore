@@ -37,3 +37,4 @@ config/hypr/dms/colors.lua
 config/hypr/hyprland.lua.backup*
 config/hypr/hyprland.lua.dmsbackup*
 config/kitty/dank-*.conf
+config/hypr/dms/cursor.lua

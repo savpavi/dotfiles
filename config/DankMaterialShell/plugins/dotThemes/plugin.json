@@ -1,0 +1,13 @@
+{
+  "id": "dotThemes",
+  "name": "DWM Temaları",
+  "description": "Noctalia'dan taşınan 15 DWM teması: palet, duvar kağıdı ve imleç tek tıkla (dot-dms-theme).",
+  "version": "0.1.0",
+  "author": "Ege",
+  "type": "widget",
+  "capabilities": ["dankbar-widget"],
+  "component": "./ThemeWidget.qml",
+  "icon": "palette",
+  "requires_dms": ">=1.0.0",
+  "permissions": ["process"]
+}

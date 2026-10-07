@@ -7,8 +7,9 @@ Kaynak: Noctalia theme-switcher themes.json + ~/.config/noctalia/palettes.
   dot-dms-theme apply <id>   temayı uygula (palet + mod + duvar kağıdı)
   dot-dms-theme wall         aktif temanın sıradaki duvar kağıdı
   dot-dms-theme list         tema kimlikleri
+  dot-dms-theme json         bar seçicisi için tema listesi (JSON)
 """
-import json, subprocess as sp, sys
+import json, subprocess as sp, sys, time
 from pathlib import Path
 
 HOME = Path.home()
@@ -16,6 +17,27 @@ THEMES = HOME/'.local/state/noctalia/plugins/data/theblackdon/theme-switcher/the
 PALETTES = HOME/'.config/noctalia/palettes'
 OUT = HOME/'.config/DankMaterialShell/themes'
 STATE = HOME/'.local/state/dot-dms-theme.json'
+
+# Tema -> imleç (XCursor adı; ~/.local/share/icons). Nord'da hyprcursor sürümü de var.
+CURSORS = {
+    'dwm-catppuccin': 'catppuccin-mocha-dark-cursors',
+    'dwm-catppuccin-latte': 'catppuccin-latte-light-cursors',
+    'dwm-dracula': 'Dracula-cursors',
+    'dwm-everforest': 'everforest-cursors',
+    'dwm-gruvbox': 'Capitaine Cursors (Gruvbox)',
+    'dwm-gruvbox-light': 'Capitaine Cursors (Gruvbox) - White',
+    'dwm-monochrome': 'Bibata-Modern-Classic',
+    'dwm-nord': 'Nordzy-cursors',
+    'dwm-one-dark': 'catppuccin-macchiato-blue-cursors',
+    'dwm-rose-pine': 'BreezeX-RosePine-Linux',
+    'dwm-rose-pine-dawn': 'BreezeX-RosePineDawn-Linux',
+    'dwm-solarized': 'Bibata-Modern-Amber',
+    'dwm-solarized-light': 'Bibata-Modern-Ice',
+    'dwm-tokyo-night': 'Capitaine Cursors (Palenight)',
+    'dwm-tokyo-night-day': 'catppuccin-latte-blue-cursors',
+}
+HYPRCURSORS = {'Nordzy-cursors': 'Nordzy-hyprcursors'}
+CURSOR_SIZE = 24
 
 def mix(a, b, t):
     a, b = a.lstrip('#'), b.lstrip('#')
@@ -77,7 +99,41 @@ def apply(tid, wall_index=None):
     dms('settings', 'set', 'currentThemeName', 'custom')
     if walls:
         dms('wallpaper', 'set', walls[i % len(walls)])
+    if wall_index is None and tid in CURSORS:
+        set_cursor(CURSORS[tid])
     STATE.write_text(json.dumps({'id': tid, 'wall': i % len(walls) if walls else 0}))
+
+def set_cursor(name):
+    """İmleci canlı değiştirir ve GTK/X11/DMS ayarlarına yazar (login'de dms/cursor.lua)."""
+    if not (HOME/'.local/share/icons'/name/'cursors').is_dir():
+        return
+    sp.run(['hyprctl', 'setcursor', HYPRCURSORS.get(name, name), str(CURSOR_SIZE)], capture_output=True)
+    sp.run(['gsettings', 'set', 'org.gnome.desktop.interface', 'cursor-theme', name], capture_output=True)
+    default = HOME/'.icons/default/index.theme'
+    default.parent.mkdir(parents=True, exist_ok=True)
+    default.write_text(f"[Icon Theme]\nName=Default\nComment=Default Cursor Theme\nInherits={name}\n")
+    for ini in (HOME/'.config/gtk-3.0/settings.ini', HOME/'.config/gtk-4.0/settings.ini'):
+        if ini.exists():
+            lines = [f"gtk-cursor-theme-name={name}" if l.startswith('gtk-cursor-theme-name=') else l
+                     for l in ini.read_text().splitlines()]
+            ini.write_text('\n'.join(lines) + '\n')
+    # DMS IPC nesne ayarı yazamıyor; dosyayı düzenle. Önceki IPC set'lerinin
+    # gecikmeli kaydı dosyayı ezebildiği için DMS değeri alana kadar tekrarla.
+    cfg = HOME/'.config/DankMaterialShell/settings.json'
+    for _ in range(8):
+        time.sleep(0.4)
+        r = sp.run(['dms', 'ipc', 'call', 'settings', 'get', 'cursorSettings'], capture_output=True, text=True, timeout=10)
+        try:
+            if json.loads(r.stdout).get('theme') == name:
+                return
+        except ValueError:
+            pass
+        try:
+            d = json.loads(cfg.read_text())
+            d.setdefault('cursorSettings', {})['theme'] = name
+            cfg.write_text(json.dumps(d, indent=2, ensure_ascii=False))
+        except (OSError, ValueError):
+            return
 
 def pick():
     ts = themes()
@@ -100,6 +156,16 @@ def main():
             apply(st['id'], st.get('wall', 0) + 1)
     elif cmd == 'list':
         print('\n'.join(t['id'] for t in themes()))
+    elif cmd == 'json':
+        cur = load_state().get('id', '')
+        out = []
+        for t in themes():
+            pal = json.loads((OUT/f"{t['id']}.json").read_text()) if (OUT/f"{t['id']}.json").exists() else {}
+            c = pal.get(t.get('mode', 'dark')) or pal.get('dark') or {}
+            out.append({'id': t['id'], 'title': t['title'], 'mode': t.get('mode', 'dark'),
+                        'active': t['id'] == cur, 'cursor': CURSORS.get(t['id'], ''),
+                        'colors': [c.get(k, '#000000') for k in ('surface', 'primary', 'secondary', 'error', 'warning')]})
+        print(json.dumps(out, ensure_ascii=False))
     else:
         sys.exit(__doc__)
 
