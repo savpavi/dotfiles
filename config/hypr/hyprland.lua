@@ -81,8 +81,8 @@ end)
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
-hl.env("XCURSOR_THEME", "Adwaita")   -- Plasma'da aktif olan tema
-hl.env("HYPRCURSOR_THEME", "Adwaita")
+hl.env("XCURSOR_THEME", "Nordzy-cursors")   -- siyah Nordzy (7 Eki 2026)
+hl.env("HYPRCURSOR_THEME", "Nordzy-hyprcursors")
 -- Varsayilan terminal: Noctalia "terminalde ac" ve TERMINAL okuyan araclar icin.
 hl.env("TERMINAL", terminal)
 
@@ -465,3 +465,4 @@ require("dms.layout")
 require("dms.binds")
 require("dms.binds-user")
 pcall(require, "dms.colors")  -- kenarlik renkleri DMS temasindan (noctalia.lua'yi ezer); uretilen dosya, git disi
+pcall(require, "dms.cursor")  -- imlec: son secilen temanin imleci (dot-dms-theme -> DMS cursorSettings)
