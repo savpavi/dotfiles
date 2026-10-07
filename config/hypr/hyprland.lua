@@ -53,7 +53,7 @@ end
 -- Set programs that you use
 local terminal    = "kitty"
 local fileManager = "thunar"
-local menu        = "noctalia msg panel-toggle launcher"
+local menu        = "dot-shell launcher"
 
 
 -------------------
@@ -66,7 +66,7 @@ local menu        = "noctalia msg panel-toggle launcher"
 -- Or execute your favorite apps at launch like this:
 --
 hl.on("hyprland.start", function ()
-  hl.exec_cmd("noctalia")
+  hl.exec_cmd("dms run")  -- varsayilan shell DMS (7 Eki 2026); Noctalia yedek: SUPER+ALT+S / dot-shell switch
   hl.exec_cmd("systemctl --user start hyprpolkitagent")  -- parola/yetki pencereleri
   hl.exec_cmd("hypridle")
   hl.exec_cmd("solaar --window=hide")  -- fare DPI/tekerlek ayarlari; Plasma'da xdg autostart yapiyor, Hyprland'da elle
@@ -295,7 +295,7 @@ local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind("ALT + SPACE", hl.dsp.exec_cmd(menu))
-hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("noctalia msg panel-toggle clipboard"))  -- pano geçmişi Noctalia'da
+hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("dot-shell clipboard"))  -- pano geçmişi aktif shell'de
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("gtk-launch app.zen_browser.zen"))
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("/home/savpavi/.local/bin/start-windows-looking-glass"))
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("flatpak run com.spotify.Client"))
@@ -308,11 +308,11 @@ hl.bind(mainMod .. " + N", hl.dsp.window.move({ workspace = "special:minimized" 
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.workspace.toggle_special("minimized"))
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" }))
 hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))
-hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("noctalia msg session lock"))
-hl.bind(mainMod .. " + escape", hl.dsp.exec_cmd("noctalia msg panel-toggle session"))
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("dot-shell lock"))
+hl.bind(mainMod .. " + escape", hl.dsp.exec_cmd("dot-shell session"))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
-hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("noctalia msg bar-toggle"))
+hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("dot-shell bar"))
 
 -- Klavyede Print yok: Insert ekran goruntusu. Shift+Insert bos (terminal yapistirma).
 hl.bind("Insert", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))
@@ -343,9 +343,9 @@ hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 -- Multimedya tuslari (ses, mikrofon, parlaklik)
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("noctalia msg volume-up 5"), { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("noctalia msg volume-down 5"),      { locked = true, repeating = true })
-hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("noctalia msg volume-mute"),     { locked = true, repeating = true })
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("dot-shell vol-up"), { locked = true, repeating = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("dot-shell vol-down"),      { locked = true, repeating = true })
+hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("dot-shell mute"),     { locked = true, repeating = true })
 hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),   { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"),                  { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"),                  { locked = true, repeating = true })
@@ -433,11 +433,11 @@ hl.window_rule({
 
 -- Tema ve duvar kagidi (Theme Switcher eklentisi): tema = palet + duvar kagidi + uygulama renkleri.
 -- Duvar kagidi kisayollari yalniz aktif temanin gorselleri arasinda dolasir.
-local themeIpc = "noctalia msg plugin theblackdon/theme-switcher:wallpaper-ipc all "
-hl.bind(mainMod .. " + CTRL + SHIFT + space", hl.dsp.exec_cmd("noctalia msg panel-toggle theblackdon/theme-switcher:carousel"))
-hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("noctalia msg panel-toggle theblackdon/theme-switcher:wallpapers"))
-hl.bind(mainMod .. " + CTRL + SHIFT + T", hl.dsp.exec_cmd(themeIpc .. "random"))
-hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd("noctalia msg settings-toggle"))
+hl.bind(mainMod .. " + ALT + S", hl.dsp.exec_cmd("dot-shell switch"))  -- Noctalia <-> DMS
+hl.bind(mainMod .. " + CTRL + SHIFT + space", hl.dsp.exec_cmd("dot-shell themes"))
+hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("dot-shell wallpapers"))
+hl.bind(mainMod .. " + CTRL + SHIFT + T", hl.dsp.exec_cmd("dot-shell random"))
+hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd("dot-shell settings"))
 
 -- Hide the XWayland screen-sharing helper (Hyprland wiki recommendation).
 hl.window_rule({
@@ -459,3 +459,9 @@ require("noctalia").apply_theme()
 
 -- Web uygulamasi ekle
 hl.bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd("/usr/bin/python3 /home/savpavi/.local/lib/webapp-maker/main.py"))
+
+-- DMS Include Configs
+require("dms.layout")
+require("dms.binds")
+require("dms.binds-user")
+pcall(require, "dms.colors")  -- kenarlik renkleri DMS temasindan (noctalia.lua'yi ezer); uretilen dosya, git disi

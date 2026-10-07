@@ -31,3 +31,9 @@ config/btop/themes/noctalia.theme
 
 # Yerel yedekler
 *.bak-*
+
+# DankMaterialShell tarafından üretilen dosyalar ve yedekleri
+config/hypr/dms/colors.lua
+config/hypr/hyprland.lua.backup*
+config/hypr/hyprland.lua.dmsbackup*
+config/kitty/dank-*.conf

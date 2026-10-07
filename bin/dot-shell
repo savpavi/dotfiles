@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Aktif shell'e (Noctalia veya DankMaterialShell) göre ortak kısayol eylemleri.
+# Kullanım: dot-shell <eylem>   — eylemler aşağıdaki case bloklarında.
+set -u
+
+action=${1:-}
+if [[ -z $action ]]; then
+  echo "kullanım: dot-shell <launcher|clipboard|lock|session|bar|vol-up|vol-down|mute|themes|wallpapers|random|settings|switch>" >&2
+  exit 2
+fi
+
+if [[ $action == switch ]]; then
+  # Noctalia <-> DMS geçişi
+  if pgrep -x noctalia >/dev/null; then
+    pkill -x noctalia
+    setsid -f dms run >/dev/null 2>&1
+  else
+    dms kill >/dev/null 2>&1
+    setsid -f noctalia >/dev/null 2>&1
+  fi
+  exit 0
+fi
+
+if pgrep -x noctalia >/dev/null; then
+  n() { noctalia msg "$@"; }
+  ts="theblackdon/theme-switcher"
+  case $action in
+    launcher)   n panel-toggle launcher ;;
+    clipboard)  n panel-toggle clipboard ;;
+    lock)       n session lock ;;
+    session)    n panel-toggle session ;;
+    bar)        n bar-toggle ;;
+    vol-up)     n volume-up 5 ;;
+    vol-down)   n volume-down 5 ;;
+    mute)       n volume-mute ;;
+    themes)     n panel-toggle "$ts:carousel" ;;
+    wallpapers) n panel-toggle "$ts:wallpapers" ;;
+    random)     n plugin "$ts:wallpaper-ipc" all random ;;
+    settings)   n settings-toggle ;;
+    *) echo "bilinmeyen eylem: $action" >&2; exit 2 ;;
+  esac
+else
+  d() { dms ipc call "$@"; }
+  case $action in
+    launcher)   d spotlight toggle ;;
+    clipboard)  d clipboard toggle ;;
+    lock)       d lock lock ;;
+    session)    d powermenu toggle ;;
+    bar)        d bar toggle index 0 ;;
+    vol-up)     d audio increment 5 ;;
+    vol-down)   d audio decrement 5 ;;
+    mute)       d audio mute ;;
+    themes)     dot-dms-theme pick ;;        # Noctalia theme-switcher temaları
+    wallpapers) d dankdash wallpaper ;;
+    random)     dot-dms-theme wall ;;        # aktif temanın sıradaki duvar kağıdı
+    settings)   d settings toggle ;;
+    *) echo "bilinmeyen eylem: $action" >&2; exit 2 ;;
+  esac
+fi >/dev/null

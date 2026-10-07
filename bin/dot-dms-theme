@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""Noctalia theme-switcher temalarını DankMaterialShell'e taşır.
+
+Kaynak: Noctalia theme-switcher themes.json + ~/.config/noctalia/palettes.
+  dot-dms-theme build        temaları DMS custom theme JSON'larına çevirir
+  dot-dms-theme pick         fuzzel ile tema seç ve uygula
+  dot-dms-theme apply <id>   temayı uygula (palet + mod + duvar kağıdı)
+  dot-dms-theme wall         aktif temanın sıradaki duvar kağıdı
+  dot-dms-theme list         tema kimlikleri
+"""
+import json, subprocess as sp, sys
+from pathlib import Path
+
+HOME = Path.home()
+THEMES = HOME/'.local/state/noctalia/plugins/data/theblackdon/theme-switcher/themes.json'
+PALETTES = HOME/'.config/noctalia/palettes'
+OUT = HOME/'.config/DankMaterialShell/themes'
+STATE = HOME/'.local/state/dot-dms-theme.json'
+
+def mix(a, b, t):
+    a, b = a.lstrip('#'), b.lstrip('#')
+    c = [round(int(a[i:i+2], 16)*(1-t) + int(b[i:i+2], 16)*t) for i in (0, 2, 4)]
+    return '#%02x%02x%02x' % tuple(c)
+
+def convert(p):
+    """Noctalia palet modu -> DMS renk anahtarları."""
+    s, v, term = p['mSurface'], p['mSurfaceVariant'], p.get('terminal', {}).get('normal', {})
+    return {
+        'primary': p['mPrimary'], 'primaryText': p['mOnPrimary'],
+        'primaryContainer': mix(p['mPrimary'], s, 0.6),
+        'secondary': p['mSecondary'], 'surfaceTint': p['mPrimary'],
+        'surface': s, 'surfaceText': p['mOnSurface'],
+        'surfaceVariant': v, 'surfaceVariantText': p['mOnSurfaceVariant'],
+        'background': s, 'backgroundText': p['mOnSurface'],
+        'outline': mix(p['mOnSurfaceVariant'], s, 0.45),
+        'surfaceContainerLowest': mix(s, v, 0.0), 'surfaceContainerLow': mix(s, v, 0.2),
+        'surfaceContainer': mix(s, v, 0.4), 'surfaceContainerHigh': mix(s, v, 0.7),
+        'surfaceContainerHighest': v,
+        'error': p['mError'], 'warning': term.get('yellow', p['mTertiary']),
+        'info': term.get('blue', p['mSecondary']),
+    }
+
+def themes():
+    return json.loads(THEMES.read_text())['themes']
+
+def build():
+    OUT.mkdir(parents=True, exist_ok=True)
+    for t in themes():
+        pal = json.loads((PALETTES/f"{t['palette']}.json").read_text())
+        data = {'id': t['id'], 'name': t['title']}
+        for mode in ('dark', 'light'):
+            if mode in pal:
+                data[mode] = convert(pal[mode])
+        (OUT/f"{t['id']}.json").write_text(json.dumps(data, indent=2, ensure_ascii=False))
+    print(f"{len(themes())} tema -> {OUT}")
+
+def dms(*args):
+    sp.run(['dms', 'ipc', 'call', *args], capture_output=True, text=True, timeout=10)
+
+def load_state():
+    try:
+        return json.loads(STATE.read_text())
+    except (OSError, ValueError):
+        return {}
+
+def apply(tid, wall_index=None):
+    t = next((x for x in themes() if x['id'] == tid), None)
+    if t is None:
+        sys.exit(f"tema yok: {tid}")
+    path = OUT/f"{tid}.json"
+    if not path.exists():
+        build()
+    walls = t.get('wallpapers') or []
+    i = t.get('wallpaperIndex', 0) if wall_index is None else wall_index
+    dms('theme', t.get('mode', 'dark'))
+    dms('settings', 'set', 'customThemeFile', str(path))
+    dms('settings', 'set', 'currentThemeName', 'custom')
+    if walls:
+        dms('wallpaper', 'set', walls[i % len(walls)])
+    STATE.write_text(json.dumps({'id': tid, 'wall': i % len(walls) if walls else 0}))
+
+def pick():
+    ts = themes()
+    labels = [f"{t['title']}  ({'açık' if t.get('mode') == 'light' else 'koyu'})" for t in ts]
+    r = sp.run(['fuzzel', '--dmenu', '-p', 'Tema: '], input='\n'.join(labels), capture_output=True, text=True)
+    if r.returncode == 0 and r.stdout.strip() in labels:
+        apply(ts[labels.index(r.stdout.strip())]['id'])
+
+def main():
+    cmd = sys.argv[1] if len(sys.argv) > 1 else 'pick'
+    if cmd == 'build':
+        build()
+    elif cmd == 'pick':
+        pick()
+    elif cmd == 'apply' and len(sys.argv) > 2:
+        apply(sys.argv[2])
+    elif cmd == 'wall':
+        st = load_state()
+        if 'id' in st:
+            apply(st['id'], st.get('wall', 0) + 1)
+    elif cmd == 'list':
+        print('\n'.join(t['id'] for t in themes()))
+    else:
+        sys.exit(__doc__)
+
+if __name__ == '__main__':
+    main()
