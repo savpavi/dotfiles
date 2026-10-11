@@ -4,7 +4,7 @@
 # Video siteleri → yt-dlp (~/Downloads/yt-dlp), görsel/galeri siteleri → gallery-dl (~/Downloads/gallery-dl).
 # Bilinmeyen site önce yt-dlp, olmazsa gallery-dl. Çerezler Zen profilinden okunur (girişli içerik için).
 # Gerekli: yt-dlp ffmpeg gallery-dl (uv tool) wl-clipboard libnotify hyprctl. (11.10.2026)
-# Kullanım: dot-grab [--clip|--tab] [URL]
+# Kullanım: dot-grab [--clip|--tab] [--force] [URL]
 set -u -o pipefail
 
 ZEN_CLASS="app.zen_browser.zen"
@@ -15,11 +15,12 @@ LOG_DIR="$HOME/.cache/dot-grab"
 
 notify() { notify-send -a "Grab" "$@"; }
 
-mode=auto url=""
+mode=auto url="" force=0
 for a in "$@"; do
     case "$a" in
         --clip) mode=clip ;;
         --tab)  mode=tab ;;
+        --force) force=1 ;;
         *)      url="$a" ;;
     esac
 done
@@ -55,6 +56,32 @@ case "$url" in
 esac
 
 host="$(printf '%s' "$url" | sed -E 's#^https?://([^/:]+).*#\1#; s#^www\.##; s#^m\.##')"
+path="$(printf '%s' "$url" | sed -E 's#^https?://[^/]+##; s#[?#].*##; s#/+$##')"
+
+# Akış koruması: ana sayfa, keşfet, arama, hesap sayfası gibi sonsuz akışlar indirilmez; yalnız tek gönderi linki.
+# (11.10.2026: sekme modu x.com/home'da tetiklendi, gallery-dl 70 dk'da 52 GB indirdi.) Bilerek istenirse: --force
+single_post() {
+    case "$host" in
+        x.com|twitter.com|mobile.twitter.com|fixupx.com|vxtwitter.com)
+            [[ $path =~ ^/[^/]+/status/[0-9]+ ]] ;;
+        instagram.com)
+            [[ $path =~ ^/(p|reel|reels|tv)/[^/]+ || $path =~ ^/[^/]+/(p|reel)/[^/]+ ]] ;;
+        reddit.com|*.reddit.com)
+            [[ $path =~ /comments/[^/]+ || $path =~ ^/gallery/[^/]+ ]] ;;
+        redd.it) [[ -n $path ]] ;;
+        bsky.app) [[ $path =~ ^/profile/[^/]+/post/[^/]+ ]] ;;
+        youtube.com|music.youtube.com)   # kanal / oynatma listesi sayfası bütün kanalı indirir
+            [[ $path =~ ^/(watch|shorts/|live/|embed/) ]] ;;
+        pinterest.*) [[ $path =~ ^/pin/[^/]+ ]] ;;
+        tumblr.com) [[ $path =~ ^/[^/]+/[0-9]+ ]] ;;
+        *.tumblr.com) [[ $path =~ ^/post/[0-9]+ ]] ;;
+        *) [[ -n $path ]] ;;   # kök adres (site ana sayfası) hiçbir sitede indirilmez
+    esac
+}
+if [ "$force" -eq 0 ] && ! single_post; then
+    notify -u critical "İndirilmedi: akış linki" "$host${path:-/} tek bir gönderi değil (ana sayfa/hesap/keşfet). Bilerek istiyorsan: dot-grab --force URL"
+    exit 2
+fi
 
 # Zen'in kullandığı profil (installs.ini → Default=)
 profile="$(sed -n 's/^Default=//p' "$ZEN_ROOT/installs.ini" 2>/dev/null | head -1)"
@@ -91,8 +118,10 @@ run_yt() {
         -o "$VIDEO_DIR/%(title).150B [%(id)s].%(ext)s" \
         --no-simulate --print after_move:filepath "$url"
 }
+# İkinci emniyet: bir çağrı en fazla GRAB_MAX_FILES dosya ve GRAB_TIMEOUT süre (--force ile de geçerli).
 run_gallery() {
-    gallery-dl "${cookie_args[@]}" -d "$GALLERY_DIR" "$url"
+    timeout "${GRAB_TIMEOUT:-20m}" gallery-dl "${cookie_args[@]}" --range "1-${GRAB_MAX_FILES:-300}" \
+        -d "$GALLERY_DIR" "$url"
 }
 
 ok=0 used=""
