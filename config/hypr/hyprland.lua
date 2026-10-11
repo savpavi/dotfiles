@@ -251,10 +251,11 @@ hl.config({
 
 hl.config({
     input = {
-        kb_layout  = "tr,us",
+        -- Yalnız Türkçe: Super+Space düzen geçişi (grp:win_space_toggle) kazara US'e alıyordu (11.10.2026).
+        kb_layout  = "tr",
         kb_variant = "",
         kb_model   = "",
-        kb_options = "grp:win_space_toggle",
+        kb_options = "",
         kb_rules   = "",
 
         repeat_rate  = 35,
@@ -315,6 +316,7 @@ hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
 hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("dot-shell bar"))
 hl.bind(mainMod .. " + SHIFT + D", hl.dsp.exec_cmd("dot-grab"))         -- Zen odaktaysa sekmeyi, değilse panodaki linki yt-dlp/gallery-dl ile indir
 hl.bind(mainMod .. " + CTRL + D", hl.dsp.exec_cmd("dot-grab --clip"))   -- her zaman panodaki link
+hl.bind(mainMod .. " + SHIFT + space", hl.dsp.exec_cmd('dms ipc call launcher toggleQuery "dig "'))  -- DigUp: dosyaları içeriğine göre ara (~/Projects/DigUp/linux)
 
 -- Klavyede Print yok: Insert ekran goruntusu. Shift+Insert bos (terminal yapistirma).
 hl.bind("Insert", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))
