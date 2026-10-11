@@ -85,7 +85,6 @@ nid="$(notify-send -a Grab -p "İndiriliyor…" "$host" 2>/dev/null || true)"
 replace=(); [ -n "$nid" ] && replace=(-r "$nid")
 
 run_yt() {
-    dir="$VIDEO_DIR"
     yt-dlp --no-playlist --newline --no-progress \
         -f "bv*+ba/b" -S "res:1080" --merge-output-format mp4 --embed-metadata \
         --js-runtimes node "${cookie_args[@]}" \
@@ -93,7 +92,6 @@ run_yt() {
         --no-simulate --print after_move:filepath "$url"
 }
 run_gallery() {
-    dir="$GALLERY_DIR"
     gallery-dl "${cookie_args[@]}" -d "$GALLERY_DIR" "$url"
 }
 
@@ -109,15 +107,19 @@ done
 
 if [ $ok -eq 1 ]; then
     count="$(printf '%s\n' "$out" | grep -c . || true)"
-    name="$(basename "$(printf '%s\n' "$out" | tail -1 | sed 's/^# //')")"
+    # Fonksiyonlar $( ) içinde (alt kabukta) çalıştığı için klasör burada belirlenir.
+    last="$(printf '%s\n' "$out" | tail -1 | sed 's/^# //')"
+    name="$(basename "$last")"
+    dir="$([ "$used" = yt ] && echo "$VIDEO_DIR" || echo "$GALLERY_DIR")"
+    [ -n "$last" ] && [ -d "$(dirname "$last")" ] && dir="$(dirname "$last")"
     msg="$name"; [ "$count" -gt 1 ] && msg="$count dosya — son: $name"
     [ "$count" -eq 0 ] && msg="Yeni dosya yok (zaten indirilmiş olabilir)"
     act="$(notify-send -a Grab "${replace[@]}" -A open="Klasörü aç" "Bitti ($([ "$used" = yt ] && echo yt-dlp || echo gallery-dl))" "$msg" 2>/dev/null || true)"
-    [ "$act" = open ] && xdg-open "$dir" >/dev/null 2>&1 &
+    [ "$act" = open ] && setsid -f xdg-open "$dir" >/dev/null 2>&1
     exit 0
 fi
 
 err="$(grep -E 'ERROR|\[error\]' "$log" | tail -1 | cut -c1-200)"
 act="$(notify-send -a Grab -u critical "${replace[@]}" -A log="Logu aç" "İndirilemedi: $host" "${err:-ayrıntılar logda}" 2>/dev/null || true)"
-[ "$act" = log ] && xdg-open "$log" >/dev/null 2>&1 &
+[ "$act" = log ] && setsid -f xdg-open "$log" >/dev/null 2>&1
 exit 1
