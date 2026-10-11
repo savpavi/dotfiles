@@ -1,6 +1,6 @@
 # dotfiles
 
-My Fedora 44 Wayland desktop: Hyprland with the Noctalia shell as the daily driver, a Niri configuration kept alongside it, a theme switcher that recolours a dozen apps at once, and a set of small desktop tools.
+My Fedora 44 Wayland desktop: Hyprland with DankMaterialShell as the daily driver (Noctalia kept as a fallback), a Niri configuration kept alongside it, a theme switcher that recolours a dozen apps at once, and a set of small desktop tools.
 
 These are personal configs. Monitor names (`DP-1`, `DP-3`), paths and app choices fit my machine, so read before you copy.
 
@@ -8,7 +8,7 @@ These are personal configs. Monitor names (`DP-1`, `DP-3`), paths and app choice
 
 | Path | What it holds |
 |---|---|
-| `config/` | App configs, symlinked into `~/.config/<name>` by `dot-link` (Hyprland, Niri, Kitty, Alacritty, Waybar, Rofi, SwayNC, btop, fastfetch, Starship, …) |
+| `config/` | App configs, symlinked into `~/.config/<name>` by `dot-link` (Hyprland, Niri, DankMaterialShell, Kitty, Alacritty, Waybar, Rofi, SwayNC, btop, fastfetch, Starship, …) |
 | `bin/` | `dot-*` helper scripts (add to `PATH`) |
 | `themes/` | 22 colour themes adapted from Omarchy |
 | `templates/` | `*.tpl` files rendered per theme |
@@ -44,6 +44,9 @@ dot-theme reapply         # re-render the active theme
 
 | Command | Does |
 |---|---|
+| `dot-shell <action>` | Shared shortcut actions (launcher, clipboard, lock, bar, volume, themes…) routed to whichever shell is running; `dot-shell switch` toggles DMS ↔ Noctalia |
+| `dot-dms-theme` | Port the Noctalia theme-switcher themes to DankMaterialShell; `pick` chooses and applies one |
+| `dot-grab` | Download the focused Zen tab or the clipboard link: video sites via yt-dlp, galleries via gallery-dl, unknown sites try both. Uses the browser's cookies and reports through notifications (Super+Shift+D tab, Super+Ctrl+D clipboard) |
 | `dot-settings` | GTK settings centre (built for the Niri session) |
 | `dot-desktop` | Noctalia service/backup indicators and tool menus |
 | `dot-health` | Read-only desktop health report; never restarts or repairs anything |
@@ -53,6 +56,8 @@ dot-theme reapply         # re-render the active theme
 | `dot-webapp Name https://url` | Create a Brave web-app launcher (never overwrites) |
 | `dot-keys` | Searchable keybinding list |
 | `dot-askpass` | Zenity askpass helper for `sudo -A` |
+
+`dot-grab` needs `yt-dlp[default]` (for YouTube's JS challenge) and `gallery-dl`, e.g. via `uv tool install`. Extra gallery-dl domains can be listed one per line in `~/.config/dot-grab/gallery-domains`, outside the repo.
 
 Run the tests with `python3 -m unittest discover -s tests`.
 
