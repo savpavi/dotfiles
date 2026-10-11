@@ -394,11 +394,12 @@ hl.window_rule({
     size = { 4480, 1440 },
 })
 
--- Looking Glass stays on the LG 1080p monitor; fullscreen is user-controlled.
+-- Looking Glass opens fullscreen on the LG 1080p monitor.
 hl.window_rule({
     name       = "looking-glass-on-lg",
     match      = { class = "looking-glass-client" },
     monitor    = "DP-3",
+    fullscreen = true,
 })
 
 hl.window_rule({
