@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+# dot-grab — açık Zen sekmesini veya panodaki linki yt-dlp / gallery-dl ile indirir.
+# Kısayol: SUPER+SHIFT+D (Zen odaktaysa sekme, değilse pano), SUPER+CTRL+D (her zaman pano).
+# Video siteleri → yt-dlp (~/Downloads/yt-dlp), görsel/galeri siteleri → gallery-dl (~/Downloads/gallery-dl).
+# Bilinmeyen site önce yt-dlp, olmazsa gallery-dl. Çerezler Zen profilinden okunur (girişli içerik için).
+# Gerekli: yt-dlp ffmpeg gallery-dl (uv tool) wl-clipboard libnotify hyprctl. (11.10.2026)
+# Kullanım: dot-grab [--clip|--tab] [URL]
+set -u -o pipefail
+
+ZEN_CLASS="app.zen_browser.zen"
+ZEN_ROOT="$HOME/.var/app/app.zen_browser.zen/.zen"
+VIDEO_DIR="$HOME/Downloads/yt-dlp"
+GALLERY_DIR="$HOME/Downloads/gallery-dl"
+LOG_DIR="$HOME/.cache/dot-grab"
+
+notify() { notify-send -a "Grab" "$@"; }
+
+mode=auto url=""
+for a in "$@"; do
+    case "$a" in
+        --clip) mode=clip ;;
+        --tab)  mode=tab ;;
+        *)      url="$a" ;;
+    esac
+done
+
+# Zen adres çubuğundan URL'yi al: Ctrl+L, Ctrl+C, Esc; panonun eski içeriğini geri koy.
+tab_url() {
+    # Lua string'i içinde \. geçersiz kaçış; nokta kaçırılmadan bırakılır.
+    local old new win="class:^${ZEN_CLASS}\$"
+    old="$(wl-paste --no-newline 2>/dev/null || true)"
+    printf '' | wl-copy
+    for k in L C; do
+        hyprctl dispatch "hl.dsp.send_shortcut({mods='CTRL', key='$k', window='$win'})" >/dev/null
+        sleep 0.15
+    done
+    sleep 0.2
+    new="$(wl-paste --no-newline 2>/dev/null || true)"
+    hyprctl dispatch "hl.dsp.send_shortcut({mods='', key='Escape', window='$win'})" >/dev/null
+    if [ -n "$old" ]; then printf '%s' "$old" | wl-copy; fi
+    printf '%s' "$new"
+}
+
+if [ -z "$url" ]; then
+    if [ "$mode" = auto ]; then
+        active="$(hyprctl activewindow -j 2>/dev/null | sed -n 's/.*"class": *"\([^"]*\)".*/\1/p' | head -1)"
+        [ "$active" = "$ZEN_CLASS" ] && mode=tab || mode=clip
+    fi
+    if [ "$mode" = tab ]; then url="$(tab_url)"; else url="$(wl-paste --no-newline 2>/dev/null || true)"; fi
+fi
+url="$(printf '%s' "$url" | head -1 | tr -d '[:space:]')"
+case "$url" in
+    http://*|https://*) ;;
+    *) notify "Link yok" "Geçerli bir http(s) linki bulunamadı (${mode})."; exit 1 ;;
+esac
+
+host="$(printf '%s' "$url" | sed -E 's#^https?://([^/:]+).*#\1#; s#^www\.##; s#^m\.##')"
+
+# Zen'in kullandığı profil (installs.ini → Default=)
+profile="$(sed -n 's/^Default=//p' "$ZEN_ROOT/installs.ini" 2>/dev/null | head -1)"
+cookie_args=()
+[ -n "$profile" ] && [ -f "$ZEN_ROOT/$profile/cookies.sqlite" ] && cookie_args=(--cookies-from-browser "firefox:$ZEN_ROOT/$profile")
+
+case "$host" in
+    youtube.com|youtu.be|music.youtube.com|twitch.tv|*.twitch.tv|vimeo.com|dailymotion.com|tiktok.com|*.tiktok.com|kick.com|soundcloud.com|rumble.com|bilibili.com)
+        tools=(yt) ;;
+    instagram.com|x.com|twitter.com|reddit.com|*.reddit.com|redd.it|imgur.com|pixiv.net|pinterest.*|*.tumblr.com|tumblr.com|deviantart.com|artstation.com|bsky.app|imgbox.com|flickr.com|catbox.moe)
+        tools=(gallery) ;;
+    *)  tools=(yt gallery) ;;
+esac
+# Yerel ek liste (repoda değil): her satır bir gallery-dl alan adı deseni, ör. "*.example.com"
+EXTRA="${XDG_CONFIG_HOME:-$HOME/.config}/dot-grab/gallery-domains"
+if [ "${tools[*]}" != gallery ] && [ -f "$EXTRA" ]; then
+    while IFS= read -r pat; do
+        pat="${pat%%#*}"; pat="${pat//[[:space:]]/}"
+        [ -n "$pat" ] || continue
+        # shellcheck disable=SC2053
+        [[ $host == $pat ]] && { tools=(gallery); break; }
+    done <"$EXTRA"
+fi
+
+mkdir -p "$LOG_DIR" "$VIDEO_DIR" "$GALLERY_DIR"
+log="$LOG_DIR/$(date +%Y%m%d-%H%M%S)-${host//[^A-Za-z0-9.]/_}.log"
+nid="$(notify-send -a Grab -p "İndiriliyor…" "$host" 2>/dev/null || true)"
+replace=(); [ -n "$nid" ] && replace=(-r "$nid")
+
+run_yt() {
+    dir="$VIDEO_DIR"
+    yt-dlp --no-playlist --newline --no-progress \
+        -f "bv*+ba/b" -S "res:1080" --merge-output-format mp4 --embed-metadata \
+        --js-runtimes node "${cookie_args[@]}" \
+        -o "$VIDEO_DIR/%(title).150B [%(id)s].%(ext)s" \
+        --no-simulate --print after_move:filepath "$url"
+}
+run_gallery() {
+    dir="$GALLERY_DIR"
+    gallery-dl "${cookie_args[@]}" -d "$GALLERY_DIR" "$url"
+}
+
+ok=0 used=""
+for t in "${tools[@]}"; do
+    used="$t"
+    echo "== $t: $url" >>"$log"
+    if [ "$t" = yt ]; then out="$(run_yt 2>>"$log" | tee -a "$log")"; rc=$?
+    else out="$(run_gallery 2>>"$log" | tee -a "$log")"; rc=$?; fi
+    # gallery-dl hiçbir şey indirmediyse (zaten varsa '# ' önekli satır yazar) bunu da başarı say
+    if [ $rc -eq 0 ]; then ok=1; break; fi
+done
+
+if [ $ok -eq 1 ]; then
+    count="$(printf '%s\n' "$out" | grep -c . || true)"
+    name="$(basename "$(printf '%s\n' "$out" | tail -1 | sed 's/^# //')")"
+    msg="$name"; [ "$count" -gt 1 ] && msg="$count dosya — son: $name"
+    [ "$count" -eq 0 ] && msg="Yeni dosya yok (zaten indirilmiş olabilir)"
+    act="$(notify-send -a Grab "${replace[@]}" -A open="Klasörü aç" "Bitti ($([ "$used" = yt ] && echo yt-dlp || echo gallery-dl))" "$msg" 2>/dev/null || true)"
+    [ "$act" = open ] && xdg-open "$dir" >/dev/null 2>&1 &
+    exit 0
+fi
+
+err="$(grep -E 'ERROR|\[error\]' "$log" | tail -1 | cut -c1-200)"
+act="$(notify-send -a Grab -u critical "${replace[@]}" -A log="Logu aç" "İndirilemedi: $host" "${err:-ayrıntılar logda}" 2>/dev/null || true)"
+[ "$act" = log ] && xdg-open "$log" >/dev/null 2>&1 &
+exit 1

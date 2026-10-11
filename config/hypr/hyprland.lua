@@ -313,6 +313,8 @@ hl.bind(mainMod .. " + escape", hl.dsp.exec_cmd("dot-shell session"))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
 hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("dot-shell bar"))
+hl.bind(mainMod .. " + SHIFT + D", hl.dsp.exec_cmd("dot-grab"))         -- Zen odaktaysa sekmeyi, değilse panodaki linki yt-dlp/gallery-dl ile indir
+hl.bind(mainMod .. " + CTRL + D", hl.dsp.exec_cmd("dot-grab --clip"))   -- her zaman panodaki link
 
 -- Klavyede Print yok: Insert ekran goruntusu. Shift+Insert bos (terminal yapistirma).
 hl.bind("Insert", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))
