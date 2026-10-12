@@ -1,0 +1,13 @@
+{
+  "id": "dotSend",
+  "name": "Telefona Gönder",
+  "description": "Sol tık: dosya seç, KDE Connect ile telefona yolla. Sağ tık: LocalSend (dot-send).",
+  "version": "0.1.0",
+  "author": "Ege",
+  "type": "widget",
+  "capabilities": ["dankbar-widget"],
+  "component": "./SendWidget.qml",
+  "icon": "smartphone",
+  "requires_dms": ">=1.0.0",
+  "permissions": ["process"]
+}

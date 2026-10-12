@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# dot-send — dosyaları KDE Connect ile telefona yollar; LocalSend diğer cihazlar için arka planda.
+# Bar eklentisi: config/DankMaterialShell/plugins/dotSend (sol tık yolla, sağ tık LocalSend).
+# Gerekli: kdeconnect (telefon eşleşmiş olmalı), zenity, libnotify, LocalSend Flatpak. (12.10.2026)
+# Kullanım: dot-send [DOSYA...]   dosya yoksa seçici açılır
+#           dot-send status        bar için JSON durum
+#           dot-send localsend     LocalSend penceresini aç
+set -u -o pipefail
+
+LOCALSEND_APP="org.localsend.localsend_app"
+
+notify() { notify-send -a "Dosya gönder" -i phone "$@"; }
+
+# Erişilebilir ilk eşleşmiş cihaz: "id ad" satırı
+device() {
+  kdeconnect-cli -a --id-name-only 2>/dev/null | head -n1
+}
+
+status() {
+  local line id="" name="" paired="" ls=false
+  line=$(device)
+  if [[ -n $line ]]; then
+    id=${line%% *}; name=${line#* }
+  else
+    paired=$(kdeconnect-cli -l --name-only 2>/dev/null | head -n1)
+  fi
+  systemctl --user is-active --quiet localsend.service && ls=true
+  python3 -c 'import json,sys; print(json.dumps({"reachable": bool(sys.argv[1]), "device": sys.argv[2] or sys.argv[3], "paired": bool(sys.argv[2] or sys.argv[3]), "localsend": sys.argv[4] == "true"}))' \
+    "$id" "$name" "$paired" "$ls"
+}
+
+send() {
+  local line id name ok=0 fail=0 f
+  line=$(device)
+  if [[ -z $line ]]; then
+    kdeconnect-cli --refresh >/dev/null 2>&1
+    sleep 2
+    line=$(device)
+  fi
+  if [[ -z $line ]]; then
+    notify "Telefon bulunamadı" "KDE Connect'te eşleşmiş ve aynı ağda bir cihaz yok. LocalSend açılıyor."
+    open_localsend
+    return 1
+  fi
+  id=${line%% *}; name=${line#* }
+  for f in "$@"; do
+    if [[ -f $f ]] && kdeconnect-cli -d "$id" --share "$(realpath -- "$f")" >/dev/null 2>&1; then
+      ((ok++))
+    else
+      ((fail++))
+    fi
+  done
+  if ((fail)); then
+    notify "Gönderim yarım kaldı" "$name: $ok gitti, $fail gitmedi."
+    return 1
+  fi
+  notify "$name cihazına gönderildi" "$ok dosya"
+}
+
+open_localsend() {
+  flatpak run "$LOCALSEND_APP" >/dev/null 2>&1 &
+  disown
+}
+
+case ${1:-} in
+  status) status ;;
+  localsend) open_localsend ;;
+  -h|--help) sed -n 2,7p "$0" | sed 's/^# \{0,1\}//' ;;
+  "")
+    mapfile -t files < <(zenity --file-selection --multiple --separator=$'\n' --title="Telefona gönder" 2>/dev/null)
+    ((${#files[@]})) || exit 0
+    send "${files[@]}"
+    ;;
+  *) send "$@" ;;
+esac

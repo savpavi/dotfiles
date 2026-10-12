@@ -53,10 +53,13 @@ dot-theme reapply         # re-render the active theme
 | `dot-record` | Screen recording via Niri IPC + wf-recorder; the same command starts and stops |
 | `dot-presenter` | Toggle a drawing/spotlight overlay on the focused monitor |
 | `dot-quicklook FILE` | Quick Look-style preview through GNOME Sushi; bound to Space in Thunar, pressing again closes it |
+| `dot-send [FILE…]` | Send files to the paired phone over KDE Connect (file picker without arguments); bar widget `dotSend`: left click sends, right click opens LocalSend |
 | `dot-ocr` | Select a region, OCR it with Tesseract, copy the text |
 | `dot-webapp Name https://url` | Create a Helium web-app launcher (never overwrites) |
 | `dot-keys` | Keybinding overlay from DankMaterialShell, read live from the Hyprland config (Super+K); `--text` prints it |
 | `dot-askpass` | Zenity askpass helper for `sudo -A` |
+
+`dot-send` needs `kdeconnect` and `zenity`. LocalSend runs hidden in the tray through `extras/systemd/localsend.service` (copy to `~/.config/systemd/user/`, then `systemctl --user enable --now localsend.service`).
 
 `dot-quicklook` needs the `sushi` package. Append `extras/thunar/accels-quicklook.scm` to `~/.config/Thunar/accels.scm` while Thunar is closed to get the Space binding.
 

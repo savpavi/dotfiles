@@ -1,0 +1,16 @@
+[Unit]
+Description=LocalSend (arka planda, tepside)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+# Flatpak uygulamayı kendi scope'una taşır; servis durunca kendiliğinden kapanmaz.
+# Bu yüzden başlarken ve dururken açık kopyayı kapat, yoksa tek-kopya kilidine takılıp döngüye girer.
+ExecStartPre=-/usr/bin/flatpak kill org.localsend.localsend_app
+ExecStart=/usr/bin/flatpak run org.localsend.localsend_app --hidden
+ExecStopPost=-/usr/bin/flatpak kill org.localsend.localsend_app
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=graphical-session.target
