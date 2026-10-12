@@ -52,10 +52,13 @@ dot-theme reapply         # re-render the active theme
 | `dot-health` | Read-only desktop health report; never restarts or repairs anything |
 | `dot-record` | Screen recording via Niri IPC + wf-recorder; the same command starts and stops |
 | `dot-presenter` | Toggle a drawing/spotlight overlay on the focused monitor |
+| `dot-quicklook FILE` | Quick Look-style preview through GNOME Sushi; bound to Space in Thunar, pressing again closes it |
 | `dot-ocr` | Select a region, OCR it with Tesseract, copy the text |
 | `dot-webapp Name https://url` | Create a Brave web-app launcher (never overwrites) |
 | `dot-keys` | Searchable keybinding list |
 | `dot-askpass` | Zenity askpass helper for `sudo -A` |
+
+`dot-quicklook` needs the `sushi` package. Append `extras/thunar/accels-quicklook.scm` to `~/.config/Thunar/accels.scm` while Thunar is closed to get the Space binding.
 
 `dot-grab` needs `yt-dlp[default]` (for YouTube's JS challenge) and `gallery-dl`, e.g. via `uv tool install`. Extra gallery-dl domains can be listed one per line in `~/.config/dot-grab/gallery-domains`, outside the repo.
 

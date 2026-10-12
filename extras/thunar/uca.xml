@@ -2,11 +2,11 @@
 <actions>
 <action>
 	<icon>utilities-terminal</icon>
-	<name>Ghostty ile aç</name>
+	<name>Kitty ile aç</name>
 	<submenu></submenu>
 	<unique-id>1788019763204830-1</unique-id>
-	<command>ghostty --working-directory=%f</command>
-	<description>Seçilen klasörde Ghostty terminalini aç</description>
+	<command>kitty --directory=%f</command>
+	<description>Seçilen klasörde Kitty terminalini aç</description>
 	<range></range>
 	<patterns>*</patterns>
 	<startup-notify/>
@@ -95,6 +95,19 @@
     <command>/home/savpavi/dotfiles/bin/dot-desktop resolve %F</command>
     <description>Görüntüyü kopyalar, sesi PCM yapar; ayrı MOV oluşturur</description>
     <patterns>*.mp4;*.mkv;*.mov;*.avi;*.MP4;*.MKV;*.MOV;*.AVI</patterns>
+    <video-files/>
+  </action>
+  <action>
+    <icon>view-preview</icon>
+    <name>Hızlı önizleme</name>
+    <unique-id>thunar-quicklook-sushi</unique-id>
+    <command>/home/savpavi/dotfiles/bin/dot-quicklook %f</command>
+    <description>Seçili dosyayı Sushi ile önizle (Quick Look)</description>
+    <patterns>*</patterns>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
     <video-files/>
   </action>
 </actions>

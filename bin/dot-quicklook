@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# dot-quicklook — dosyayı GNOME Sushi ile önizle (macOS Quick Look benzeri).
+# Thunar'da Space'e bağlı; aynı dosyada tekrar çağrılınca pencereyi kapatır.
+# Gerekli: sushi (Sushi 50+: org.gnome.NautilusPreviewer2 arayüzü)
+set -euo pipefail
+[[ $# -ge 1 ]] || { echo "kullanım: dot-quicklook DOSYA" >&2; exit 1; }
+uri=$(python3 -c 'import pathlib,sys; print(pathlib.Path(sys.argv[1]).resolve().as_uri())' "$1")
+exec dbus-send --session --print-reply=literal --dest=org.gnome.NautilusPreviewer \
+  /org/gnome/NautilusPreviewer org.gnome.NautilusPreviewer2.ShowFile \
+  string:"$uri" string:"" boolean:true string:""
