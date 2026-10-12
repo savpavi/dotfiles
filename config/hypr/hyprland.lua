@@ -297,6 +297,7 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind("ALT + SPACE", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("dot-shell clipboard"))  -- pano geçmişi aktif shell'de
+hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("espanso cmd search"))  -- Espanso snippet araması; kendi Alt+Space'i launcher'la çakışıyordu, kapalı
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("gtk-launch app.zen_browser.zen"))
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("/home/savpavi/.local/bin/start-windows-looking-glass"))
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("flatpak run com.spotify.Client"))
