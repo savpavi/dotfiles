@@ -31,6 +31,12 @@
     { "type": "uptime", "key": "│ 󰅐  Açık      │ ", "keyColor": "yellow" },
     {
       "type": "command",
+      "key": "│ 󰃭  Kurulum   │ ",
+      "keyColor": "yellow",
+      "text": "b=$(stat -c %W /); d=$(( ($(date +%s) - b) / 86400 )); printf '%s (%d gün önce)' \"$(LC_TIME=tr_TR.UTF-8 date -d @$b '+%-d %B %Y')\" $d"
+    },
+    {
+      "type": "command",
       "key": "│ 󰍹  VM        │ ",
       "keyColor": "cyan",
       "text": "state=$(LC_ALL=C timeout 2s virsh -c qemu:///system domstate EGE-Windows11 2>/dev/null) || { printf 'Bilinmiyor'; exit 0; }; case \"$state\" in running) printf 'Açık';; \"shut off\") printf 'Kapalı';; paused) printf 'Duraklatılmış';; pmsuspended) printf 'Askıda';; *) printf 'Bilinmiyor';; esac"
