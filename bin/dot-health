@@ -28,7 +28,7 @@ checks = [
  ('Kayıt durumu', ['dot-record', '--status']),
 ]
 results = [check(label,args) for label,args in checks]
-for name in ('satty','slurp','wf-recorder','ffprobe','lazygit','brave-origin'):
+for name in ('satty','slurp','wf-recorder','ffprobe','lazygit','helium'):
     path=shutil.which(name)
     print(f'{"OK" if path else "EKSİK":8} {name}: {path or "bulunamadı"}')
     results.append(bool(path))

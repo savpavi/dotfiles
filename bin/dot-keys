@@ -1,49 +1,30 @@
 #!/usr/bin/env bash
-# Kısayol rehberini aranabilir bir listede gösterir.
+# Kısayol rehberi (SUPER + K).
 #
-#   dot-keys           hyprlauncher ile aranabilir liste (SUPER + K)
+#   dot-keys           DMS kısayol penceresini aç/kapat (canlı Hyprland config'i okur)
 #   dot-keys --text    terminale yazdır
 #
-# Kaynak: docs/hyprland-cheatsheet.md içindeki markdown tabloları.
+# Kaynak `dms keybinds show hyprland`: config'deki bind'lar ve yanlarındaki
+# yorumlar. docs/hyprland-cheatsheet.md artık elle tutulan eski rehber.
 set -uo pipefail
 
-DOT="${DOT_DIR:-$HOME/dotfiles}"
-SHEET="$DOT/docs/hyprland-cheatsheet.md"
-CFG="${XDG_CONFIG_HOME:-$HOME/.config}"
-
-[[ -f $SHEET ]] || { echo "rehber bulunamadı: $SHEET" >&2; exit 1; }
-
-# Markdown tablolarını "Bölüm │ Kısayol │ İşlev" satırlarına çevir
-flatten() {
-  awk -F'|' '
-    /^## / { section = substr($0, 4); next }
-    /^\|[[:space:]]*-+/ { next }                     # ayırıcı satır
-    /^\|/ {
-      key = $2; desc = $3
-      gsub(/^[[:space:]]+|[[:space:]]+$/, "", key)
-      gsub(/^[[:space:]]+|[[:space:]]+$/, "", desc)
-      gsub(/`/, "", key); gsub(/`/, "", desc)
-      if (key == "" || key == "Kısayol" || key == "Tuş") next
-      printf "%-22s  %-46s  %s\n", key, desc, section
-    }
-  ' "$SHEET"
+text() {
+  dms keybinds show hyprland | python3 -c '
+import json, sys
+data = json.load(sys.stdin)
+for section, binds in data.get("binds", {}).items():
+    for b in binds:
+        key, desc = b.get("key", ""), b.get("desc", "")
+        print(f"{key:<26}  {desc:<60}  {section}")
+'
 }
 
 if [[ ${1:-} == "--text" ]]; then
-  flatten
+  text
   exit 0
 fi
 
-# Burada seçim sonucu kullanılmıyor; liste yalnızca aranabilir şekilde gösteriliyor.
-# DOT_MENU=rofi ile eski davranışa dönülür.
-ENGINE="${DOT_MENU:-hyprlauncher}"
-
-if [[ $ENGINE == hyprlauncher ]] && command -v hyprlauncher >/dev/null; then
-  flatten | hyprlauncher --dmenu --quiet >/dev/null 2>&1
-elif command -v rofi >/dev/null; then
-  flatten | rofi -dmenu -i -p "Kısayol" \
-      -theme "$CFG/rofi/config-short.rasi" >/dev/null 2>&1 \
-    || flatten | rofi -dmenu -i -p "Kısayol" >/dev/null
-else
-  flatten | less -R
+# DMS çalışmıyorsa (ör. dot-shell switch ile Noctalia açıksa) listeyi terminalde göster.
+if ! dms ipc call keybinds toggle hyprland >/dev/null 2>&1; then
+  exec kitty --class dot-keys -e sh -c 'dot-keys --text | less -S'
 fi

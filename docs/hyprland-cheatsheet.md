@@ -1,6 +1,7 @@
 # Hyprland Kısayol Rehberi
 
-`SUPER` = Windows tuşu. Aramak için `SUPER + K`.
+`SUPER` = Windows tuşu. Güncel liste: `SUPER + K` (DMS kısayol penceresi, config'i canlı okur).
+Bu dosya elle tutulan eski rehberdir; config ile farklı olabilir.
 
 ## Uygulamalar
 
@@ -107,7 +108,7 @@ kullanır). Eski davranış için: `DOT_MENU=rofi dot-theme menu`.
 
 | Kısayol | İşlev |
 |---|---|
-| `SUPER + K` | Bu rehberi aç (aranabilir) |
+| `SUPER + K` | Kısayol penceresini aç (DMS) |
 | `SUPER + L` | Ekranı kilitle |
 | `SUPER + Escape` | Çıkış menüsünü aç |
 | `SUPER + M` | Hyprland kapatma/çıkış işlemini başlat |

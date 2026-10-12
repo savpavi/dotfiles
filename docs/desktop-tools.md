@@ -12,7 +12,7 @@
 | Super+Shift+S | Türkçe Niri kısayol rehberi |
 | Super+Ctrl+H | Kitty'de salt okunur masaüstü sağlık raporu |
 | Super+Ctrl+G | Dotfiles reposunu Lazygit'te aç |
-| Alt+Space → Gemini / Claude | Brave uygulama penceresi aç |
+| Alt+Space → Gemini / Claude | Helium uygulama penceresi aç |
 
 ## Kayıt
 
@@ -32,7 +32,7 @@ Noctalia uygulama menüsü minimal liste düzenindedir: kategoriler, alt açıkl
 
 ## Web uygulamaları ve Lazygit
 
-`dot-webapp İsim https://adres` yeni Brave `.desktop` başlatıcısı üretir. Mevcut dosyanın üzerine yazmaz; yalnız HTTP/HTTPS kabul eder. Gemini ve Claude dosyaları `extras/applications/` içinde yedekli. Kullanıcı dizinine kopyaladıktan sonra `update-desktop-database ~/.local/share/applications` çalıştırılabilir. İki başlatıcı gerçek Brave oturumunda ayrı uygulama penceresi olarak doğrulandı.
+`dot-webapp İsim https://adres` yeni Helium `.desktop` başlatıcısı üretir. Mevcut dosyanın üzerine yazmaz; yalnız HTTP/HTTPS kabul eder. Gemini ve Claude dosyaları `extras/applications/` içinde yedekli. Kullanıcı dizinine kopyaladıktan sonra `update-desktop-database ~/.local/share/applications` çalıştırılabilir. İki başlatıcı Brave döneminde ayrı uygulama penceresi olarak doğrulandı; 12 Ekim 2026 itibarıyla Helium kullanılıyor.
 
 Lazygit 0.65.0, resmî GitHub release SHA256 listesiyle doğrulanıp `~/.local/bin/lazygit` konumuna kuruldu; RPM/COPR eklenmedi. Binary repoya eklenmez. Herhangi bir Git reposunda `lazygit` çalıştırılabilir. Gerçek Ghostty/TUI açılışı görsel doğrulandı.
 

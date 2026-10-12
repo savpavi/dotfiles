@@ -289,54 +289,55 @@ hl.gesture({
 local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 
 -- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
-hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
-local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
+hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))  -- Terminal (Kitty)
+local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())  -- Pencereyi kapat
 -- closeWindowBind:set_enabled(false)
 -- Super+M pencere duzeni: window-mode.lua; cikis Super+Escape menusunde.
-hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
-hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
-hl.bind("ALT + SPACE", hl.dsp.exec_cmd(menu))
-hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("dot-shell clipboard"))  -- pano geçmişi aktif shell'de
-hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("espanso cmd search"))  -- Espanso snippet araması; kendi Alt+Space'i launcher'la çakışıyordu, kapalı
-hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("gtk-launch app.zen_browser.zen"))
-hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("/home/savpavi/.local/bin/start-windows-looking-glass"))
-hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("flatpak run com.spotify.Client"))
-hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("flatpak run org.telegram.desktop"))
-hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("flatpak run org.mozilla.thunderbird_esr"))
-hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("flatpak run com.discordapp.Discord"))
-hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd("zed"))
-hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("flatpak run md.obsidian.Obsidian"))
-hl.bind(mainMod .. " + N", hl.dsp.window.move({ workspace = "special:minimized" }))
-hl.bind(mainMod .. " + SHIFT + N", hl.dsp.workspace.toggle_special("minimized"))
-hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" }))
-hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))
-hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("dot-shell lock"))
-hl.bind(mainMod .. " + escape", hl.dsp.exec_cmd("dot-shell session"))
-hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
-hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
-hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("dot-shell bar"))
-hl.bind(mainMod .. " + SHIFT + D", hl.dsp.exec_cmd("dot-grab"))         -- Zen odaktaysa sekmeyi, değilse panodaki linki yt-dlp/gallery-dl ile indir
-hl.bind(mainMod .. " + CTRL + D", hl.dsp.exec_cmd("dot-grab --clip"))   -- her zaman panodaki link
-hl.bind(mainMod .. " + SHIFT + space", hl.dsp.exec_cmd('dms ipc call launcher toggleQuery "dig "'))  -- DigUp: dosyaları içeriğine göre ara (~/Projects/DigUp/linux)
+hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))  -- Dosya yöneticisi (Thunar)
+hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))  -- Pencereyi serbest/döşeli yap
+hl.bind("ALT + SPACE", hl.dsp.exec_cmd(menu))  -- Uygulama başlatıcı
+hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("dot-shell clipboard"))  -- Pano geçmişi
+hl.bind(mainMod .. " + K", hl.dsp.exec_cmd("dot-keys"))  -- Kısayol penceresi
+hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("espanso cmd search"))  -- Espanso snippet araması
+hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("gtk-launch app.zen_browser.zen"))  -- Tarayıcı (Zen)
+hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("/home/savpavi/.local/bin/start-windows-looking-glass"))  -- Windows VM (Looking Glass)
+hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("flatpak run com.spotify.Client"))  -- Spotify
+hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("flatpak run org.telegram.desktop"))  -- Telegram
+hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("flatpak run org.mozilla.thunderbird_esr"))  -- Thunderbird (mail/takvim)
+hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("flatpak run com.discordapp.Discord"))  -- Discord
+hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd("zed"))  -- Zed editör
+hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("flatpak run md.obsidian.Obsidian"))  -- Obsidian
+hl.bind(mainMod .. " + N", hl.dsp.window.move({ workspace = "special:minimized" }))  -- Pencereyi küçült (gizli alana at)
+hl.bind(mainMod .. " + SHIFT + N", hl.dsp.workspace.toggle_special("minimized"))  -- Küçültülen pencereleri göster/gizle
+hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" }))  -- Pencereyi büyüt
+hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" }))  -- Tam ekran
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("dot-shell lock"))  -- Ekranı kilitle
+hl.bind(mainMod .. " + escape", hl.dsp.exec_cmd("dot-shell session"))  -- Oturum menüsü (kapat/yeniden başlat)
+hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())  -- Sahte döşeme (pseudo)
+hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))  -- Bölme yönünü değiştir
+hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("dot-shell bar"))  -- Barı göster/gizle
+hl.bind(mainMod .. " + SHIFT + D", hl.dsp.exec_cmd("dot-grab"))  -- İndir: Zen sekmesi ya da panodaki link
+hl.bind(mainMod .. " + CTRL + D", hl.dsp.exec_cmd("dot-grab --clip"))  -- İndir: panodaki link
+hl.bind(mainMod .. " + SHIFT + space", hl.dsp.exec_cmd('dms ipc call launcher toggleQuery "dig "'))  -- DigUp: dosya içeriğinde ara
 
 -- Klavyede Print yok: Insert ekran goruntusu. Shift+Insert bos (terminal yapistirma).
-hl.bind("Insert", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))
-hl.bind("Print", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))
-hl.bind("SHIFT + Print", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))
+hl.bind("Insert", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))  -- Ekran görüntüsü (Flameshot)
+hl.bind("Print", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))  -- Ekran görüntüsü (Flameshot)
+hl.bind("SHIFT + Print", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))  -- Ekran görüntüsü (Flameshot)
 
 -- Move focus with mainMod + arrow keys
-hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
-hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
-hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))
-hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))
+hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))  -- Odak: sol pencere
+hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))  -- Odak: sağ pencere
+hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }))  -- Odak: üst pencere
+hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }))  -- Odak: alt pencere
 
-hl.bind(mainMod .. " + SHIFT + left",  hl.dsp.window.move({ monitor = "l", follow = true }))
-hl.bind(mainMod .. " + SHIFT + right", hl.dsp.window.move({ monitor = "r", follow = true }))
+hl.bind(mainMod .. " + SHIFT + left",  hl.dsp.window.move({ monitor = "l", follow = true }))  -- Pencereyi sol ekrana taşı
+hl.bind(mainMod .. " + SHIFT + right", hl.dsp.window.move({ monitor = "r", follow = true }))  -- Pencereyi sağ ekrana taşı
 
-hl.bind(mainMod .. " + CTRL + left",  hl.dsp.window.resize({ x = -40, y = 0, relative = true }), { repeating = true })
-hl.bind(mainMod .. " + CTRL + right", hl.dsp.window.resize({ x = 40,  y = 0, relative = true }), { repeating = true })
-hl.bind(mainMod .. " + CTRL + up",    hl.dsp.window.resize({ x = 0, y = 40,  relative = true }), { repeating = true })
-hl.bind(mainMod .. " + CTRL + down",  hl.dsp.window.resize({ x = 0, y = -40, relative = true }), { repeating = true })
+hl.bind(mainMod .. " + CTRL + left",  hl.dsp.window.resize({ x = -40, y = 0, relative = true }), { repeating = true })  -- Pencereyi daralt
+hl.bind(mainMod .. " + CTRL + right", hl.dsp.window.resize({ x = 40,  y = 0, relative = true }), { repeating = true })  -- Pencereyi genişlet
+hl.bind(mainMod .. " + CTRL + up",    hl.dsp.window.resize({ x = 0, y = 40,  relative = true }), { repeating = true })  -- Pencereyi uzat
+hl.bind(mainMod .. " + CTRL + down",  hl.dsp.window.resize({ x = 0, y = -40, relative = true }), { repeating = true })  -- Pencereyi kısalt
 
 -- Ekrana gore 1..9 ve Super+M davranisi ayri modulde.
 require("window-mode")
@@ -344,22 +345,22 @@ require("window-mode")
 require("tiling")
 
 -- Move/resize windows with mainMod + LMB/RMB and dragging
-hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
-hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
+hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })  -- Fareyle pencereyi taşı
+hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })  -- Fareyle pencereyi boyutlandır
 
 -- Multimedya tuslari (ses, mikrofon, parlaklik)
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("dot-shell vol-up"), { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("dot-shell vol-down"),      { locked = true, repeating = true })
-hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("dot-shell mute"),     { locked = true, repeating = true })
-hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),   { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"),                  { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"),                  { locked = true, repeating = true })
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("dot-shell vol-up"), { locked = true, repeating = true })  -- Sesi aç
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("dot-shell vol-down"),      { locked = true, repeating = true })  -- Sesi kıs
+hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("dot-shell mute"),     { locked = true, repeating = true })  -- Sesi kapat/aç
+hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),   { locked = true, repeating = true })  -- Mikrofonu kapat/aç
+hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"),                  { locked = true, repeating = true })  -- Parlaklığı artır
+hl.bind("XF86MonBrightnessDown",hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"),                  { locked = true, repeating = true })  -- Parlaklığı azalt
 
 -- Requires playerctl
-hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true })
-hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
-hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = true })
+hl.bind("XF86AudioNext",  hl.dsp.exec_cmd("playerctl next"),       { locked = true })  -- Sonraki parça
+hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })  -- Oynat/duraklat
+hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })  -- Oynat/duraklat
+hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),   { locked = true })  -- Önceki parça
 
 
 --------------------------------
@@ -439,11 +440,11 @@ hl.window_rule({
 
 -- Tema ve duvar kagidi (Theme Switcher eklentisi): tema = palet + duvar kagidi + uygulama renkleri.
 -- Duvar kagidi kisayollari yalniz aktif temanin gorselleri arasinda dolasir.
-hl.bind(mainMod .. " + ALT + S", hl.dsp.exec_cmd("dot-shell switch"))  -- Noctalia <-> DMS
-hl.bind(mainMod .. " + CTRL + SHIFT + space", hl.dsp.exec_cmd("dot-shell themes"))
-hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("dot-shell wallpapers"))
-hl.bind(mainMod .. " + CTRL + SHIFT + T", hl.dsp.exec_cmd("dot-shell random"))
-hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd("dot-shell settings"))
+hl.bind(mainMod .. " + ALT + S", hl.dsp.exec_cmd("dot-shell switch"))  -- Shell değiştir (DMS ↔ Noctalia)
+hl.bind(mainMod .. " + CTRL + SHIFT + space", hl.dsp.exec_cmd("dot-shell themes"))  -- Tema seç
+hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("dot-shell wallpapers"))  -- Duvar kağıdı seç
+hl.bind(mainMod .. " + CTRL + SHIFT + T", hl.dsp.exec_cmd("dot-shell random"))  -- Rastgele tema
+hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd("dot-shell settings"))  -- Shell ayarları
 
 -- Hide the XWayland screen-sharing helper (Hyprland wiki recommendation).
 hl.window_rule({
@@ -464,7 +465,7 @@ hl.window_rule({
 require("noctalia").apply_theme()
 
 -- Web uygulamasi ekle
-hl.bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd("/usr/bin/python3 /home/savpavi/.local/lib/webapp-maker/main.py"))
+hl.bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd("/usr/bin/python3 /home/savpavi/.local/lib/webapp-maker/main.py"))  -- Web uygulaması oluştur
 
 -- DMS Include Configs
 require("dms.layout")

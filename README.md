@@ -54,8 +54,8 @@ dot-theme reapply         # re-render the active theme
 | `dot-presenter` | Toggle a drawing/spotlight overlay on the focused monitor |
 | `dot-quicklook FILE` | Quick Look-style preview through GNOME Sushi; bound to Space in Thunar, pressing again closes it |
 | `dot-ocr` | Select a region, OCR it with Tesseract, copy the text |
-| `dot-webapp Name https://url` | Create a Brave web-app launcher (never overwrites) |
-| `dot-keys` | Searchable keybinding list |
+| `dot-webapp Name https://url` | Create a Helium web-app launcher (never overwrites) |
+| `dot-keys` | Keybinding overlay from DankMaterialShell, read live from the Hyprland config (Super+K); `--text` prints it |
 | `dot-askpass` | Zenity askpass helper for `sudo -A` |
 
 `dot-quicklook` needs the `sushi` package. Append `extras/thunar/accels-quicklook.scm` to `~/.config/Thunar/accels.scm` while Thunar is closed to get the Space binding.

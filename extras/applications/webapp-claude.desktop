@@ -2,8 +2,8 @@
 Type=Application
 Version=1.0
 Name=Claude
-Exec=brave-origin "--app=https://claude.ai/"
-Icon=brave-browser
+Exec=helium "--app=https://claude.ai/"
+Icon=helium
 Terminal=false
 Categories=Network;
 StartupNotify=true

@@ -18,7 +18,7 @@ Başka bir makinede ekran adlarını, çözünürlükleri ve kişisel yolları u
 
 Niri ve Noctalia yanında Ghostty, Thunar, `hyprpolkitagent.service`,
 `wl-paste` (wl-clipboard), cliphist, Solaar, wpctl ve playerctl çağrılır.
-Uygulama kısayolları Brave Origin, Zed ve şu Flatpak kimliklerini kullanır:
+Uygulama kısayolları Helium, Zed ve şu Flatpak kimliklerini kullanır:
 `com.spotify.Client`, `org.telegram.desktop`, `com.discordapp.Discord`,
 `md.obsidian.Obsidian`.
 

@@ -33,7 +33,7 @@ hl.on("config.reloaded", function()
     end
 end)
 
-hl.bind("SUPER + M", function()
+hl.bind("SUPER + M", function()  -- Bu alanı döşeli/serbest yap
     local ws = active_workspace()
     if not ws then return end
     tiled[ws.id] = not tiled[ws.id]
@@ -59,10 +59,10 @@ end
 
 for i = 1, 9 do
     local index = i
-    hl.bind("SUPER + " .. index, function()
+    hl.bind("SUPER + " .. index, function()  -- Çalışma alanına git (1-9)
         hl.dispatch(hl.dsp.focus({ workspace = workspace_base() + index }))
     end)
-    hl.bind("SUPER + SHIFT + " .. index, function()
+    hl.bind("SUPER + SHIFT + " .. index, function()  -- Pencereyi çalışma alanına gönder (1-9)
         hl.dispatch(hl.dsp.window.move({ workspace = workspace_base() + index, follow = false }))
     end)
 end
@@ -75,5 +75,5 @@ local function cycle_workspace(delta)
     hl.dispatch(hl.dsp.focus({ workspace = base + index }))
 end
 
-hl.bind("SUPER + mouse_down", function() cycle_workspace(1) end)
-hl.bind("SUPER + mouse_up", function() cycle_workspace(-1) end)
+hl.bind("SUPER + mouse_down", function() cycle_workspace(1) end)  -- Sonraki çalışma alanı
+hl.bind("SUPER + mouse_up", function() cycle_workspace(-1) end)  -- Önceki çalışma alanı
