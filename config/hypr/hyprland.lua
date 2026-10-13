@@ -20,22 +20,7 @@
 ---- MONITORS ----
 ------------------
 
--- See https://wiki.hypr.land/Configuring/Basics/Monitors/
-hl.monitor({
-    output   = "desc:ASUSTek COMPUTER INC XG27ACS",
-    mode     = "2560x1440@180",
-    position = "0x0",
-    scale    = 1,
-})
-
--- LG yatay kullaniliyor (transform 0). Dikey kullanilirsa transform = 1 (ters gelirse 3).
-hl.monitor({
-    output    = "desc:LG Electronics LG ULTRAGEAR",
-    mode      = "1920x1080@119.98",
-    position  = "2560x180",
-    scale     = 1,
-    transform = 0,          -- efektif alan: 1920x1080
-})
+-- Monitörler settings.json -> settings.lua içinde (ayarlar penceresi, Super+Alt+S; dosyanın sonunda yüklenir).
 
 -- Her ekranda bagimsiz 1..9: ic kimlikler ASUS 1..9, LG 11..19.
 for i = 1, 9 do
@@ -66,7 +51,7 @@ local menu        = "dot-shell launcher"
 -- Or execute your favorite apps at launch like this:
 --
 hl.on("hyprland.start", function ()
-  hl.exec_cmd("dms run")  -- varsayilan shell DMS (7 Eki 2026); Noctalia yedek: SUPER+ALT+S / dot-shell switch
+  -- shell: savpavi-shell user servisi (graphical-session.target ile başlar, 13 Eki 2026); DMS yedek: SUPER+ALT+S / dot-shell switch
   hl.exec_cmd("systemctl --user start hyprpolkitagent")  -- parola/yetki pencereleri
   hl.exec_cmd("hypridle")
   hl.exec_cmd("solaar --window=hide")  -- fare DPI/tekerlek ayarlari; Plasma'da xdg autostart yapiyor, Hyprland'da elle
@@ -83,11 +68,11 @@ hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
 hl.env("XCURSOR_THEME", "Nordzy-cursors")   -- siyah Nordzy (7 Eki 2026)
 hl.env("HYPRCURSOR_THEME", "Nordzy-hyprcursors")
--- Varsayilan terminal: Noctalia "terminalde ac" ve TERMINAL okuyan araclar icin.
+-- Varsayilan terminal: "terminalde ac" ve TERMINAL okuyan araclar icin.
 hl.env("TERMINAL", terminal)
 
 -- Qt uygulamalari (Dolphin, Okular, Ark...) renklerini qt6ct'den alir;
--- qt6ct renk dosyasini Noctalia yazar (scripts/sync-app-appearance.py).
+-- qt6ct renk dosyasini dot-shell-theme yazar (colors/savpavi.conf).
 -- Native Qt backend; UWSM de autostart oncesi export ediyor.
 hl.env("QT_QPA_PLATFORM", "wayland")
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
@@ -126,8 +111,8 @@ hl.config({
 
         border_size = 2,
 
-        -- Kenarlik renkleri burada degil: dosya sonundaki require("noctalia")
-        -- aktif Noctalia paletinden uygular (tema degisince otomatik).
+        -- Kenarlik renkleri burada degil: dosya sonundaki require("savpavi.colors")
+        -- aktif temadan uygular (dot-shell-theme yazar, tema degisince otomatik).
 
         -- Set to true to enable resizing windows by clicking and dragging on borders and gaps
         resize_on_border = false,
@@ -241,6 +226,8 @@ hl.config({
     misc = {
         force_default_wallpaper = 0,
         disable_hyprland_logo   = true,
+        -- kilit ekranı (savpavi-shell) çökerse yeniden başlatılan kilit oturumu devralabilsin
+        allow_session_lock_restore = true,
     },
 })
 
@@ -258,19 +245,11 @@ hl.config({
         kb_options = "",
         kb_rules   = "",
 
-        repeat_rate  = 35,
-        repeat_delay = 250,
-
+        -- tekrar hızı/gecikmesi, hassasiyet, doğal kaydırma: settings.json -> settings.lua
         follow_mouse = 1,
 
         -- Preserve high-resolution wheel events for Looking Glass/Wayland.
         emulate_discrete_scroll = 0,
-
-        sensitivity = 0, -- -1.0 - 1.0, 0 means no modification.
-
-        touchpad = {
-            natural_scroll = false,
-        },
     },
 })
 
@@ -318,7 +297,7 @@ hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))  -- Bölme yönünü de
 hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("dot-shell bar"))  -- Barı göster/gizle
 hl.bind(mainMod .. " + SHIFT + D", hl.dsp.exec_cmd("dot-grab"))  -- İndir: Zen sekmesi ya da panodaki link
 hl.bind(mainMod .. " + CTRL + D", hl.dsp.exec_cmd("dot-grab --clip"))  -- İndir: panodaki link
-hl.bind(mainMod .. " + SHIFT + space", hl.dsp.exec_cmd('dms ipc call launcher toggleQuery "dig "'))  -- DigUp: dosya içeriğinde ara
+hl.bind(mainMod .. " + SHIFT + space", hl.dsp.exec_cmd("dot-shell dig"))  -- DigUp: dosya içeriğinde ara
 
 -- Klavyede Print yok: Insert ekran goruntusu. Shift+Insert bos (terminal yapistirma).
 hl.bind("Insert", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))  -- Ekran görüntüsü (Flameshot)
@@ -438,13 +417,12 @@ hl.window_rule({
     float = true,
 })
 
--- Tema ve duvar kagidi (Theme Switcher eklentisi): tema = palet + duvar kagidi + uygulama renkleri.
+-- Tema ve duvar kagidi (dot-shell-theme): tema = palet + duvar kagidi + uygulama renkleri + imlec.
 -- Duvar kagidi kisayollari yalniz aktif temanin gorselleri arasinda dolasir.
-hl.bind(mainMod .. " + ALT + S", hl.dsp.exec_cmd("dot-shell switch"))  -- Shell değiştir (DMS ↔ Noctalia)
 hl.bind(mainMod .. " + CTRL + SHIFT + space", hl.dsp.exec_cmd("dot-shell themes"))  -- Tema seç
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("dot-shell wallpapers"))  -- Duvar kağıdı seç
 hl.bind(mainMod .. " + CTRL + SHIFT + T", hl.dsp.exec_cmd("dot-shell random"))  -- Rastgele tema
-hl.bind(mainMod .. " + comma", hl.dsp.exec_cmd("dot-shell settings"))  -- Shell ayarları
+hl.bind(mainMod .. " + ALT + S", hl.dsp.exec_cmd("dot-shell settings"))  -- Shell ayarları (DMS'e geçiş de burada)
 
 -- Hide the XWayland screen-sharing helper (Hyprland wiki recommendation).
 hl.window_rule({
@@ -460,16 +438,12 @@ hl.window_rule({
     opacity = 0.0,
 })
 
--- Noctalia renk sablonu (hyprland builtin template): kenarlik + grup renkleri.
--- Tema degisince Noctalia bu dosyayi yeniden yazar ve config'i reload eder.
-require("noctalia").apply_theme()
-
 -- Web uygulamasi ekle
 hl.bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd("/usr/bin/python3 /home/savpavi/.local/lib/webapp-maker/main.py"))  -- Web uygulaması oluştur
 
--- DMS Include Configs
-require("dms.layout")
-require("dms.binds")
-require("dms.binds-user")
-pcall(require, "dms.colors")  -- kenarlik renkleri DMS temasindan (noctalia.lua'yi ezer); uretilen dosya, git disi
-pcall(require, "dms.cursor")  -- imlec: son secilen temanin imleci (dot-dms-theme -> DMS cursorSettings)
+-- savpavi-shell: ayarlar penceresinin yazdıkları (monitörler, düzen, klavye, özel kısayollar)
+-- + aktif temanın kenarlık renkleri ve imleci
+require("settings")
+pcall(require, "user-binds")
+pcall(require, "savpavi.colors")  -- kenarlik renkleri (dot-shell-theme uretir, git disi)
+pcall(require, "savpavi.cursor")  -- imlec (dot-shell-theme uretir, git disi)

@@ -1,48 +1,55 @@
 #!/usr/bin/env bash
-# Aktif shell'e (Noctalia veya DankMaterialShell) göre ortak kısayol eylemleri.
+# Aktif shell'e (savpavi-shell ya da yedek DankMaterialShell) göre ortak kısayol eylemleri.
 # Kullanım: dot-shell <eylem>   — eylemler aşağıdaki case bloklarında.
 set -u
 
 action=${1:-}
 if [[ -z $action ]]; then
-  echo "kullanım: dot-shell <launcher|clipboard|lock|session|bar|vol-up|vol-down|mute|themes|wallpapers|random|settings|switch>" >&2
+  echo "kullanım: dot-shell <launcher|dig|clipboard|lock|session|bar|vol-up|vol-down|mute|themes|wallpapers|random|settings|switch>" >&2
   exit 2
 fi
 
 if [[ $action == switch ]]; then
-  # Noctalia <-> DMS geçişi
-  if pgrep -x noctalia >/dev/null; then
-    pkill -x noctalia
+  # savpavi-shell <-> DMS geçişi
+  if systemctl --user is-active -q savpavi-shell.service; then
+    systemctl --user stop savpavi-shell.service
     setsid -f dms run >/dev/null 2>&1
   else
     dms kill >/dev/null 2>&1
-    setsid -f noctalia >/dev/null 2>&1
+    systemctl --user start savpavi-shell.service
   fi
   exit 0
 fi
 
-if pgrep -x noctalia >/dev/null; then
-  n() { noctalia msg "$@"; }
-  ts="theblackdon/theme-switcher"
+# Her iki shell'de aynı olanlar
+case $action in
+  themes) exec dot-shell-theme pick ;;
+  random) exec dot-shell-theme wall ;;          # aktif temanın sıradaki duvar kağıdı
+esac
+
+savpavi="$HOME/dotfiles/config/savpavi-shell"
+if pgrep -f "qs -p $savpavi" >/dev/null; then
+  s() { qs -p "$savpavi" ipc call "$@"; }
   case $action in
-    launcher)   n panel-toggle launcher ;;
-    clipboard)  n panel-toggle clipboard ;;
-    lock)       n session lock ;;
-    session)    n panel-toggle session ;;
-    bar)        n bar-toggle ;;
-    vol-up)     n volume-up 5 ;;
-    vol-down)   n volume-down 5 ;;
-    mute)       n volume-mute ;;
-    themes)     n panel-toggle "$ts:carousel" ;;
-    wallpapers) n panel-toggle "$ts:wallpapers" ;;
-    random)     n plugin "$ts:wallpaper-ipc" all random ;;
-    settings)   n settings-toggle ;;
+    launcher)   s launcher toggle ;;
+    dig)        s launcher open "dig " ;;
+    clipboard)  s launcher clipboard ;;
+    lock)       s lock lock ;;
+    session)    s session toggle ;;
+    bar)        s bar toggle ;;
+    wallpapers) s wallpapers toggle ;;
+    settings)   s settings toggle ;;
+    # OSD varsayılan çıkışı kendisi izliyor; burada yalnız ses değişir
+    vol-up)     wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+ ;;
+    vol-down)   wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- ;;
+    mute)       wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
     *) echo "bilinmeyen eylem: $action" >&2; exit 2 ;;
   esac
 else
   d() { dms ipc call "$@"; }
   case $action in
     launcher)   d spotlight toggle ;;
+    dig)        d launcher toggleQuery "dig " ;;
     clipboard)  d clipboard toggle ;;
     lock)       d lock lock ;;
     session)    d powermenu toggle ;;
@@ -50,9 +57,7 @@ else
     vol-up)     d audio increment 5 ;;
     vol-down)   d audio decrement 5 ;;
     mute)       d audio mute ;;
-    themes)     dot-dms-theme pick ;;        # Noctalia theme-switcher temaları
     wallpapers) d dankdash wallpaper ;;
-    random)     dot-dms-theme wall ;;        # aktif temanın sıradaki duvar kağıdı
     settings)   d settings toggle ;;
     *) echo "bilinmeyen eylem: $action" >&2; exit 2 ;;
   esac

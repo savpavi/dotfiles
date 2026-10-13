@@ -1,0 +1,311 @@
+{
+  "themes": [
+    {
+      "id": "dwm-catppuccin",
+      "title": "Catppuccin",
+      "palette": "DWM Catppuccin",
+      "mode": "dark",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/omarchy/catppuccin/backgrounds/1-totoro.webp",
+        "/home/savpavi/Pictures/wallpapers/omarchy/catppuccin/backgrounds/3-blue-eye.webp",
+        "/home/savpavi/Pictures/wallpapers/omarchy/catppuccin/backgrounds/omarchy.webp",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/Catppuccin/Abstract & Artistic/dark-waves.jpg",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/Catppuccin/Nature & Landscapes/blue-landscape.png",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/Catppuccin/Uncategorized/dominik-mayer-8.jpg",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/Catppuccin/Urban & Architecture/venice-market.png",
+        "/home/savpavi/Pictures/wallpapers/catppuccin-mocha/haunted-house.jpg",
+        "/home/savpavi/Pictures/wallpapers/catppuccin-mocha/majo-no-tabitabi.jpg",
+        "/home/savpavi/Pictures/wallpapers/catppuccin-mocha/pixel-alley.png",
+        "/home/savpavi/Pictures/wallpapers/catppuccin-mocha/ruins.jpg",
+        "/home/savpavi/Pictures/wallpapers/catppuccin-mocha/satellite.png"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-catppuccin-latte",
+      "title": "Catppuccin Latte",
+      "palette": "DWM Catppuccin",
+      "mode": "light",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/omarchy/catppuccin-latte/backgrounds/omarchy.webp",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/minimal/a_cartoon_of_trees_on_a_hill_01.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/minimal/a_city_skyline_with_a_pink_sky.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/minimal/a_drawing_of_a_bear_and_a_campfire.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/minimal/a_landscape_of_mountains_and_a_sunset_02.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/minimal/a_landscape_of_mountains_with_a_pink_and_blue_sky.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/minimal/a_snow_covered_land_with_orange_and_white_colors.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/minimal/a_train_crossing_a_bridge_over_a_bridge_with_mountains_in_the_background.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/minimal/a_video_game_screen_of_a_video_game_01.jpg"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-dracula",
+      "title": "Dracula",
+      "palette": "DWM Dracula",
+      "mode": "dark",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/aesthetic-wallpapers/images/waves_dracula_flipped.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/outrun/a_astronaut_walking_through_a_doorway.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/outrun/a_city_at_night_with_a_fence_and_buildings.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/outrun/a_city_skyline_with_a_sunset_in_the_background.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/outrun/a_gas_station_with_purple_lights.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/outrun/a_group_of_flowers_on_a_black_background.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/outrun/a_group_of_palm_trees.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/outrun/a_person's_feet_in_a_car.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/outrun/a_person_wearing_headphones.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/outrun/a_skeleton_with_a_skull_and_arms.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/outrun/a_sports_car_with_neon_lights.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/outrun/a_street_with_buildings_and_signs.png"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-everforest",
+      "title": "Everforest",
+      "palette": "DWM Everforest",
+      "mode": "dark",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nature/a_beach_with_waves_and_cliffs.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nature/a_beach_with_waves_and_rocks.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nature/a_body_of_water_with_a_lit_up_tower_in_the_middle.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nature/a_close_up_of_a_plant.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nature/a_close_up_of_pink_flowers.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nature/a_group_of_fish_swimming_in_a_pond.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nature/a_lake_with_snow_covered_mountains_in_the_background.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nature/a_rocky_beach_with_water_in_the_background.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nature/a_waterfall_over_rocks.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nature/waves_crashing_waves_on_rocks.jpg"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-gruvbox",
+      "title": "Gruvbox",
+      "palette": "DWM Gruvbox",
+      "mode": "dark",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/omarchy/gruvbox/backgrounds/2-flower-basket.webp",
+        "/home/savpavi/Pictures/wallpapers/omarchy/gruvbox/backgrounds/3-village-square.jpg",
+        "/home/savpavi/Pictures/wallpapers/omarchy/gruvbox/backgrounds/4-idyllic-procession.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/gruvbox/a_cat_mask_with_gold_and_blue_accents.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/gruvbox/a_fish_swimming_in_water.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/gruvbox/a_mountain_range_with_snow.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/gruvbox/a_street_with_buildings_and_a_street_lamp.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/gruvbox/a_view_of_a_city_from_a_window.jpg",
+        "/home/savpavi/Pictures/wallpapers/gruvbox-wallpapers/wallpapers/minimalistic/gruv-kanji.png",
+        "/home/savpavi/Pictures/wallpapers/gruvbox-wallpapers/wallpapers/minimalistic/gruv-samurai-cyberpunk2077.png",
+        "/home/savpavi/Pictures/wallpapers/gruvbox-wallpapers/wallpapers/minimalistic/rocket.png",
+        "/home/savpavi/Pictures/wallpapers/gruvbox-wallpapers/wallpapers/minimalistic/zelda_botw.png"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-gruvbox-light",
+      "title": "Gruvbox Light",
+      "palette": "DWM Gruvbox",
+      "mode": "light",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/gruvbox-wallpapers/wallpapers/minimalistic/gruv-samurai-cyberpunk2077.png",
+        "/home/savpavi/Pictures/wallpapers/gruvbox-wallpapers/wallpapers/minimalistic/gruv-understand.png",
+        "/home/savpavi/Pictures/wallpapers/gruvbox-wallpapers/wallpapers/minimalistic/gruvbox_spac.jpg",
+        "/home/savpavi/Pictures/wallpapers/gruvbox-wallpapers/wallpapers/minimalistic/husky.png",
+        "/home/savpavi/Pictures/wallpapers/gruvbox-wallpapers/wallpapers/minimalistic/light/gruv-buildings.png",
+        "/home/savpavi/Pictures/wallpapers/gruvbox-wallpapers/wallpapers/minimalistic/tetris_gruvbox_brighter_lighter.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/gruvbox/a_cartoon_of_a_man_standing_in_space.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/gruvbox/a_cartoon_of_a_person_sitting_on_a_wolf.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/gruvbox/a_close_up_of_a_circuit_board.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/gruvbox/a_cup_of_coffee_on_a_table.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/gruvbox/a_logo_of_mountains_and_sun.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/gruvbox/a_skull_with_spikes_on_it.jpg"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-monochrome",
+      "title": "Monochrome",
+      "palette": "DWM Monochrome",
+      "mode": "dark",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/omarchy/matte-black/backgrounds/1-dark-waters.webp",
+        "/home/savpavi/Pictures/wallpapers/omarchy/matte-black/backgrounds/2-dot-hands.webp",
+        "/home/savpavi/Pictures/wallpapers/omarchy/matte-black/backgrounds/omarchy.webp",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/monochrome/a_bird_flying_over_a_mountain.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/monochrome/a_black_and_white_building_with_a_fire_escape.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/monochrome/a_black_and_white_image_of_a_hill.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/monochrome/a_black_and_white_photo_of_clouds.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/monochrome/a_car_in_a_parking_garage.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/monochrome/a_close_up_of_a_black_surface.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/monochrome/a_dock_on_the_water.jpeg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/monochrome/a_mountain_with_snow_on_it.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/monochrome/birds_on_top_of_a_bus.jpg"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-nord",
+      "title": "Nord",
+      "palette": "DWM Nord",
+      "mode": "dark",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/Nord/Urban & Architecture/ign_manInStreet.png",
+        "/home/savpavi/Pictures/wallpapers/omarchy/nord/backgrounds/0-black-moon.jpg",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/Nord/Abstract & Artistic/ign_Wiravketto-2.png",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/Nord/Seasonal & Weather/ign_ChromeOSFire-2.png",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/Nord/Space & Cosmic/ign_ChromeOSEarth-1.png",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/Nord/Transportation/container_ship.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nord/a_person_standing_in_front_of_a_building.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nord/a_planet_in_the_sky.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/nord/a_view_of_earth_from_a_space_station.png",
+        "/home/savpavi/Pictures/wallpapers/nordic-wallpapers/wallpapers/ign_endeavour4.png",
+        "/home/savpavi/Pictures/wallpapers/nordic-wallpapers/wallpapers/ign_travelling.jpg",
+        "/home/savpavi/Pictures/wallpapers/nordic-wallpapers/wallpapers/ign_unsplash50.png"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-one-dark",
+      "title": "One Dark",
+      "palette": "DWM One Dark",
+      "mode": "dark",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/One Dark/Gaming (BOTW)/od_botw_z.png",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/One Dark/Minimal & Abstract/od_brush.png",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/One Dark/Programs & Apps/od_inkscape.png",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/One Dark/Space & Cosmic/od_discovery.png",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/One Dark/Technology & Retro/od_brain.jpeg",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/One Dark/Technology & Retro/od_current.png",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/One Dark/Uncategorized/od_nighthakws.png",
+        "/home/savpavi/Pictures/wallpapers/cozy-pixels/One Dark/Window Managers/od_i3.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cold/a_mountain_with_snow_on_it.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cold/a_snow_covered_houses_and_a_street_light.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cold/a_snowy_landscape_with_trees_and_a_light_on_it.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cold/a_train_tracks_in_a_foggy_day.jpg"
+      ],
+      "wallpaperIndex": 8
+    },
+    {
+      "id": "dwm-rose-pine",
+      "title": "Rose Pine",
+      "palette": "DWM Rose Pine",
+      "mode": "dark",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/omarchy/rose-pine/backgrounds/3-omarchy-plants.webp",
+        "/home/savpavi/Pictures/wallpapers/omarchy/rose-pine/backgrounds/omarchy.webp",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cherry/a_branch_with_pink_flowers.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cherry/a_branch_with_pink_flowers_01.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cherry/a_branch_with_pink_flowers_02.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cherry/a_branch_with_white_flowers.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cherry/a_close_up_of_a_branch_with_pink_flowers.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cherry/a_close_up_of_a_tree_branch_with_pink_flowers.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cherry/a_painting_of_a_tree_branch_with_pink_flowers.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cherry/a_tree_with_pink_flowers.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cherry/a_tree_with_white_flowers.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/cherry/a_white_flower_on_a_tree_branch.jpg"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-rose-pine-dawn",
+      "title": "Rose Pine Dawn",
+      "palette": "DWM Rose Pine",
+      "mode": "light",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/flowers/a_close_up_of_a_flower_01.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/flowers/a_close_up_of_a_flower_09.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/flowers/a_close_up_of_a_flower_11.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/flowers/a_close_up_of_a_plant.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/flowers/a_close_up_of_flowers.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/flowers/a_group_of_flowers_growing_out_of_a_rocky_area.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/flowers/a_group_of_pink_flowers.jpeg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/flowers/a_purple_flowers_growing_out_of_lily_pads_in_a_pond.jpg",
+        "/home/savpavi/Pictures/wallpapers/omarchy/rose-pine/backgrounds/3-omarchy-plants.webp",
+        "/home/savpavi/Pictures/wallpapers/omarchy/rose-pine/backgrounds/omarchy.webp"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-solarized",
+      "title": "Solarized",
+      "palette": "DWM Solarized",
+      "mode": "dark",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_blue_and_white_graphic_of_a_bird.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_blue_dragon_with_a_banner.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_blue_drawing_of_a_heart.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_cassette_tape_with_a_chain_and_a_chain.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_chain_from_a_ceiling.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_crane_with_a_light_on_top.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_graphic_design_with_a_bird_and_feathers.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_large_body_of_water_with_clouds_in_the_sky.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_moon_over_a_spaceship.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_planet_in_space_with_clouds.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_planet_in_the_sky.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_red_sun_over_mountains.jpg"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-solarized-light",
+      "title": "Solarized Light",
+      "palette": "DWM Solarized",
+      "mode": "light",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_blue_and_white_graphic_of_a_bird.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_blue_dragon_with_a_banner.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_blue_drawing_of_a_heart.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_cassette_tape_with_a_chain_and_a_chain.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_chain_from_a_ceiling.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_crane_with_a_light_on_top.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_graphic_design_with_a_bird_and_feathers.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_large_body_of_water_with_clouds_in_the_sky.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_moon_over_a_spaceship.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_planet_in_space_with_clouds.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_planet_in_the_sky.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/solarized/a_red_sun_over_mountains.jpg"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-tokyo-night",
+      "title": "Tokyo Night",
+      "palette": "DWM Tokyo Night",
+      "mode": "dark",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/omarchy/tokyo-night/backgrounds/1-quattro.webp",
+        "/home/savpavi/Pictures/wallpapers/omarchy/tokyo-night/backgrounds/4-omakub.webp",
+        "/home/savpavi/Pictures/wallpapers/omarchy/tokyo-night/backgrounds/5-oma-cityscape.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/digital/2paggfqi38aa1.webp",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/digital/a_colorful_sky_with_clouds.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/digital/a_foggy_mountain_with_trees.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/digital/a_group_of_trees_in_a_snowy_field.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/digital/a_man_standing_in_a_dark_place_with_a_large_circle_of_light.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/digital/a_night_sky_with_clouds_and_a_street_light.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/digital/a_person_walking_on_a_road_with_power_lines_and_wires.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/digital/s61f586j38aa1.webp",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/digital/x0zoaiwl38aa1.webp"
+      ],
+      "wallpaperIndex": 0
+    },
+    {
+      "id": "dwm-tokyo-night-day",
+      "title": "Tokyo Night Day",
+      "palette": "DWM Tokyo Night",
+      "mode": "light",
+      "wallpapers": [
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/aerial/a_aerial_view_of_a_snowy_mountain_range.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/aerial/a_beach_with_waves_crashing_on_the_shore.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/aerial/a_close_up_of_a_rock.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/aerial/a_road_surrounded_by_trees.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/aerial/a_rocky_beach_with_trees_and_water.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/aerial/a_swimming_pool_on_a_rocky_island.jpg",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/aerial/waves_crashing_on_rocks.png",
+        "/home/savpavi/Pictures/wallpapers/dharmx-walls/aerial/waves_crashing_waves_on_the_ocean.jpg",
+        "/home/savpavi/Pictures/wallpapers/omarchy/tokyo-night/backgrounds/1-quattro.webp",
+        "/home/savpavi/Pictures/wallpapers/omarchy/tokyo-night/backgrounds/4-omakub.webp",
+        "/home/savpavi/Pictures/wallpapers/omarchy/tokyo-night/backgrounds/5-oma-cityscape.jpg"
+      ],
+      "wallpaperIndex": 0
+    }
+  ]
+}

@@ -6,13 +6,13 @@ import qs.Widgets
 import qs.Modules.Plugins
 
 // Bar'da aktif tema; tıklayınca 15 DWM temasının listesi.
-// Veri ve uygulama: ~/dotfiles/bin/dot-dms-theme (json / apply / wall).
+// Veri ve uygulama: ~/dotfiles/bin/dot-shell-theme (json / apply / wall).
 PluginComponent {
     id: root
 
     layerNamespacePlugin: "dot-themes"
 
-    readonly property string tool: Quickshell.env("HOME") + "/dotfiles/bin/dot-dms-theme"
+    readonly property string tool: Quickshell.env("HOME") + "/dotfiles/bin/dot-shell-theme"
     property var themes: []
     readonly property var active: themes.find(t => t.active) || null
 

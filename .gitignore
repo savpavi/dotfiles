@@ -24,10 +24,6 @@ config/niri/*.bak*
 __pycache__/
 *.pyc
 
-# Noctalia şablonlarının ürettiği dosyalar
-config/hypr/noctalia.lua
-config/kitty/themes/noctalia.conf
-config/btop/themes/noctalia.theme
 
 # Yerel yedekler
 *.bak-*
@@ -38,3 +34,8 @@ config/hypr/hyprland.lua.backup*
 config/hypr/hyprland.lua.dmsbackup*
 config/kitty/dank-*.conf
 config/hypr/dms/cursor.lua
+
+# dot-shell-theme tarafından üretilen dosyalar (savpavi-shell)
+config/hypr/savpavi/
+config/kitty/savpavi-*.conf
+config/btop/themes/savpavi.theme

@@ -1,30 +1,20 @@
 #!/usr/bin/env bash
 # Kısayol rehberi (SUPER + K).
 #
-#   dot-keys           DMS kısayol penceresini aç/kapat (canlı Hyprland config'i okur)
+#   dot-keys           savpavi-shell kısayol penceresini aç/kapat
 #   dot-keys --text    terminale yazdır
 #
-# Kaynak `dms keybinds show hyprland`: config'deki bind'lar ve yanlarındaki
-# yorumlar. docs/hyprland-cheatsheet.md artık elle tutulan eski rehber.
+# Kaynak: config/savpavi-shell/scripts/keybinds.py — Lua config'teki hl.bind
+# satırları ve yanlarındaki yorumlar.
 set -uo pipefail
 
-text() {
-  dms keybinds show hyprland | python3 -c '
-import json, sys
-data = json.load(sys.stdin)
-for section, binds in data.get("binds", {}).items():
-    for b in binds:
-        key, desc = b.get("key", ""), b.get("desc", "")
-        print(f"{key:<26}  {desc:<60}  {section}")
-'
-}
+shell="$HOME/dotfiles/config/savpavi-shell"
 
 if [[ ${1:-} == "--text" ]]; then
-  text
-  exit 0
+  exec python3 "$shell/scripts/keybinds.py" --text
 fi
 
-# DMS çalışmıyorsa (ör. dot-shell switch ile Noctalia açıksa) listeyi terminalde göster.
-if ! dms ipc call keybinds toggle hyprland >/dev/null 2>&1; then
+# savpavi-shell çalışmıyorsa (ör. dot-shell switch ile DMS açıksa) listeyi terminalde göster.
+if ! qs -p "$shell" ipc call keybinds toggle >/dev/null 2>&1; then
   exec kitty --class dot-keys -e sh -c 'dot-keys --text | less -S'
 fi

@@ -5,7 +5,7 @@
 --   SUPER+W (kapat)      -> sende Windows VM
 --   SUPER+T (float)      -> sende Telegram
 --   SUPER+S (scratchpad) -> sende Spotify; yerine SUPER+grave kullaniliyor
---   SUPER+L (layout)     -> sende ekran kilidi (Noctalia)
+--   SUPER+L (layout)     -> sende ekran kilidi (savpavi-shell)
 --   SUPER+O (pop out)    -> sende Obsidian
 --   SUPER+F/J/P          -> sende zaten ayni islevde
 --   SUPER+CTRL+ok        -> sende 40px boyutlandirma
