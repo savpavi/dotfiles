@@ -1,5 +1,0 @@
-# Mevcut ~/.config/noctalia/config.toml içindeki [theme] tablosuna birleştir.
-[theme]
-builtin = "Nord"
-mode = "dark"
-source = "builtin"

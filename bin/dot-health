@@ -18,7 +18,7 @@ print('Masaüstü sağlık kontrolü — salt okunur\n')
 checks = [
  ('Niri config', ['niri', 'validate']),
  ('Niri IPC', ['niri', 'msg', 'version']),
- ('Noctalia IPC', ['noctalia', 'msg', 'status']),
+ ('savpavi-shell', ['systemctl', '--user', 'is-active', 'savpavi-shell.service']),
  ('Dinamik yerleşim', ['systemctl', '--user', 'is-active', 'niri-dynamic-layout.service']),
  ('PipeWire', ['systemctl', '--user', 'is-active', 'pipewire.service']),
  ('WirePlumber', ['systemctl', '--user', 'is-active', 'wireplumber.service']),

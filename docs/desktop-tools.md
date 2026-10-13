@@ -1,4 +1,4 @@
-# Niri / Noctalia günlük araçları
+# Günlük masaüstü araçları
 
 11 Eylül 2026: dwm-titus ve Omarchy incelemesinden seçilen 1, 3, 5, 6, 7, 9, 10 maddeleri.
 
@@ -22,14 +22,6 @@
 
 Canlı doğrulama: 640×360 sessiz ve 1920×1080 sistem sesli kayıtlar düzgün kapandı; ffprobe H.264/AAC, ffmpeg tam çözümleme başarılı. Mikrofonun gerçek ses kalitesi ve uzun kayıt performansı test edilmedi.
 
-## Tema
-
-Noctalia'nın sabit yerleşik `Nord` paleti, kullanıcı şablonları üzerinden Ghostty `theme.conf` ve Niri `noctalia.kdl` dosyalarına uygulanır. Ghostty'nin mevcut font, sekme, scroll ve diğer tercihleri korunur. Niri renk dosyası ana config'in sonunda include edilir. Şablonlar `~/.config/noctalia/templates/`; tanımlar Noctalia config'indeki `theme.templates.user.desktop_*` tablolarında. `noctalia msg templates-apply` yeniden uygular. Ghostty yeniden yüklemesi GTK D-Bus action kullanır, süreç öldürmez.
-
-Yedek kaynaklar `extras/noctalia/` altında. `nord-theme.toml` ve `desktop-templates.toml` dosyalarını mevcut Noctalia config'ine **bir kez birleştir**; bütün config yerine kopyalama. İki şablonu `~/.config/noctalia/templates/` altına kopyala. Ghostty ana config'i `config-file = theme.conf` içermeli. Şablon tanımları [Noctalia resmî şablon yapısını](https://docs.noctalia.dev/noctalia/theming/templates/) kullanır.
-
-Noctalia uygulama menüsü minimal liste düzenindedir: kategoriler, alt açıklamalar ve paket kaynağı rozetleri gizli; ikonlar ve kullanım sıralaması açıktır. Taşınabilir parça `extras/noctalia/minimal-launcher.toml`; mevcut `~/.config/noctalia/config.toml` dosyasına birleştirilir. Canlı değişiklik öncesi yedek `~/.local/state/noctalia-launcher-minimal-20260917/` altındadır.
-
 ## Web uygulamaları ve Lazygit
 
 `dot-webapp İsim https://adres` yeni Helium `.desktop` başlatıcısı üretir. Mevcut dosyanın üzerine yazmaz; yalnız HTTP/HTTPS kabul eder. Gemini ve Claude dosyaları `extras/applications/` içinde yedekli. Kullanıcı dizinine kopyaladıktan sonra `update-desktop-database ~/.local/share/applications` çalıştırılabilir. İki başlatıcı Brave döneminde ayrı uygulama penceresi olarak doğrulandı; 12 Ekim 2026 itibarıyla Helium kullanılıyor.
@@ -45,57 +37,9 @@ Kontroller: `python3 -m unittest discover -s tests -v`, `niri validate`, `deskto
 Önceki dosyalar: `~/.local/state/desktop-upgrade/20260911-085936/`. Geri dönüşte önce `dot-record --stop` çalıştır; yedek Noctalia config'ini geri koyarak şablonları kapat, sonra yedek Niri config ve Ghostty theme.conf dosyalarını geri koy. `niri validate`, `niri msg action load-config-file` ve Ghostty config reload uygula. Yedekler gerçek dosya içeriklerini taşır; mevcut Ghostty symlink'ini değiştirme. Eklenen Gemini/Claude başlatıcıları ve kullanıcı Lazygit binary'si ayrı kaldırılabilir. Kayıt videoları kullanıcı verisidir, geri dönüşte silinmez.
 
 
-## Omarchy fikirlerinden uyarlanan araçlar — 11 Eylül 2026
+## Resolve için ses hazırlama
 
-Orijinal eklentiler topluca kurulmadı; Fedora/Niri/Noctalia için yerel adaptörler eklendi.
-
-- Bar: servis hataları (sağlıklıyken gizlenir), yedek durumu, Tailscale, mevcut not seçimi ve çizim düğmeleri.
-- `Super+Alt+D`: odaklı monitörde çizim; `Super+Alt+P`: spotlight. Esc veya kısayolu tekrar kullanmak kapatır. D/A/R kalem/ok/dikdörtgen, U/Y geri/ileri, C temizle, 1–4 renk, T araç çubuğu. Katman açıkken tıklamalar alttaki uygulamaya geçmez.
-- `Super+Alt+N`: Aktif Kasa mevcut Markdown notlarını arayarak seç; Kaydet ile yaz, Vazgeç ile iptal. Harici değişiklik tespit edilirse üzerine yazılmaz. Yeni not üretilmez.
-- Thunar video sağ tık → **Resolve için sesi hazırla**. Ayrı `_resolve.mov`; video aynen kopyalanır, tüm ses akışları PCM olur. Altyazı/veri akışları aktarılmaz. Hedef varsa üzerine yazılmaz. Resolve video codec desteği bu işlemle değişmez.
-- Tailscale: cihazlar, IP/DNS kopyalama; destekleyen çevrimiçi hedeflere dosya seçimi ve açık gönderim onayıyla Taildrop. Ağ ayarlarına dokunmaz.
-
-Kaynak `bin/dot-desktop`, `lib/desktop_panels.py`, `bin/dot-presenter`; canlı kopyaları `~/dotfiles/` altında. Tek `desktop-panels.service` 30 saniye aralıklarla durumu okur; Niri oturum başında başlatır. Bar eklentisi `~/.config/noctalia/zz-desktop-tools.toml` üretilir. Yedekler yalnız kullanıcı servisleri: archive-critical-backup, vault-git-backup, proton-backup. Son başarı son 14 gün/100 journal satırı üzerinden okunur; snapshot veya geri yükleme testi değildir.
-
-Presenter çizim bileşenleri MIT kaynak `extras/presenter/LICENSE.upstream` ile korunur. Yerel Fedora Quickshell RPM runtime'ı `~/.local/lib/quickshell-fedora/` altında; sistem paket kurulumu yapılmadı. Yeniden kurulumda Fedora quickshell RPM'i `dnf download quickshell --destdir /tmp/desktop-quickshell` ile indirip ayrı dizinde `rpm2cpio DOSYA.rpm | cpio -idm` ile aç; bu dizini runtime konumuna taşı. RPM ve binary Git'e dahil değildir. QML kaynaklarını `~/.config/quickshell/niri-presenter/` altına kopyala. Thunar eylemini mevcut uca.xml'e birleştir; yedek XML ile bütün ayarları ezme.
-
-Doğrulama: 8 birim testi, Niri/Noctalia config geçerliliği; gerçek ffmpeg örneğinde PCM ses, aynı video akış hash'i, değişmeyen kaynak ve mevcut hedefe yazmama doğrulandı. Presenter DP-3 üzerinde IPC çizim/spot komutları, araç çubuğu görünümü ve temiz çıkış doğrulandı. Diğer monitörde fiziksel kısayol kullanımı, not editörünün etkileşimli Kaydet akışı, Taildrop transferi ve Resolve içe aktarma henüz denenmedi.
-
-İlk canlı taramada ydotool.service başarısız, üç yedek timer'ı kapalı ve başarı kaydı yoktu. Otomatik onarım/başlatma yapılmadı.
-
-Geri dönüş: `systemctl --user stop desktop-panels.service dot-presenter.service`; Niri'den eklenen startup/kısayolları, Noctalia `zz-desktop-tools.toml` ve Thunar `desktop-resolve-audio` eylemini kaldır. Önceki config yedeği `~/.local/state/desktop-upgrade/plugins-20260911-093600/` altında. Niri validate ile kontrol et. Bu geri dönüş notları/video çıktılarını değiştirmez.
-
-
-### 11 Eylül yedek bakımı düzeltmesi
-
-Proton 23 Ağustos'ta bilinçli kaldırılmıştır; izlenen işler yalnız archive-critical-backup ve vault-git-backup. İki timer yeniden etkinleştirildi. Kalıcı script başarı kayıtları journal'a ek kanıt olarak okunur. Vault Git timer'ı açılışlarda plansız `active (elapsed)` durumuna düşmemesi için `00:00`, `06:00`, `12:00`, `18:00` takvim zamanlarını ve `Persistent=true` kullanır; panel sonraki zamanı `list-timers` JSON üzerinden okur. Kritik arşiv işi Python sqlite3 backup API kullanır; gerçek Restic çalışması ve %2 kontrol başarılı. Git işi kullanıcı seçimiyle `backup/fedora-host-20260911` dalını iki mevcut hedefe gönderir; main geçmişleri birleştirilmedi. Değişiklik yokken de push yeniden denenir.
-
-
-## Grafik ayar merkezi — 11 Eylül 2026
-
-`Super+P` veya uygulama menüsünde **Masaüstü Ayarları** → `dot-settings`. GTK3/Gio tabanlı yerel pencere: Ekranlar, Varsayılan uygulamalar, Görünüm ve panel. Son bölüm mevcut Noctalia ayarlarını açar. Varsayılanlar seçici onayıyla Gio/XDG MIME tercihlerine yazılır; kategori kapsamları UI üzerinde belirtilir. Uygulama içi tercihler ve terminal emülatörü seçimi bu sayfanın kapsamı dışındadır.
-
-Ekran GUI: [nwg-displays](https://github.com/nwg-piotr/nwg-displays), commit `fd79522cb91ef2ba080ba51838c0f307e1d4fb83` (setup sürümü 0.4.4). Kaynak ve MIT lisansı `~/.local/share/nwg-displays/`, başlatıcı `~/.local/bin/nwg-displays`. Mevcut GTK3, GtkLayerShell ve Python bağımlılıkları kullanıldı; sistem paketi eklenmedi. Yeniden kurulumda bu commit'in nwg_displays dizinini ve LICENSE dosyasını aynı yere kopyala; başlatıcı bu yolu sys.path'e ekleyerek nwg_displays.main.main çalıştırır. GDK_BACKEND=wayland.
-
-Canlı Niri'nin mevcut iki output bloğu değiştirilmeden `~/.config/niri/monitor.kdl` dosyasına taşındı; ana config include eder. GUI'nin Apply işlemi bu dosyaya yazar. Repo kopyası kendi önceki output değerlerini monitor.kdl içinde korur; canlı/repo tüm dosyaları birbirinin üzerine kopyalanmadı. İki araç için floating pencere kuralları eklendi. Eski config `~/.local/state/desktop-upgrade/settings-20260911/config.kdl`.
-
-Doğrulama: Niri validate, Python derleme, desktop-file-validate, git diff --check; iki monitör GUI tarafından algılandı, iki pencere görsel kontrol edildi. Gio varsayılan yazma/okuma testi izole XDG_CONFIG_HOME içinde geçti. Gerçek ekran konumu/Hz veya kullanıcının MIME tercihleri test için değiştirilmedi; fiziksel ekran değişikliği ve Apply geri sayımını kullanıcı kullanımında doğrulamak gerekir.
-
-
-### Yedi ek ayar bölümü
-
-Super+P merkezine klavye/fare, kısayollar, ses, güç/kilit, başlangıç, pencere düzeni ve yedekler eklendi. Kaynaklar `lib/settings_store.py`, `lib/settings_pages.py`; canlı kopyalar `~/dotfiles/lib/`.
-
-Klavye/fare formu dil, tekrar, hız ve kaydırma seçeneklerini; pencere formu gaps, border width ve odak/ortalama seçeneklerini değiştirir. KDL yorumları ve diğer seçenekler korunur; aday dosya niri validate işleminden geçmeden yazılmaz. Kısayol formu ana config binds bölümünü düzenler, modifier sırası/Super alias çakışmasını kontrol eder. Niri validate ayrıca geçersiz tuşları reddeder. Dahil edilen ayrı dosyalardaki kısayollar bu ilk sürümün listesinde değildir.
-
-Ses, kurulu pavucontrol açar. Güç formu Noctalia full effective config'ten mevcut üç davranışı okur ve state settings.toml içindeki ilgili enabled/timeout alanlarını değiştirir; diğer alanlar korunur. Süre birimi dakika. Noctalia kaynak modeli: https://docs.noctalia.dev/noctalia/configuration/ . Ekran kilitleme/uyutma test amacıyla tetiklenmedi.
-
-Başlangıç formu mevcut Niri spawn-at-startup satırlarını ve kullanıcı ~/.config/autostart desktop dosyalarını açıp kapatır; etkisi sonraki oturumdadır. Yeni uygulama ekleme bu sürümde yok. Uygulama kuralı açık uygulamanın app-id'sinden tam eşleşme üretir, floating/tiling/fullscreen ve isteğe bağlı monitör belirtir; yeni açılan pencerelere uygulanır. Sonradan eklenen kurallar öncekilerin ilgili alanını geçersiz kılabilir; geri dönüş snapshot ile.
-
-Ayar yedekleri ~/.local/state/desktop-settings/backups altında tarihli manifestli klasörlerdir. Merkezde kayıt öncesi ve dış ekran/Noctalia ayar penceresini açmadan önce snapshot alınır. Dış GUI'deki her Apply ayrı snapshot değildir. Yedekler Niri KDL, Noctalia TOML, MIME ve kullanıcı autostart dosyalarını kapsar; sesin anlık PipeWire durumu kapsam dışıdır. Geri almadan önce Niri/Noctalia dosyaları doğrulanır ve mevcut durum ayrıca yedeklenir. Sonradan eklenen ilgisiz dosyalar silinmez. Geri yüklemeden sonra merkezi yeniden aç.
-
-Kontroller: 13 otomatik test; gerçek Niri config üzerinde değişiklik adayları; izole kopyada snapshot-edit-restore byte eşitliği; güç TOML adayı Noctalia validate; gerçek GUI açılışı ve bölüm listesi görsel doğrulaması. Kullanıcının canlı input, güç, ses ve başlangıç tercihleri test için değiştirilmedi.
-
+Thunar video sağ tık → **Resolve için sesi hazırla** (`bin/dot-resolve`). Yanına `_resolve.mov` yazar; video akışı aynen kopyalanır, ses PCM olur, orijinal dosyaya dokunulmaz. 13 Ekim 2026'da Noctalia'ya bağlı `dot-desktop`'tan ayrıldı; `dot-desktop`, `dot-settings`, `dot-presenter` ve Niri config'i Noctalia ile birlikte repodan kaldırıldı (git geçmişinde duruyor).
 
 ## KDE uygulamalarından geçiş — 12 Eylül 2026
 

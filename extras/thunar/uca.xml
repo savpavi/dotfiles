@@ -92,7 +92,7 @@
     <icon>video-x-generic</icon>
     <name>Resolve için sesi hazırla</name>
     <unique-id>desktop-resolve-audio</unique-id>
-    <command>/home/savpavi/dotfiles/bin/dot-desktop resolve %F</command>
+    <command>/home/savpavi/dotfiles/bin/dot-resolve %F</command>
     <description>Görüntüyü kopyalar, sesi PCM yapar; ayrı MOV oluşturur</description>
     <patterns>*.mp4;*.mkv;*.mov;*.avi;*.MP4;*.MKV;*.MOV;*.AVI</patterns>
     <video-files/>

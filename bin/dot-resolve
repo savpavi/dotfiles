@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""DaVinci Resolve için video hazırlar: görüntü akışı kopyalanır, ses PCM olur, yanına <ad>_resolve.mov yazılır.
+Orijinal dosyaya dokunulmaz. Thunar eylemi: "Resolve için sesi hazırla".
+  dot-resolve [dosya ...]   dosya verilmezse seçici açılır
+"""
+import json, os, subprocess as sp, sys, tempfile
+from pathlib import Path
+
+
+def convert(source):
+    source = Path(source).resolve(strict=True)
+    if not source.is_file():
+        raise RuntimeError('Video dosyası gerekli')
+    dest = source.with_name(source.stem + '_resolve.mov')
+    if dest.exists():
+        raise FileExistsError('Hedef zaten var: ' + str(dest))
+    info = sp.run(['ffprobe', '-v', 'error', '-show_streams', '-of', 'json', str(source)],
+                  capture_output=True, text=True, check=True)
+    streams = json.loads(info.stdout)['streams']
+    if not any(x.get('codec_type') == 'video' for x in streams):
+        raise RuntimeError('Video akışı bulunamadı')
+    if not any(x.get('codec_type') == 'audio' for x in streams):
+        raise RuntimeError('Ses akışı yok; dönüştürmeye gerek yok')
+    fd, tmp = tempfile.mkstemp(prefix='.' + source.stem + '-', suffix='.mov', dir=source.parent)
+    os.close(fd)
+    try:
+        r = sp.run(['ffmpeg', '-nostdin', '-hide_banner', '-loglevel', 'error', '-i', str(source),
+                    '-map', '0:v', '-map', '0:a', '-c:v', 'copy', '-c:a', 'pcm_s16le', '-f', 'mov', '-y', tmp],
+                   capture_output=True, text=True)
+        if r.returncode:
+            raise RuntimeError(r.stderr[-1200:])
+        os.link(tmp, dest)  # var olan dosyayı ezmeden atomik
+        return dest
+    finally:
+        Path(tmp).unlink(missing_ok=True)
+
+
+def main():
+    files = sys.argv[1:]
+    if not files:
+        r = sp.run(['zenity', '--file-selection', '--title=Resolve için video seç'], capture_output=True, text=True)
+        if r.returncode:
+            return
+        files = [r.stdout.rstrip('\n')]
+    results = []
+    for path in files:
+        try:
+            results.append('OK: ' + str(convert(path)))
+        except (RuntimeError, OSError, sp.CalledProcessError) as error:
+            results.append('HATA: ' + str(error))
+    text = '\n'.join(results) + '\n\nGörüntü akışı kopyalandı; ses PCM. Orijinal dosyalar korunur.\nVideo codec desteği ayrıca Resolve sürümüne bağlıdır.'
+    sp.run(['zenity', '--text-info', '--title=Resolve hazırlama sonucu', '--width=780', '--height=520', '--no-markup'],
+           input=text, text=True)
+
+
+if __name__ == '__main__':
+    main()
