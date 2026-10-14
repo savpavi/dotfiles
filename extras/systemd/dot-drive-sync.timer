@@ -1,0 +1,9 @@
+[Unit]
+Description=Drive klasör senkronu: Drive tarafındaki değişiklikler için 10 dakikada bir
+
+[Timer]
+OnBootSec=3min
+OnUnitInactiveSec=10min
+
+[Install]
+WantedBy=timers.target

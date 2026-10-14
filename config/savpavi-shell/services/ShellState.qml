@@ -34,6 +34,7 @@ Singleton {
             property bool showClaude: true
             property bool showTailscale: true
             property bool showSend: true
+            property bool showDrive: true
             property bool showFocusedWindow: true
             property bool clockSeconds: false
             property bool barOnAllScreens: true

@@ -58,6 +58,7 @@ PanelWindow {
 
             Tray { anchors.verticalCenter: parent.verticalCenter }
             SendButton { visible: ShellState.settings.showSend }
+            DriveWidget {}
 
             BarButton {
                 padding: 6

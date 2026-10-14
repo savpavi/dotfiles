@@ -1,0 +1,10 @@
+[Unit]
+Description=Drive klasör senkronu: yerel değişiklikleri izle (inotify, 45 sn sükunette senkron)
+
+[Service]
+ExecStart=%h/dotfiles/bin/dot-drive watch
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=default.target

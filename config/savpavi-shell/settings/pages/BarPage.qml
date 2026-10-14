@@ -11,6 +11,7 @@ Column {
     Toggle { title: "Ses görselleştirme (cava)"; hint: "Müzik çalarken"; checked: cfg.showCava; onToggled: v => cfg.showCava = v }
     Toggle { title: "Hava durumu"; checked: cfg.showWeather; onToggled: v => cfg.showWeather = v }
     Toggle { title: "Telefona gönder"; checked: cfg.showSend; onToggled: v => cfg.showSend = v }
+    Toggle { title: "Google Drive"; hint: "Yükleme durumu ve önbellek"; checked: cfg.showDrive; onToggled: v => cfg.showDrive = v }
     Toggle { title: "CPU / RAM"; checked: cfg.showStats; onToggled: v => cfg.showStats = v }
     Toggle { title: "Claude kullanımı"; checked: cfg.showClaude; onToggled: v => cfg.showClaude = v }
     Toggle { title: "Tailscale"; checked: cfg.showTailscale; onToggled: v => cfg.showTailscale = v }

@@ -110,4 +110,32 @@
     <text-files/>
     <video-files/>
   </action>
+  <action>
+    <icon>folder-google-drive</icon>
+    <name>Drive linkini kopyala</name>
+    <unique-id>thunar-gdrive-link</unique-id>
+    <command>/home/savpavi/dotfiles/bin/dot-drive link %F</command>
+    <description>~/GoogleDrive altındaki dosyanın Drive linkini panoya kopyala (paylaşım değişmez)</description>
+    <patterns>*</patterns>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
+  </action>
+  <action>
+    <icon>emblem-shared</icon>
+    <name>Drive'da herkese açık paylaş</name>
+    <unique-id>thunar-gdrive-share</unique-id>
+    <command>/home/savpavi/dotfiles/bin/dot-drive share %F</command>
+    <description>Linke sahip herkesin görebileceği Drive linki oluştur ve kopyala (onay ister)</description>
+    <patterns>*</patterns>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
+  </action>
 </actions>

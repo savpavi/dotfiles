@@ -71,12 +71,17 @@ dot-theme reapply         # re-render the active theme
 | `dot-resolve [FILE…]` | Prepare a video for DaVinci Resolve: copy the video stream, PCM audio, write `<name>_resolve.mov` (Thunar action) |
 | `dot-quicklook FILE` | Quick Look-style preview through GNOME Sushi; bound to Space in Thunar, pressing again closes it |
 | `dot-send [FILE…]` | Send files to the paired phone over KDE Connect (file picker without arguments); bar widget `dotSend`: left click sends, right click opens LocalSend |
+| `dot-drive <action>` | Google Drive mounted at `~/GoogleDrive` with rclone: `status` (JSON for the bar's Drive widget), `link FILE…` copies the Drive link without changing sharing, `share FILE…` creates a public link after confirming, `sync [NAME]` two-way folder sync with rclone bisync, `open`, `web`, `restart` (Thunar actions for link and share) |
 | `dot-ocr` | Select a region, OCR it with Tesseract, copy the text |
 | `dot-webapp Name https://url` | Create a Helium web-app launcher (never overwrites) |
 | `dot-keys` | Keybind sheet of savpavi-shell, read from the Hyprland Lua config and its comments (Super+K); `--text` prints it |
 | `dot-askpass` | Zenity askpass helper for `sudo -A` |
 
 `dot-send` needs `kdeconnect` and `zenity`. LocalSend runs hidden in the tray through `extras/systemd/localsend.service` (copy to `~/.config/systemd/user/`, then `systemctl --user enable --now localsend.service`).
+
+`dot-drive` needs `rclone` with a remote named `gdrive:` (your own OAuth client: Desktop app, consent screen External and in production, Drive API enabled). The mount runs from `extras/systemd/rclone-gdrive.service` (copy to `~/.config/systemd/user/`, then `systemctl --user enable --now rclone-gdrive.service`); it exposes rclone's remote control on a socket in `$XDG_RUNTIME_DIR`, which `dot-drive` reads, and notifies when the mount stops unexpectedly.
+
+Folder sync (like "back up folders from my computer" in Drive for Windows) is configured in `~/.config/dot-drive/sync.conf`, one `NAME<TAB>LOCAL<TAB>REMOTE` line per pair with optional filters in `NAME.filter`. The first run and any filter change do a `--resync` automatically; conflicts keep the newer copy and rename the other `.conflictN`. `extras/systemd/dot-drive-sync.{service,timer}` runs it every 10 minutes and `dot-drive-watch.service` (needs `inotify-tools`) triggers it 45 s after local changes settle.
 
 `dot-quicklook` needs the `sushi` package. Append `extras/thunar/accels-quicklook.scm` to `~/.config/Thunar/accels.scm` while Thunar is closed to get the Space binding.
 

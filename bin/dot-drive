@@ -1,0 +1,279 @@
+#!/usr/bin/env bash
+# dot-drive — rclone ile bağlanan Google Drive (~/GoogleDrive) için durum, link ve paylaşım.
+# Mount: extras/systemd/rclone-gdrive.service (kopya ~/.config/systemd/user), rc soketi $XDG_RUNTIME_DIR/rclone-gdrive.sock.
+# Bar: config/savpavi-shell/bar/DriveWidget.qml. Thunar: "Drive linkini kopyala" / "Drive'da herkese açık paylaş".
+# Klasör senkronu (Windows'taki "bilgisayarımdaki klasörler"): ~/.config/dot-drive/sync.conf satırları
+#   AD<TAB>YEREL_KLASÖR<TAB>REMOTE  (filtre: ~/.config/dot-drive/AD.filter), rclone bisync ile çift yönlü.
+#   Tetikleyiciler: extras/systemd/dot-drive-sync.{service,timer} (10 dk) + dot-drive-watch.service (inotify).
+# Gerekli: rclone, wl-clipboard, libnotify, zenity, inotify-tools, python3. (14.10.2026)
+# Kullanım: dot-drive status        bar için JSON durum
+#           dot-drive link DOSYA...  Drive linkini panoya kopyala (paylaşım değişmez)
+#           dot-drive share DOSYA... herkese açık link oluştur (onay ister) ve kopyala
+#           dot-drive sync [AD] [--resync|--force]  klasör senkronu (ilk çalıştırma ve filtre değişince --resync kendiliğinden)
+#           dot-drive watch          yerel değişiklikte sync servisini tetikler (systemd için)
+#           dot-drive open | web | restart
+#           dot-drive stopped       systemd ExecStopPost kancası
+set -u -o pipefail
+
+MOUNT="$HOME/GoogleDrive"
+REMOTE="gdrive:"
+UNIT="rclone-gdrive.service"
+SOCK="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/rclone-gdrive.sock"
+CACHE_MAX=$((20 * 1024 * 1024 * 1024))   # servisteki --vfs-cache-max-size ile aynı
+CONF_DIR="${DOT_DRIVE_CONF:-$HOME/.config/dot-drive}"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dot-drive"
+SYNC_UNIT="dot-drive-sync.service"
+
+notify() { notify-send -a "Google Drive" -i folder-google-drive "$@"; }
+
+rc() { rclone rc --unix-socket "$SOCK" --url http://localhost/ "$@" 2>/dev/null; }
+
+status() {
+  local active=false mounted=false vfs="{}" core="{}"
+  systemctl --user is-active --quiet "$UNIT" && active=true
+  mountpoint -q "$MOUNT" && mounted=true
+  if [[ $active == true && -S $SOCK ]]; then
+    vfs=$(rc vfs/stats) || vfs="{}"
+    core=$(rc core/stats) || core="{}"
+  fi
+  python3 -I - "$active" "$mounted" "$vfs" "$core" "$CACHE_MAX" "$STATE_DIR" <<'PY'
+import glob, json, os, sys
+active, mounted = sys.argv[1] == "true", sys.argv[2] == "true"
+syncs = []
+import subprocess
+for f in sorted(glob.glob(os.path.join(sys.argv[6], "*", "state.json"))):
+    try: st = json.load(open(f))
+    except (OSError, ValueError): continue
+    sock = os.path.join(os.path.dirname(f), "rc.sock")
+    if st.get("state") == "running":
+        # kilit boştaysa çalıştırma yarıda kesilmiş (servis durduruldu, oturum kapandı…)
+        import fcntl
+        try:
+            with open(os.path.join(os.path.dirname(f), "lock"), "a") as lk:
+                fcntl.flock(lk, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                st["state"], st["error"] = "error", "Yarıda kesildi; tekrar denemek için tıkla"
+        except OSError: pass
+    if st.get("state") == "running" and os.path.exists(sock):
+        try:
+            out = subprocess.run(["rclone", "rc", "--unix-socket", sock, "--url", "http://localhost/", "core/stats"],
+                                 capture_output=True, text=True, timeout=5).stdout
+            c = json.loads(out)
+            st["progress"] = {k: c.get(k) for k in ("bytes", "totalBytes", "transfers", "totalTransfers", "eta", "speed", "errors")}
+        except (OSError, ValueError, subprocess.SubprocessError): pass
+    syncs.append(st)
+def load(s):
+    try: return json.loads(s or "{}")
+    except ValueError: return {}
+vfs, core = load(sys.argv[3]), load(sys.argv[4])
+dc = vfs.get("diskCache", {})
+print(json.dumps({
+    "active": active,
+    "mounted": mounted,
+    "rc": bool(vfs),
+    "uploading": dc.get("uploadsInProgress", 0),
+    "queued": dc.get("uploadsQueued", 0),
+    "errored": dc.get("erroredFiles", 0),
+    "outOfSpace": dc.get("outOfSpace", False),
+    "cacheBytes": dc.get("bytesUsed", 0),
+    "cacheMax": int(sys.argv[5]),
+    "transferring": [t.get("name", "") for t in core.get("transferring", [])][:5],
+    "lastError": core.get("lastError", ""),
+    "syncs": syncs,
+}))
+PY
+}
+
+# ~/GoogleDrive altındaki yerel yolu remote yoluna çevirir; dışındaysa boş döner.
+relpath() {
+  local abs
+  abs=$(realpath -m -- "$1")
+  [[ $abs == "$MOUNT" ]] && { printf '\n'; return; }
+  [[ $abs == "$MOUNT"/* ]] || return 1
+  printf '%s\n' "${abs#"$MOUNT"/}"
+}
+
+need_mount() {
+  if [[ ! -S $SOCK ]]; then
+    notify -u critical "Drive bağlı değil" "Önce mount servisini başlat: dot-drive restart"
+    exit 1
+  fi
+}
+
+# Dosyanın Drive ID'si (henüz yüklenmediyse boş)
+drive_id() {
+  rc operations/stat fs="$REMOTE" remote="$1" | python3 -I -c 'import json,sys
+try: print((json.load(sys.stdin).get("item") or {}).get("ID", ""))
+except ValueError: print("")'
+}
+
+link() {
+  local f rel id urls=() missing=()
+  need_mount
+  for f in "$@"; do
+    if ! rel=$(relpath "$f"); then missing+=("$(basename -- "$f") (Drive dışında)"); continue; fi
+    if [[ -z $rel ]]; then urls+=("https://drive.google.com/drive/my-drive"); continue; fi
+    id=$(drive_id "$rel")
+    if [[ -z $id ]]; then missing+=("$(basename -- "$f") (henüz yüklenmedi)"); continue; fi
+    urls+=("https://drive.google.com/open?id=$id")
+  done
+  report "Link kopyalandı" "${#urls[@]}" "${urls[@]}" -- "${missing[@]}"
+}
+
+share() {
+  local f rel url urls=() missing=() names=()
+  need_mount
+  for f in "$@"; do names+=("$(basename -- "$f")"); done
+  zenity --question --title "Herkese açık paylaş" --ok-label "Paylaş" --cancel-label "Vazgeç" \
+    --text "Linke sahip olan herkes görebilecek:\n\n$(printf '• %s\n' "${names[@]}")" 2>/dev/null || exit 0
+  for f in "$@"; do
+    if ! rel=$(relpath "$f") || [[ -z $rel ]]; then missing+=("$(basename -- "$f") (Drive dışında)"); continue; fi
+    url=$(rc operations/publiclink fs="$REMOTE" remote="$rel" | python3 -I -c 'import json,sys
+try: print(json.load(sys.stdin).get("url", ""))
+except ValueError: print("")')
+    if [[ -z $url ]]; then missing+=("$(basename -- "$f") (paylaşılamadı)"); continue; fi
+    urls+=("$url")
+  done
+  report "Herkese açık link kopyalandı" "${#urls[@]}" "${urls[@]}" -- "${missing[@]}"
+}
+
+# report BAŞLIK N URL... -- SORUNLU...
+report() {
+  local title=$1 n=$2; shift 2
+  local urls=() bad=()
+  while [[ $# -gt 0 && $1 != -- ]]; do urls+=("$1"); shift; done
+  [[ $# -gt 0 ]] && shift
+  bad=("$@")
+  if (( n > 0 )); then
+    printf '%s\n' "${urls[@]}" | wl-copy
+    printf '%s\n' "${urls[@]}"
+  fi
+  if (( ${#bad[@]} > 0 )); then
+    notify -u critical "${n} link kopyalandı, ${#bad[@]} dosya atlandı" "$(printf '%s\n' "${bad[@]}")"
+    exit 1
+  fi
+  notify "$title" "$( (( n == 1 )) && printf '%s' "${urls[0]}" || printf '%s link panoda' "$n")"
+}
+
+# ---- klasör senkronu (rclone bisync) ----
+
+pairs() { [[ -f $CONF_DIR/sync.conf ]] && grep -vE '^\s*(#|$)' "$CONF_DIR/sync.conf"; }
+
+# write_state DİZİN AD DURUM [hata] [çakışma] [resync]
+write_state() {
+  python3 -I - "$@" <<'PY'
+import json, os, sys, time
+d, name, state = sys.argv[1:4]
+err = sys.argv[4] if len(sys.argv) > 4 else ""
+conflicts = int(sys.argv[5]) if len(sys.argv) > 5 and sys.argv[5] else 0
+resync = len(sys.argv) > 6 and sys.argv[6] == "1"
+p = os.path.join(d, "state.json")
+try: old = json.load(open(p))
+except (OSError, ValueError): old = {}
+now = int(time.time())
+st = {"name": name, "state": state, "resync": resync, "error": err, "conflicts": conflicts,
+      "started": now if state == "running" else old.get("started", 0),
+      "finished": old.get("finished", 0) if state == "running" else now,
+      "lastOk": now if state == "ok" else old.get("lastOk", 0)}
+tmp = p + ".tmp"
+json.dump(st, open(tmp, "w")); os.replace(tmp, p)
+PY
+}
+
+sync_one() {
+  local name=$1 src=$2 dst=$3 mode=$4
+  local st="$STATE_DIR/$name" filter="$CONF_DIR/$name.filter" fsum="" resync=0 fd code conflicts err
+  mkdir -p "$st"
+  exec {fd}>"$st/lock"
+  flock -n "$fd" || { echo "$name: zaten çalışıyor"; return 0; }
+
+  # flock bizde: önceki kesilmiş çalıştırmadan kalan bisync kilidi ve rc soketi bayattır
+  rm -f "$st"/bisync/*.lck "$st/rc.sock"
+  local args=(bisync "$src" "$dst" --workdir "$st/bisync"
+    --rc --rc-addr "unix://$st/rc.sock" --rc-no-auth
+    --resilient --recover --max-lock 10m
+    --conflict-resolve newer --conflict-loser num
+    --create-empty-src-dirs --drive-skip-gdocs --fast-list
+    --log-file "$st/last.log" --log-level INFO)
+  if [[ -f $filter ]]; then
+    args+=(--filters-file "$filter")
+    fsum=$(md5sum < "$filter" | cut -d' ' -f1)
+  fi
+  # ilk çalıştırma ya da filtre değişikliği bisync'te --resync ister (birleşim alır, silmez)
+  if [[ $mode == --resync || ! -f $st/initialized || $(cat "$st/filter.md5" 2>/dev/null) != "$fsum" ]]; then
+    resync=1; args+=(--resync)
+    mkdir -p "$src"; rclone mkdir "$dst" 2>/dev/null   # bisync iki tarafın da var olmasını ister
+  fi
+  [[ $mode == --force ]] && args+=(--force)
+
+  write_state "$st" "$name" running "" 0 "$resync"
+  : > "$st/last.log"
+  rclone "${args[@]}"; code=$?
+  conflicts=$(grep -c 'New or changed in both paths' "$st/last.log")
+
+  if (( code == 0 )); then
+    touch "$st/initialized"; printf '%s\n' "$fsum" > "$st/filter.md5"
+    write_state "$st" "$name" ok "" "$conflicts" "$resync"
+    (( resync )) && notify "Drive senkronu hazır" "$name: $src ↔ $dst eşitlendi"
+    (( conflicts > 0 )) && notify "Drive senkronunda çakışma" "$name: $conflicts dosya iki tarafta da değişmişti; yeni olan kaldı, eskisi .conflict adıyla duruyor"
+    return 0
+  fi
+  err=$(grep -E 'ERROR|CRITICAL|too many deletes|--resync' "$st/last.log" | tail -n1 | sed -E 's/^[0-9\/ :]+//')
+  write_state "$st" "$name" error "${err:-rclone bisync çıkış kodu $code}" "$conflicts" "$resync"
+  notify -u critical "Drive senkronu başarısız" "$name: ${err:-çıkış kodu $code}
+Log: $st/last.log"
+  return "$code"
+}
+
+sync_cmd() {
+  local want="" mode="" a name src dst found=0 rc=0
+  for a in "$@"; do
+    case $a in --resync|--force) mode=$a ;; *) want=$a ;; esac
+  done
+  while IFS=$'\t' read -r name src dst; do
+    [[ -n $want && $want != "$name" ]] && continue
+    found=1
+    sync_one "$name" "${src/#\~/$HOME}" "$dst" "$mode" || rc=1
+  done < <(pairs)
+  (( found )) || { echo "sync.conf'ta eşleşen kayıt yok: ${want:-<boş>}" >&2; return 2; }
+  return "$rc"
+}
+
+watch_cmd() {
+  local dirs=() name src dst
+  while IFS=$'\t' read -r name src dst; do dirs+=("${src/#\~/$HOME}"); done < <(pairs)
+  (( ${#dirs[@]} )) || { echo "sync.conf boş" >&2; exit 1; }
+  # genel gürültü + repo dışındaki kişisel desenler (~/.config/dot-drive/watch-exclude, satır başı bir ERE)
+  local excl='/\.git/|/node_modules/|/\.venv/|/venv/|/\.next/|/__pycache__/|\.part$|\.crdownload$|\.~lock\.' extra
+  extra=$(grep -vE '^\s*(#|$)' "$CONF_DIR/watch-exclude" 2>/dev/null | paste -sd'|')
+  [[ -n $extra ]] && excl+="|$extra"
+  # olaylar 45 sn durulunca bir senkron tetikle
+  inotifywait -m -r -q -e close_write,move,create,delete --format '%w%f' --exclude "($excl)" "${dirs[@]}" |
+  while read -r _; do
+    while read -r -t 45 _; do :; done
+    systemctl --user start --no-block "$SYNC_UNIT"
+  done
+}
+
+stopped() {
+  # systemd ExecStopPost: yalnız beklenmedik durmada uyar
+  [[ ${SERVICE_RESULT:-success} == success ]] && exit 0
+  # yeniden başlatma denemeleri art arda düşerse 5 dakikada bir uyar
+  local stamp="${XDG_RUNTIME_DIR:-/tmp}/dot-drive-stopped"
+  [[ -f $stamp && $(( $(date +%s) - $(stat -c %Y "$stamp") )) -lt 300 ]] && exit 0
+  touch "$stamp"
+  notify -u critical "Drive bağlantısı koptu" "rclone-gdrive: ${SERVICE_RESULT:-?} (${EXIT_STATUS:-?}). Log: ~/.cache/rclone/gdrive-mount.log"
+}
+
+case "${1:-status}" in
+  status)  status ;;
+  link)    shift; (( $# )) || { echo "kullanım: dot-drive link DOSYA..." >&2; exit 2; }; link "$@" ;;
+  share)   shift; (( $# )) || { echo "kullanım: dot-drive share DOSYA..." >&2; exit 2; }; share "$@" ;;
+  open)    xdg-open "$MOUNT" >/dev/null 2>&1 & ;;
+  web)     xdg-open "https://drive.google.com/drive/my-drive" >/dev/null 2>&1 & ;;
+  restart) systemctl --user restart "$UNIT" && notify "Drive yeniden bağlandı" "$MOUNT" ;;
+  sync)    shift; sync_cmd "$@" ;;
+  sync-now) systemctl --user start --no-block "$SYNC_UNIT" ;;
+  watch)   watch_cmd ;;
+  stopped) stopped ;;
+  *) sed -n '2,16p' "$0" >&2; exit 2 ;;
+esac

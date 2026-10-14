@@ -1,0 +1,30 @@
+[Unit]
+Description=Google Drive mount (rclone, ~/GoogleDrive)
+# Bar widget ve Thunar eylemleri: ~/dotfiles/bin/dot-drive (rc soketi üzerinden)
+Documentation=man:rclone(1)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=notify
+# rclone ani ölürse mount noktası "Transport endpoint is not connected" kalır; önce temizle
+ExecStartPre=-/usr/bin/fusermount3 -uz %h/GoogleDrive
+ExecStartPre=/usr/bin/rm -f %t/rclone-gdrive.sock
+ExecStartPre=/usr/bin/mkdir -p %h/GoogleDrive
+ExecStart=/usr/bin/rclone mount gdrive: %h/GoogleDrive \
+    --vfs-cache-mode full \
+    --vfs-cache-max-size 20G \
+    --vfs-cache-max-age 72h \
+    --dir-cache-time 1h \
+    --poll-interval 1m \
+    --drive-export-formats docx,xlsx,pptx,svg \
+    --rc --rc-addr unix://%t/rclone-gdrive.sock --rc-no-auth \
+    --log-level INFO \
+    --log-file %h/.cache/rclone/gdrive-mount.log
+ExecStop=/usr/bin/fusermount3 -uz %h/GoogleDrive
+ExecStopPost=%h/dotfiles/bin/dot-drive stopped
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=default.target

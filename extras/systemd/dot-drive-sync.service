@@ -1,0 +1,12 @@
+[Unit]
+Description=Drive klasör senkronu (dot-drive sync, rclone bisync)
+# Çiftler ~/.config/dot-drive/sync.conf; tetikleyiciler dot-drive-sync.timer ve dot-drive-watch.service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/dotfiles/bin/dot-drive sync
+TimeoutStartSec=infinity
+Nice=10
+IOSchedulingClass=idle
