@@ -11,6 +11,9 @@ PanelWindow {
     required property ShellScreen modelData
     screen: modelData
 
+    // Narrow screens (1080p) drop the secondary widgets so the centre and right rows don't collide.
+    readonly property bool compact: modelData.width < 2200
+
     anchors { top: true; left: true; right: true }
     margins { top: Theme.barMargin; left: Theme.barMargin; right: Theme.barMargin }
     implicitHeight: Theme.barHeight
@@ -66,8 +69,8 @@ PanelWindow {
                 onClicked: Quickshell.execDetached(["dot-shell", "clipboard"])
             }
 
-            Stats { visible: ShellState.settings.showStats }
-            ClaudeWidget { visible: ShellState.settings.showClaude }
+            Stats { visible: ShellState.settings.showStats && !bar.compact }
+            ClaudeWidget { visible: ShellState.settings.showClaude && !bar.compact }
             TailscaleWidget {}
 
             BarButton {
