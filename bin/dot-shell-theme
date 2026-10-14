@@ -88,6 +88,7 @@ APP_OUTPUTS = [
     ('zen-userchrome.css', DATA/'savpavi-shell/zen.css'),
     ('hypr-colors.lua', CFG/'hypr/savpavi/colors.lua'),
     ('btop.theme', CFG/'btop/themes/savpavi.theme'),
+    ('fuzzel.ini', CFG/'fuzzel/fuzzel.ini'),
 ]
 
 def roles(p):
