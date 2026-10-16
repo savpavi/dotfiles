@@ -128,8 +128,10 @@ ok=0 used=""
 for t in "${tools[@]}"; do
     used="$t"
     echo "== $t: $url" >>"$log"
-    if [ "$t" = yt ]; then out="$(run_yt 2>>"$log" | tee -a "$log")"; rc=$?
-    else out="$(run_gallery 2>>"$log" | tee -a "$log")"; rc=$?; fi
+    # Çıktı önce yakalanıp sonra loga eklenir (aynı pipeline'da $log'u okuyup yazmamak için, SC2094).
+    if [ "$t" = yt ]; then out="$(run_yt 2>>"$log")"; rc=$?
+    else out="$(run_gallery 2>>"$log")"; rc=$?; fi
+    [ -n "$out" ] && printf '%s\n' "$out" >>"$log"
     # gallery-dl hiçbir şey indirmediyse (zaten varsa '# ' önekli satır yazar) bunu da başarı say
     if [ $rc -eq 0 ]; then ok=1; break; fi
 done
