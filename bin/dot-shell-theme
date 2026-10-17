@@ -8,6 +8,8 @@ Kaynak: config/savpavi-shell/themes (themes.json + palettes/, Noctalia'dan taş�
   dot-shell-theme wall [N]     aktif temanın sıradaki (ya da N'inci) duvar kağıdı
   dot-shell-theme walls        aktif temanın duvar kağıtları (JSON, seçici için)
   dot-shell-theme apps         aktif temanın renklerini uygulamalara yaz (DMS yokken apply bunu kendi yapar)
+  dot-shell-theme lives [ara]  aktif temanın hareketli duvarları ya da kütüphanede arama (JSON)
+  dot-shell-theme live <id|off>  hareketli duvarı Workshop id ile seç ya da kapat
   dot-shell-theme live-active  aktif temanın hareketli duvarı var mı (çıkış kodu)
   dot-shell-theme list         tema kimlikleri
   dot-shell-theme json         bar seçicisi için tema listesi (JSON)
@@ -216,7 +218,7 @@ def apply(tid, wall_index=None):
                                   'wallpaper': walls[i % len(walls)] if walls else '', 'live': item}))
     if item is not None:
         # ExecCondition durum dosyasını okuyor; servis yazımdan sonra başlamalı
-        sp.run(['systemctl', '--user', 'start', 'waywallen-layer-shell.service'], capture_output=True)
+        show_live(item)
     if wall_index is None and not dms_running():
         render_apps(tid, t.get('mode', 'dark'))
 
@@ -317,6 +319,68 @@ def live(tid, i):
     ww('Resume')
     return item
 
+def ww_rows(where, args, limit):
+    """waywallen kataloğundan hareketli duvarlar (ayarlar sayfası için)."""
+    import sqlite3
+    try:
+        db = sqlite3.connect(f'file:{WW_DB}?mode=ro', uri=True, timeout=5)
+        root = db.execute("SELECT path FROM library ORDER BY id LIMIT 1").fetchone()
+        rows = db.execute("SELECT id, external_id, display_name, type, preview_path FROM item "
+                          f"WHERE hidden = 0 AND {where} ORDER BY display_name LIMIT ?", (*args, limit)).fetchall()
+        db.close()
+    except sqlite3.Error:
+        return []
+    base = Path(root[0]) if root else Path('/')
+    return [{'item': r[0], 'id': r[1] or '', 'title': r[2], 'type': r[3],
+             'preview': str(base/r[4]) if r[4] else ''} for r in rows]
+
+def lives(query=''):
+    """Aktif temanın hareketli duvarları; sorgu verilirse tüm kütüphanede arama."""
+    st = load_state()
+    if query:
+        out = ww_rows("display_name LIKE ?", (f'%{query}%',), 60)
+    else:
+        out = []
+        for e in json.loads(LIVE.read_text()).get(st.get('id'), []) if LIVE.exists() else []:
+            row = ww_rows("external_id = ?", (e['id'],), 1)
+            out.append(row[0] if row else {'item': None, 'id': e['id'], 'title': e.get('title', ''),
+                                             'type': e.get('type', ''), 'preview': ''})
+    for x in out:
+        x['active'] = x['item'] is not None and x['item'] == st.get('live')
+    return out
+
+def set_live(wid):
+    """Hareketli duvarı elle seçer (Workshop id) ya da kapatır (off); tema değişmez."""
+    st = load_state()
+    if wid == 'off':
+        sp.run(['systemctl', '--user', 'stop', 'waywallen-layer-shell.service'], capture_output=True)
+        ww('Pause')
+        item = None
+    else:
+        sp.run(['systemctl', '--user', 'start', 'waywallen.service'], capture_output=True)
+        item = ww_item(wid)
+        if item is None and ww('Rescan'):
+            item = ww_item(wid)
+        if item is None:
+            sys.exit(f"waywallen kataloğunda yok: {wid}")
+        ww('ApplyById', str(item))
+        ww('Resume')
+    st['live'] = item
+    STATE.parent.mkdir(parents=True, exist_ok=True)
+    STATE.write_text(json.dumps(st))
+    if item is not None:
+        show_live(item)
+
+def show_live(item):
+    """Hareketli duvar katmanını açar. Katman yeni bağlanınca waywallen ekranın son
+    duvarını geri çağırıp seçimi eziyor; o yüzden seçim bağlantıdan sonra yinelenir."""
+    unit = 'waywallen-layer-shell.service'
+    if sp.run(['systemctl', '--user', 'is-active', '-q', unit]).returncode == 0:
+        return
+    sp.run(['systemctl', '--user', 'start', unit], capture_output=True)
+    time.sleep(2.5)
+    ww('ApplyById', str(item))
+
 def pick():
     ts = themes()
     labels = [f"{t['title']}  ({'açık' if t.get('mode') == 'light' else 'koyu'})" for t in ts]
@@ -344,6 +408,10 @@ def main():
     elif cmd == 'apps':
         st = load_state()
         render_apps(st['id'], st.get('mode', 'dark'))
+    elif cmd == 'lives':
+        print(json.dumps(lives(' '.join(sys.argv[2:]).strip()), ensure_ascii=False))
+    elif cmd == 'live' and len(sys.argv) > 2:
+        set_live(sys.argv[2])
     elif cmd == 'live-active':
         # waywallen-layer-shell.service ExecCondition: aktif temada hareketli duvar var mı
         sys.exit(0 if load_state().get('live') else 1)
