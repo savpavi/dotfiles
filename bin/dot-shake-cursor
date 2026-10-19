@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+# dot-shake-cursor — KDE'deki "shake cursor" gibi: fare hızlıca sallanınca imleç büyür, durunca küçülür.
+# Hyprland IPC soketinden imleç konumunu okur, büyütmeyi `setcursor` ile yapar. (19.10.2026)
+# Tema/boyut ~/.config/hypr/savpavi/cursor.lua'dan okunur (dot-shell-theme üretir).
+# Servis: systemd user unit dot-shake-cursor.service
+# Kullanım: dot-shake-cursor [--max BOYUT] [--debug]
+import argparse
+import math
+import os
+import re
+import signal
+import socket
+import sys
+import time
+from collections import deque
+
+CURSOR_LUA = os.path.expanduser("~/.config/hypr/savpavi/cursor.lua")
+
+WINDOW = 0.8         # sn: sallama bu kadar geçmişe bakarak ölçülür
+MIN_PATH = 500       # px: penceredeki toplam yol en az bu kadar olmalı
+SWING = 40           # px: bir yöne en az bu kadar gidip dönmek bir salınım sayılır
+SWINGS = 3           # aynı eksende bu kadar yön değişimi = sallama
+HOLD = 0.5           # sn: sallama bitince bu kadar bekleyip küçült
+STEP = 1 / 60        # sn: örnekleme aralığı
+
+
+def sock_path():
+    sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+    if not sig:
+        sys.exit("dot-shake-cursor: HYPRLAND_INSTANCE_SIGNATURE yok, Hyprland içinde çalıştır")
+    return os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/run/user/%d" % os.getuid()), "hypr", sig, ".socket.sock")
+
+
+SOCK = sock_path()
+
+
+def hypr(cmd):
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+        s.connect(SOCK)
+        s.sendall(cmd.encode())
+        return s.recv(4096).decode()
+
+
+def cursor_pos():
+    m = re.search(r'"x":\s*(-?\d+).*"y":\s*(-?\d+)', hypr("j/cursorpos"), re.S)
+    return (int(m.group(1)), int(m.group(2))) if m else None
+
+
+def cursor_conf():
+    theme = os.environ.get("HYPRCURSOR_THEME") or os.environ.get("XCURSOR_THEME") or "default"
+    size = int(os.environ.get("HYPRCURSOR_SIZE") or os.environ.get("XCURSOR_SIZE") or 24)
+    try:
+        text = open(CURSOR_LUA).read()
+        if m := re.search(r'"HYPRCURSOR_THEME",\s*"([^"]+)"', text):
+            theme = m.group(1)
+        if m := re.search(r'"HYPRCURSOR_SIZE",\s*"(\d+)"', text):
+            size = int(m.group(1))
+    except OSError:
+        pass
+    return theme, size
+
+
+def reversals(vals):
+    """Tek eksende SWING px'ten büyük yön değişimlerini sayar (titreşim sayılmaz)."""
+    count, direction, extreme = 0, 0, vals[0]
+    for v in vals[1:]:
+        if direction >= 0 and v > extreme or direction <= 0 and v < extreme:
+            extreme = v
+        elif abs(v - extreme) >= SWING:
+            if direction:
+                count += 1
+            direction = 1 if v > extreme else -1
+            extreme = v
+        if direction == 0 and abs(v - vals[0]) >= SWING:
+            direction = 1 if v > vals[0] else -1
+    return count
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--max", type=int, default=72, help="sallamada ulaşılan boyut (varsayılan 72)")
+    ap.add_argument("--debug", action="store_true")
+    args = ap.parse_args()
+
+    theme, base = cursor_conf()
+    cur = base          # şu an uygulanan boyut
+    hist = deque()      # (t, x, y)
+    last_shake = 0.0
+
+    def set_size(size):
+        nonlocal cur
+        size = int(round(size))
+        if size != cur:
+            r = hypr(f"setcursor {theme} {size}").strip()
+            if r != "ok":
+                print(f"setcursor {theme} {size}: {r}", flush=True)
+            cur = size
+
+    def restore(*_):
+        try:
+            set_size(base)
+        finally:
+            sys.exit(0)
+
+    signal.signal(signal.SIGTERM, restore)
+    signal.signal(signal.SIGINT, restore)
+
+    while True:
+        time.sleep(STEP)
+        try:
+            p = cursor_pos()
+        except OSError:
+            time.sleep(1)  # Hyprland yeniden başlıyor olabilir
+            continue
+        if not p:
+            continue
+        now = time.monotonic()
+        hist.append((now, *p))
+        while hist and now - hist[0][0] > WINDOW:
+            hist.popleft()
+
+        path = sum(math.dist(a[1:], b[1:]) for a, b in zip(hist, list(hist)[1:]))
+        turns = max(reversals([h[1] for h in hist]), reversals([h[2] for h in hist]))
+        shaking = path > MIN_PATH and turns >= SWINGS
+
+        if shaking:
+            if cur == base:
+                theme, base = cursor_conf()  # tema değişmiş olabilir
+                print(f"sallama: yol={path:.0f} dönüş={turns} -> {args.max}", flush=True)
+            last_shake = now
+            target = args.max
+        elif now - last_shake > HOLD:
+            target = base
+        else:
+            target = cur
+
+        if target != cur:
+            # yumuşak geçiş: büyürken hızlı, küçülürken yavaş
+            rate = 0.35 if target > cur else 0.18
+            nxt = cur + (target - cur) * rate
+            if abs(target - nxt) < 2:
+                nxt = target
+            if args.debug:
+                print(f"path={path:.0f} turns={turns} size={cur}->{round(nxt)}", flush=True)
+            set_size(nxt)
+
+
+if __name__ == "__main__":
+    main()
