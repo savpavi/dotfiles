@@ -72,7 +72,6 @@ dot-theme reapply         # re-render the active theme
 | `dot-quicklook FILE` | Quick Look-style preview through GNOME Sushi; bound to Space in Thunar, pressing again closes it |
 | `dot-send [FILE…]` | Send files to the paired phone over KDE Connect (file picker without arguments); bar widget `dotSend`: left click sends, right click opens LocalSend |
 | `dot-drive <action>` | Google Drive mounted at `~/GoogleDrive` with rclone: `status` (JSON for the bar's Drive widget), `link FILE…` copies the Drive link without changing sharing, `share FILE…` creates a public link after confirming, `sync [NAME]` two-way folder sync with rclone bisync, `open`, `web`, `restart` (Thunar actions for link and share) |
-| `dot-shake-cursor` | KDE-style shake to find: shaking the mouse grows the Hyprland cursor (default 72 px, `--max`), it shrinks back after you stop. Theme and size come from `~/.config/hypr/savpavi/cursor.lua`; runs from `extras/systemd/dot-shake-cursor.service` |
 | `dot-ocr` | Select a region, OCR it with Tesseract, copy the text |
 | `dot-webapp Name https://url` | Create a Helium web-app launcher (never overwrites) |
 | `dot-keys` | Keybind sheet of savpavi-shell, read from the Hyprland Lua config and its comments (Super+K); `--text` prints it |
