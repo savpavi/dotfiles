@@ -78,7 +78,18 @@ single_post() {
         *) [[ -n $path ]] ;;   # kök adres (site ana sayfası) hiçbir sitede indirilmez
     esac
 }
-if [ "$force" -eq 0 ] && ! single_post; then
+# X profili (x.com/kullanici veya /media) → yalnız medya sekmesi; sınır aşağıdaki GRAB_MAX_FILES/GRAB_TIMEOUT. (24.10.2026)
+x_profile() {
+    case "$host" in x.com|twitter.com|mobile.twitter.com) ;; *) return 1 ;; esac
+    [[ $path =~ ^/([A-Za-z0-9_]{1,15})(/(media|with_replies|highlights))?$ ]] || return 1
+    case "${BASH_REMATCH[1],,}" in
+        home|explore|search|notifications|messages|i|settings|compose|login|logout|signup|tos|privacy|jobs|hashtag|lists|bookmarks) return 1 ;;
+    esac
+    url="https://x.com/${BASH_REMATCH[1]}/media"
+}
+if [ "$force" -eq 0 ] && x_profile; then
+    :
+elif [ "$force" -eq 0 ] && ! single_post; then
     notify -u critical "İndirilmedi: akış linki" "$host${path:-/} tek bir gönderi değil (ana sayfa/hesap/keşfet). Bilerek istiyorsan: dot-grab --force URL"
     exit 2
 fi
