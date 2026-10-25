@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# dot-grab — açık Zen sekmesini veya panodaki linki yt-dlp / gallery-dl ile indirir.
-# Kısayol: SUPER+SHIFT+D (Zen odaktaysa sekme, değilse pano), SUPER+CTRL+D (her zaman pano).
+# dot-grab — açık Brave Origin sekmesini veya panodaki linki yt-dlp / gallery-dl ile indirir.
+# Kısayol: SUPER+SHIFT+D (Brave odaktaysa sekme, değilse pano), SUPER+CTRL+D (her zaman pano).
 # Video siteleri → yt-dlp (~/Downloads/yt-dlp), görsel/galeri siteleri → gallery-dl (~/Downloads/gallery-dl).
-# Bilinmeyen site önce yt-dlp, olmazsa gallery-dl. Çerezler Zen profilinden okunur (girişli içerik için).
+# Bilinmeyen site önce yt-dlp, olmazsa gallery-dl. Çerezler Brave Origin profilinden okunur (girişli içerik için; 25.10.2026'dan beri, önce Zen).
 # Gerekli: yt-dlp ffmpeg gallery-dl (uv tool) wl-clipboard libnotify hyprctl. (11.10.2026)
 # Kullanım: dot-grab [--clip|--tab] [--force] [URL]
 set -u -o pipefail
 
-ZEN_CLASS="app.zen_browser.zen"
-ZEN_ROOT="$HOME/.var/app/app.zen_browser.zen/.zen"
+BROWSER_CLASS="brave-origin"
+BRAVE_PROFILE="$HOME/.config/BraveSoftware/Brave-Origin/Default"
 VIDEO_DIR="$HOME/Downloads/yt-dlp"
 GALLERY_DIR="$HOME/Downloads/gallery-dl"
 LOG_DIR="$HOME/.cache/dot-grab"
@@ -25,10 +25,10 @@ for a in "$@"; do
     esac
 done
 
-# Zen adres çubuğundan URL'yi al: Ctrl+L, Ctrl+C, Esc; panonun eski içeriğini geri koy.
+# Tarayıcı adres çubuğundan URL'yi al: Ctrl+L, Ctrl+C, Esc; panonun eski içeriğini geri koy.
 tab_url() {
     # Lua string'i içinde \. geçersiz kaçış; nokta kaçırılmadan bırakılır.
-    local old new win="class:^${ZEN_CLASS}\$"
+    local old new win="class:^${BROWSER_CLASS}\$"
     old="$(wl-paste --no-newline 2>/dev/null || true)"
     printf '' | wl-copy
     for k in L C; do
@@ -45,7 +45,7 @@ tab_url() {
 if [ -z "$url" ]; then
     if [ "$mode" = auto ]; then
         active="$(hyprctl activewindow -j 2>/dev/null | sed -n 's/.*"class": *"\([^"]*\)".*/\1/p' | head -1)"
-        [ "$active" = "$ZEN_CLASS" ] && mode=tab || mode=clip
+        [ "$active" = "$BROWSER_CLASS" ] && mode=tab || mode=clip
     fi
     if [ "$mode" = tab ]; then url="$(tab_url)"; else url="$(wl-paste --no-newline 2>/dev/null || true)"; fi
 fi
@@ -94,10 +94,11 @@ elif [ "$force" -eq 0 ] && ! single_post; then
     exit 2
 fi
 
-# Zen'in kullandığı profil (installs.ini → Default=)
-profile="$(sed -n 's/^Default=//p' "$ZEN_ROOT/installs.ini" 2>/dev/null | head -1)"
+# Brave Origin çerezleri. Anahtar GNOME Keyring'de ("Brave Safe Storage"); Hyprland'de otomatik seçim yanlış
+# anahtarlığa düşüp v11 çerezleri çözemiyor, o yüzden +gnomekeyring açık yazılı. secretstorage gerekir:
+# uv tool install --force 'yt-dlp[default]' --with secretstorage (gallery-dl için de aynı). (25.10.2026)
 cookie_args=()
-[ -n "$profile" ] && [ -f "$ZEN_ROOT/$profile/cookies.sqlite" ] && cookie_args=(--cookies-from-browser "firefox:$ZEN_ROOT/$profile")
+[ -f "$BRAVE_PROFILE/Cookies" ] && cookie_args=(--cookies-from-browser "brave+gnomekeyring:$BRAVE_PROFILE")
 
 case "$host" in
     youtube.com|youtu.be|music.youtube.com|twitch.tv|*.twitch.tv|vimeo.com|dailymotion.com|tiktok.com|*.tiktok.com|kick.com|soundcloud.com|rumble.com|bilibili.com)

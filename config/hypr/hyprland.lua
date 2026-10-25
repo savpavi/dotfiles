@@ -278,7 +278,7 @@ hl.bind("ALT + SPACE", hl.dsp.exec_cmd(menu))  -- Uygulama başlatıcı
 hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("dot-shell clipboard"))  -- Pano geçmişi
 hl.bind(mainMod .. " + K", hl.dsp.exec_cmd("dot-keys"))  -- Kısayol penceresi
 hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("espanso cmd search"))  -- Espanso snippet araması
-hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("gtk-launch app.zen_browser.zen"))  -- Tarayıcı (Zen)
+hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("gtk-launch brave-origin"))  -- Tarayıcı (Brave Origin)
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("/home/savpavi/.local/bin/start-windows-looking-glass"))  -- Windows VM (Looking Glass)
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("flatpak run com.spotify.Client"))  -- Spotify
 hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("flatpak run org.telegram.desktop"))  -- Telegram
@@ -295,7 +295,7 @@ hl.bind(mainMod .. " + escape", hl.dsp.exec_cmd("dot-shell session"))  -- Oturum
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())  -- Sahte döşeme (pseudo)
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))  -- Bölme yönünü değiştir
 hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("dot-shell bar"))  -- Barı göster/gizle
-hl.bind(mainMod .. " + SHIFT + D", hl.dsp.exec_cmd("dot-grab"))  -- İndir: Zen sekmesi ya da panodaki link
+hl.bind(mainMod .. " + SHIFT + D", hl.dsp.exec_cmd("dot-grab"))  -- İndir: Brave sekmesi ya da panodaki link
 hl.bind(mainMod .. " + CTRL + D", hl.dsp.exec_cmd("dot-grab --clip"))  -- İndir: panodaki link
 hl.bind(mainMod .. " + SHIFT + space", hl.dsp.exec_cmd("dot-shell dig"))  -- DigUp: dosya içeriğinde ara
 

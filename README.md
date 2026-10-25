@@ -65,7 +65,7 @@ dot-theme reapply         # re-render the active theme
 |---|---|
 | `dot-shell <action>` | Shared shortcut actions (launcher, clipboard, lock, bar, volume, settings, themes…) routed to savpavi-shell or the DMS fallback; `dot-shell switch` toggles between them |
 | `dot-shell-theme` | Themes for savpavi-shell and the apps (see above) |
-| `dot-grab` | Download the focused Zen tab or the clipboard link: video sites via yt-dlp, galleries via gallery-dl, unknown sites try both. Uses the browser's cookies and reports through notifications (Super+Shift+D tab, Super+Ctrl+D clipboard) |
+| `dot-grab` | Download the focused Brave Origin tab or the clipboard link: video sites via yt-dlp, galleries via gallery-dl, unknown sites try both. Uses the browser's cookies and reports through notifications (Super+Shift+D tab, Super+Ctrl+D clipboard) |
 | `dot-health` | Read-only desktop health report; never restarts or repairs anything |
 | `dot-record` | Screen recording via Niri IPC + wf-recorder; the same command starts and stops |
 | `dot-resolve [FILE…]` | Prepare a video for DaVinci Resolve: copy the video stream, PCM audio, write `<name>_resolve.mov` (Thunar action) |
@@ -73,7 +73,7 @@ dot-theme reapply         # re-render the active theme
 | `dot-send [FILE…]` | Send files to the paired phone over KDE Connect (file picker without arguments); bar widget `dotSend`: left click sends, right click opens LocalSend |
 | `dot-drive <action>` | Google Drive mounted at `~/GoogleDrive` with rclone: `status` (JSON for the bar's Drive widget), `link FILE…` copies the Drive link without changing sharing, `share FILE…` creates a public link after confirming, `sync [NAME]` two-way folder sync with rclone bisync, `open`, `web`, `restart` (Thunar actions for link and share) |
 | `dot-ocr` | Select a region, OCR it with Tesseract, copy the text |
-| `dot-webapp Name https://url` | Create a Helium web-app launcher (never overwrites) |
+| `dot-webapp Name https://url` | Create a Brave Origin web-app launcher (never overwrites) |
 | `dot-keys` | Keybind sheet of savpavi-shell, read from the Hyprland Lua config and its comments (Super+K); `--text` prints it |
 | `dot-askpass` | Zenity askpass helper for `sudo -A` |
 

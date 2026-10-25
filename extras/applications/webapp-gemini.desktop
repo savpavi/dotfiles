@@ -2,8 +2,8 @@
 Type=Application
 Version=1.0
 Name=Gemini
-Exec=helium "--app=https://gemini.google.com/app"
-Icon=helium
+Exec=brave-origin "--app=https://gemini.google.com/app"
+Icon=brave-origin
 Terminal=false
 Categories=Network;
 StartupNotify=true
