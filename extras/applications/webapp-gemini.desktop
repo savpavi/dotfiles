@@ -2,7 +2,7 @@
 Type=Application
 Version=1.0
 Name=Gemini
-Exec=brave-origin "--app=https://gemini.google.com/app"
+Exec=brave-origin --disable-features=TouchpadOverscrollHistoryNavigation,OverscrollHistoryNavigation "--app=https://gemini.google.com/app"
 Icon=brave-origin
 Terminal=false
 Categories=Network;

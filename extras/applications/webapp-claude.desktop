@@ -2,7 +2,7 @@
 Type=Application
 Version=1.0
 Name=Claude
-Exec=brave-origin "--app=https://claude.ai/"
+Exec=brave-origin --disable-features=TouchpadOverscrollHistoryNavigation,OverscrollHistoryNavigation "--app=https://claude.ai/"
 Icon=brave-origin
 Terminal=false
 Categories=Network;
