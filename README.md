@@ -65,7 +65,7 @@ dot-theme reapply         # re-render the active theme
 |---|---|
 | `dot-shell <action>` | Shared shortcut actions (launcher, clipboard, lock, bar, volume, settings, themes…) routed to savpavi-shell or the DMS fallback; `dot-shell switch` toggles between them |
 | `dot-shell-theme` | Themes for savpavi-shell and the apps (see above) |
-| `dot-grab` | Download the focused Brave Origin tab or the clipboard link: video sites via yt-dlp, galleries via gallery-dl, unknown sites try both. Uses the browser's cookies and reports through notifications (Super+Shift+D tab, Super+Ctrl+D clipboard) |
+| `dot-grab` | Download the focused Brave Origin tab or the clipboard link: video sites via yt-dlp, galleries via gallery-dl, unknown sites try both, then fall back to the direct file links found on the page (videos and archives first, otherwise images; saved under a folder named after the page title). Uses the browser's cookies and reports through notifications (Super+Shift+D tab, Super+Ctrl+D clipboard) |
 | `dot-health` | Read-only desktop health report; never restarts or repairs anything |
 | `dot-record` | Screen recording via Niri IPC + wf-recorder; the same command starts and stops |
 | `dot-resolve [FILE…]` | Prepare a video for DaVinci Resolve: copy the video stream, PCM audio, write `<name>_resolve.mov` (Thunar action) |

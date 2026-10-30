@@ -2,7 +2,7 @@
 # dot-grab — açık Brave Origin sekmesini veya panodaki linki yt-dlp / gallery-dl ile indirir.
 # Kısayol: SUPER+SHIFT+D (Brave odaktaysa sekme, değilse pano), SUPER+CTRL+D (her zaman pano).
 # Video siteleri → yt-dlp (~/Downloads/yt-dlp), görsel/galeri siteleri → gallery-dl (~/Downloads/gallery-dl).
-# Bilinmeyen site önce yt-dlp, olmazsa gallery-dl. Çerezler Brave Origin profilinden okunur (girişli içerik için; 25.10.2026'dan beri, önce Zen).
+# Bilinmeyen site önce yt-dlp, olmazsa gallery-dl, o da olmazsa sayfadaki doğrudan dosya linkleri (direct). Çerezler Brave Origin profilinden okunur (girişli içerik için; 25.10.2026'dan beri, önce Zen).
 # Gerekli: yt-dlp ffmpeg gallery-dl (uv tool) wl-clipboard libnotify hyprctl. (11.10.2026)
 # Kullanım: dot-grab [--clip|--tab] [--force] [URL]
 set -u -o pipefail
@@ -105,7 +105,7 @@ case "$host" in
         tools=(yt) ;;
     instagram.com|x.com|twitter.com|reddit.com|*.reddit.com|redd.it|imgur.com|pixiv.net|pinterest.*|*.tumblr.com|tumblr.com|deviantart.com|artstation.com|bsky.app|imgbox.com|flickr.com|catbox.moe)
         tools=(gallery) ;;
-    *)  tools=(yt gallery) ;;
+    *)  tools=(yt gallery direct) ;;
 esac
 # Yerel ek liste (repoda değil): her satır bir gallery-dl alan adı deseni, ör. "*.example.com"
 EXTRA="${XDG_CONFIG_HOME:-$HOME/.config}/dot-grab/gallery-domains"
@@ -136,13 +136,43 @@ run_gallery() {
         -d "$GALLERY_DIR" "$url"
 }
 
+# Son çare: iki araç da siteyi tanımıyorsa (ör. fileditchalbums.st) sayfadaki doğrudan dosya linklerini
+# (href/src) toplar ve yt-dlp ile indirir; video/arşiv varsa yalnız onlar, yoksa görseller. Klasör = sayfa başlığı.
+# Büyük albümler için timeout yok; dosya sınırı GRAB_MAX_FILES. (30.10.2026)
+run_direct() {
+    local page origin title links media='mp4|mkv|webm|mov|m4v|avi|wmv|flv|ts|zip|rar|7z' img='jpe?g|png|gif|webp|avif'
+    page="$(curl -sfL -m 30 -A 'Mozilla/5.0 (X11; Linux x86_64)' "$url")" || return 1
+    origin="$(printf '%s' "$url" | sed -E 's#^(https?://[^/]+).*#\1#')"
+    pick() {
+        printf '%s' "$page" | grep -oiE "(href|src)=[\"'][^\"']+\.($1)([?#][^\"']*)?[\"']" |
+            sed -E "s/^[a-zA-Z]+=[\"']//; s/[\"']\$//; s/&amp;/\\&/g; s#^//#https://#; s#^/#$origin/#" |
+            grep -E '^https?://' | awk '!seen[$0]++' | head -n "${GRAB_MAX_FILES:-300}"
+    }
+    links="$(pick "$media")"
+    [ -n "$links" ] || links="$(pick "$img")"
+    [ -n "$links" ] || { echo "ERROR: direct: sayfada doğrudan dosya linki yok" >&2; return 1; }
+    title="$(printf '%s' "$page" | tr '\n' ' ' | sed -nE 's#.*<title[^>]*>([^<]*)</title>.*#\1#Ip' |
+        sed -E 's/ [·|–-] [^·|–-]*$//; s#[/\\:*?"<>|]#_#g; s/^[[:space:].]+//; s/[[:space:]]+$//' | cut -c1-100)"
+    echo "direct: $(printf '%s\n' "$links" | wc -l) link" >&2
+    printf '%s\n' "$links" | yt-dlp --ignore-errors --newline --no-progress -a - \
+        -o "$VIDEO_DIR/${title:-$host}/%(title).150B.%(ext)s" \
+        --no-simulate --print after_move:filepath
+    return 0
+}
+
 ok=0 used=""
 for t in "${tools[@]}"; do
     used="$t"
     echo "== $t: $url" >>"$log"
     # Çıktı önce yakalanıp sonra loga eklenir (aynı pipeline'da $log'u okuyup yazmamak için, SC2094).
-    if [ "$t" = yt ]; then out="$(run_yt 2>>"$log")"; rc=$?
-    else out="$(run_gallery 2>>"$log")"; rc=$?; fi
+    rc=1
+    case "$t" in
+        yt) out="$(run_yt 2>>"$log")"; rc=$? ;;
+        gallery) out="$(run_gallery 2>>"$log")"; rc=$? ;;
+        direct) out="$(run_direct 2>>"$log")"; rc=$?
+            # --ignore-errors: bazı dosyalar inmese de inenler başarı sayılır
+            [ $rc -eq 0 ] && [ -z "$out" ] && rc=1 ;;
+    esac
     [ -n "$out" ] && printf '%s\n' "$out" >>"$log"
     # gallery-dl hiçbir şey indirmediyse (zaten varsa '# ' önekli satır yazar) bunu da başarı say
     if [ $rc -eq 0 ]; then ok=1; break; fi
@@ -153,11 +183,11 @@ if [ $ok -eq 1 ]; then
     # Fonksiyonlar $( ) içinde (alt kabukta) çalıştığı için klasör burada belirlenir.
     last="$(printf '%s\n' "$out" | tail -1 | sed 's/^# //')"
     name="$(basename "$last")"
-    dir="$([ "$used" = yt ] && echo "$VIDEO_DIR" || echo "$GALLERY_DIR")"
+    dir="$([ "$used" = gallery ] && echo "$GALLERY_DIR" || echo "$VIDEO_DIR")"
     [ -n "$last" ] && [ -d "$(dirname "$last")" ] && dir="$(dirname "$last")"
     msg="$name"; [ "$count" -gt 1 ] && msg="$count dosya — son: $name"
     [ "$count" -eq 0 ] && msg="Yeni dosya yok (zaten indirilmiş olabilir)"
-    act="$(notify-send -a Grab "${replace[@]}" -A open="Klasörü aç" "Bitti ($([ "$used" = yt ] && echo yt-dlp || echo gallery-dl))" "$msg" 2>/dev/null || true)"
+    act="$(notify-send -a Grab "${replace[@]}" -A open="Klasörü aç" "Bitti ($(case "$used" in yt) echo yt-dlp ;; gallery) echo gallery-dl ;; *) echo direkt link ;; esac))" "$msg" 2>/dev/null || true)"
     [ "$act" = open ] && setsid -f xdg-open "$dir" >/dev/null 2>&1
     exit 0
 fi
