@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
-# dot-grab — açık Brave Origin sekmesini veya panodaki linki yt-dlp / gallery-dl ile indirir.
-# Kısayol: SUPER+SHIFT+D (Brave odaktaysa sekme, değilse pano), SUPER+CTRL+D (her zaman pano).
+# dot-grab — açık Firefox sekmesini veya panodaki linki yt-dlp / gallery-dl ile indirir.
+# Kısayol: SUPER+SHIFT+D (Firefox odaktaysa sekme, değilse pano), SUPER+CTRL+D (her zaman pano).
 # Video siteleri → yt-dlp (~/Downloads/yt-dlp), görsel/galeri siteleri → gallery-dl (~/Downloads/gallery-dl).
-# Bilinmeyen site önce yt-dlp, olmazsa gallery-dl, o da olmazsa sayfadaki doğrudan dosya linkleri (direct). Çerezler Brave Origin profilinden okunur (girişli içerik için; 25.10.2026'dan beri, önce Zen).
+# Bilinmeyen site önce yt-dlp, olmazsa gallery-dl, o da olmazsa sayfadaki doğrudan dosya linkleri (direct). Çerezler Firefox profilinden okunur (girişli içerik için; 05.11.2026'dan beri, önce Brave Origin ve Zen).
 # Gerekli: yt-dlp ffmpeg gallery-dl (uv tool) wl-clipboard libnotify hyprctl. (11.10.2026)
 # Kullanım: dot-grab [--clip|--tab] [--force] [URL]
 set -u -o pipefail
 
-BROWSER_CLASS="brave-origin"
-BRAVE_PROFILE="$HOME/.config/BraveSoftware/Brave-Origin/Default"
+BROWSER_CLASS="org.mozilla.firefox"
+# Firefox 159 profili XDG yolunda; kurulumun varsayılan profili installs.ini'den okunur.
+FF_DIR="$HOME/.config/mozilla/firefox"
+FF_PROFILE="$FF_DIR/$(sed -n 's/^Default=//p' "$FF_DIR/installs.ini" 2>/dev/null | head -1)"
 VIDEO_DIR="$HOME/Downloads/yt-dlp"
 GALLERY_DIR="$HOME/Downloads/gallery-dl"
 LOG_DIR="$HOME/.cache/dot-grab"
@@ -94,11 +96,10 @@ elif [ "$force" -eq 0 ] && ! single_post; then
     exit 2
 fi
 
-# Brave Origin çerezleri. Anahtar GNOME Keyring'de ("Brave Safe Storage"); Hyprland'de otomatik seçim yanlış
-# anahtarlığa düşüp v11 çerezleri çözemiyor, o yüzden +gnomekeyring açık yazılı. secretstorage gerekir:
-# uv tool install --force 'yt-dlp[default]' --with secretstorage (gallery-dl için de aynı). (25.10.2026)
+# Firefox çerezleri (cookies.sqlite şifresiz, anahtarlık gerekmez). Profil yolu açık verilir, çünkü
+# yt-dlp/gallery-dl varsayılan olarak ~/.mozilla/firefox'a bakar. (05.11.2026)
 cookie_args=()
-[ -f "$BRAVE_PROFILE/Cookies" ] && cookie_args=(--cookies-from-browser "brave+gnomekeyring:$BRAVE_PROFILE")
+[ -f "$FF_PROFILE/cookies.sqlite" ] && cookie_args=(--cookies-from-browser "firefox:$FF_PROFILE")
 
 case "$host" in
     youtube.com|youtu.be|music.youtube.com|twitch.tv|*.twitch.tv|vimeo.com|dailymotion.com|tiktok.com|*.tiktok.com|kick.com|soundcloud.com|rumble.com|bilibili.com)
