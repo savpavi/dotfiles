@@ -48,6 +48,6 @@ Column {
         elide: Text.ElideNone
         color: Theme.fgDim
         font.pixelSize: Theme.fontSmall
-        text: "Seçim, kategorinin tüm dosya türleri için ~/.config/mimeapps.list dosyasına yazılır (xdg-mime). Terminal seçimi bazı uygulamalarda TERMINAL ortam değişkenine de bağlıdır (şu an kitty)."
+        text: "Seçim, kategorinin tüm dosya türleri için ~/.config/mimeapps.list dosyasına yazılır (xdg-mime). Terminal seçimi bazı uygulamalarda TERMINAL ortam değişkenine de bağlıdır (şu an ghostty)."
     }
 }

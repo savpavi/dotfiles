@@ -1,7 +1,7 @@
 # App colour templates
 
 Templates that `bin/dot-shell-theme` fills from the active theme's palette and
-writes to each app's config (GTK 3/4, Qt5/6ct, KDE colour schemes, kitty,
+writes to each app's config (GTK 3/4, Qt5/6ct, KDE colour schemes, Ghostty, kitty,
 Vesktop/Vencord, Zed, Zen, Hyprland borders, dgop).
 
 They are copied from DankMaterialShell's matugen templates

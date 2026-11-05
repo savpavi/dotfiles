@@ -2,11 +2,11 @@
 <actions>
 <action>
 	<icon>utilities-terminal</icon>
-	<name>Kitty ile aç</name>
+	<name>Ghostty ile aç</name>
 	<submenu></submenu>
 	<unique-id>1788019763204830-1</unique-id>
-	<command>kitty --directory=%f</command>
-	<description>Seçilen klasörde Kitty terminalini aç</description>
+	<command>ghostty --working-directory=%f</command>
+	<description>Seçilen klasörde Ghostty terminalini aç</description>
 	<range></range>
 	<patterns>*</patterns>
 	<startup-notify/>

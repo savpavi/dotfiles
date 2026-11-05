@@ -7,7 +7,7 @@ Bu dosya elle tutulan eski rehberdir; config ile farklı olabilir.
 
 | Kısayol | İşlev |
 |---|---|
-| `SUPER + Q` | Kitty terminali aç |
+| `SUPER + Q` | Ghostty terminali aç |
 | `SUPER + E` | Dolphin dosya yöneticisini aç |
 | `Alt + Space` | Hyprlauncher uygulama menüsünü aç |
 | `Alt + Space` sonra `=` | Hesap makinesi — sonuç panoya kopyalanır |

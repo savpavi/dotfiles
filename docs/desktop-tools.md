@@ -10,7 +10,7 @@
 | Ctrl+Tab | Sessiz bölge kaydı başlat; yeniden basınca durdur |
 | Super+Ctrl+Print | Bölge/monitör ve sessiz/sistem sesi/mikrofon seç; kayıt varsa durdur |
 | Super+Shift+S | Türkçe Niri kısayol rehberi |
-| Super+Ctrl+H | Kitty'de salt okunur masaüstü sağlık raporu |
+| Super+Ctrl+H | Terminalde salt okunur masaüstü sağlık raporu |
 | Super+Ctrl+G | Dotfiles reposunu Lazygit'te aç |
 | Alt+Space → Gemini / Claude | Brave Origin uygulama penceresi aç |
 

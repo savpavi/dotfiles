@@ -48,7 +48,7 @@
       "calendar": { "mode": "month", "weeks-pos": "right" }
     },
 
-    "cpu":    { "format": "  {usage}%", "interval": 3, "on-click": "kitty -e btop" },
+    "cpu":    { "format": "  {usage}%", "interval": 3, "on-click": "ghostty -e btop" },
     "memory": { "format": "  {percentage}%", "interval": 5, "tooltip-format": "{used:0.1f}G / {total:0.1f}G" },
     "temperature": {
       // k10temp (Ryzen 9800X3D). PCI yolu sabit, hwmonN degisebilir --

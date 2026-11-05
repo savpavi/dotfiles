@@ -38,4 +38,5 @@ config/hypr/dms/cursor.lua
 # dot-shell-theme tarafından üretilen dosyalar (savpavi-shell)
 config/hypr/savpavi/
 config/kitty/savpavi-*.conf
+config/ghostty/savpavi-theme
 config/btop/themes/savpavi.theme

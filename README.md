@@ -8,7 +8,7 @@ These are personal configs. Monitor names (`DP-1`, `DP-3`), paths and app choice
 
 | Path | What it holds |
 |---|---|
-| `config/` | App configs, symlinked into `~/.config/<name>` by `dot-link` (Hyprland, savpavi-shell, DankMaterialShell, Kitty, Alacritty, Waybar, Rofi, SwayNC, btop, fastfetch, Starship, …) |
+| `config/` | App configs, symlinked into `~/.config/<name>` by `dot-link` (Hyprland, savpavi-shell, DankMaterialShell, Ghostty, Kitty, Alacritty, Waybar, Rofi, SwayNC, btop, fastfetch, Starship, …) |
 | `bin/` | `dot-*` helper scripts (add to `PATH`) |
 | `themes/` | 22 colour themes adapted from Omarchy |
 | `templates/` | `*.tpl` files rendered by `dot-theme`; `templates/apps/` app colour templates filled by `dot-shell-theme` |
@@ -45,7 +45,7 @@ dot-shell-theme apply dwm-nord
 dot-shell-theme wall        # next wallpaper of the active theme
 ```
 
-`dot-shell-theme` reads `config/savpavi-shell/themes/` (theme list + palettes) and writes the shell palette, Hyprland border colours and cursor, and app colours for GTK 3/4, Qt5/6ct, KDE, kitty, Vesktop/Vencord, Zed and btop from `templates/apps/`. With waywallen installed it also opens the theme's Wallpaper Engine wallpaper.
+`dot-shell-theme` reads `config/savpavi-shell/themes/` (theme list + palettes) and writes the shell palette, Hyprland border colours and cursor, and app colours for GTK 3/4, Qt5/6ct, KDE, Ghostty, kitty, Vesktop/Vencord, Zed and btop from `templates/apps/`. With waywallen installed it also opens the theme's Wallpaper Engine wallpaper.
 
 ## Themes (dot-theme, older)
 

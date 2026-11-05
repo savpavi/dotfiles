@@ -73,7 +73,7 @@ Column {
         BarButton {
             Icon { name: "monitoring"; anchors.verticalCenter: parent.verticalCenter }
             Label { text: "Sistem izleyici"; anchors.verticalCenter: parent.verticalCenter }
-            onClicked: Quickshell.execDetached(["kitty", "--class", "btop", "btop"])
+            onClicked: Quickshell.execDetached(["ghostty", "--title=btop", "-e", "btop"])
         }
     }
 }

@@ -16,5 +16,5 @@ fi
 
 # savpavi-shell çalışmıyorsa (ör. dot-shell switch ile DMS açıksa) listeyi terminalde göster.
 if ! qs -p "$shell" ipc call keybinds toggle >/dev/null 2>&1; then
-  exec kitty --class dot-keys -e sh -c 'dot-keys --text | less -S'
+  exec ghostty --title=dot-keys -e sh -c 'dot-keys --text | less -S'
 fi

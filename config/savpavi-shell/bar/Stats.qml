@@ -21,5 +21,5 @@ BarButton {
         Label { text: Math.round(SystemStats.mem * 100) + "%"; font.family: Theme.mono; font.pixelSize: Theme.fontSmall; anchors.verticalCenter: parent.verticalCenter }
     }
 
-    onClicked: Quickshell.execDetached(["kitty", "--class", "btop", "btop"])
+    onClicked: Quickshell.execDetached(["ghostty", "--title=btop", "-e", "btop"])
 }

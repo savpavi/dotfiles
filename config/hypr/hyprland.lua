@@ -36,7 +36,7 @@ end
 ---------------------
 
 -- Set programs that you use
-local terminal    = "kitty"
+local terminal    = "ghostty"
 local fileManager = "thunar"
 local menu        = "dot-shell launcher"
 
@@ -268,7 +268,7 @@ hl.gesture({
 local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 
 -- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
-hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))  -- Terminal (Kitty)
+hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))  -- Terminal (Ghostty)
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())  -- Pencereyi kapat
 -- closeWindowBind:set_enabled(false)
 -- Super+M pencere duzeni: window-mode.lua; cikis Super+Escape menusunde.

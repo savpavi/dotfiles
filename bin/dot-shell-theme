@@ -84,6 +84,7 @@ APP_OUTPUTS = [
     ('dark-kcolorscheme.colors', DATA/'color-schemes/SavpaviDark.colors'),
     ('kitty.conf', CFG/'kitty/savpavi-theme.conf'),
     ('kitty-tabs.conf', CFG/'kitty/savpavi-tabs.conf'),
+    ('ghostty-theme', CFG/'ghostty/savpavi-theme'),
     ('vesktop.css', CFG/'vesktop/themes/savpavi.css'),
     ('vesktop.css', CFG/'Vencord/themes/savpavi.css'),
     ('dank-zed.json', CFG/'zed/themes/savpavi.json'),
@@ -165,7 +166,8 @@ def render_apps(tid, mode):
             print(f"uyarı: {src} içinde doldurulmayan {len(left)} yer tutucu: {left[0]}", file=sys.stderr)
         dst.parent.mkdir(parents=True, exist_ok=True)
         dst.write_text(text)
-    # açık uygulamaları tazele: kitty (SIGUSR1), Hyprland kenarlıkları, GTK
+    # açık uygulamaları tazele: ghostty (SIGUSR2), kitty (SIGUSR1), Hyprland kenarlıkları, GTK
+    sp.run(['pkill', '-USR2', '-x', 'ghostty'], capture_output=True)
     sp.run(['pkill', '-USR1', '-x', 'kitty'], capture_output=True)
     sp.run(['hyprctl', 'reload', 'config-only'], capture_output=True)
     sp.run(['gsettings', 'set', 'org.gnome.desktop.interface', 'color-scheme',

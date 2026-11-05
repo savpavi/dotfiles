@@ -49,7 +49,7 @@ Column {
 
     Label { text: "Tema"; color: Theme.fgDim; font.pixelSize: Theme.fontSmall }
     Label { width: parent.width; wrapMode: Text.WordWrap; elide: Text.ElideNone; color: Theme.fgDim; font.pixelSize: Theme.fontSmall
-        text: "Tema; bar, kenarlıklar, imleç, duvar kağıdı ve uygulama renklerini (GTK, Qt, kitty, Zed, Vesktop, btop) birlikte değiştirir." }
+        text: "Tema; bar, kenarlıklar, imleç, duvar kağıdı ve uygulama renklerini (GTK, Qt, Ghostty, kitty, Zed, Vesktop, btop) birlikte değiştirir." }
 
     Grid {
         width: parent.width
