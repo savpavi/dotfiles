@@ -84,6 +84,15 @@ else
     fi
   fi
 
+  # Claude Desktop keeps its own token, so nothing renews the CLI's unless the
+  # CLI runs. `claude auth status` refreshes it without using the model.
+  best=$(head -n 1 "$work/ordered" | cut -f1)
+  case "$best" in ''|*[!0-9]*) best=0 ;; esac
+  if [ "$best" -le $((now_ms + 300000)) ]; then
+    "$(command -v claude || echo "$HOME/.local/bin/claude")" auth status >/dev/null 2>&1
+    collect
+  fi
+
   [ -s "$work/ordered" ] || exit 1   # no usable credentials anywhere
 
   ver=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
