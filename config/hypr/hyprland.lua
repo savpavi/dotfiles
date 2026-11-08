@@ -360,21 +360,17 @@ local suppressMaximizeRule = hl.window_rule({
 })
 -- suppressMaximizeRule:set_enabled(false)
 
--- Flameshot 13: span ASUS 2560x1440 + LG 1920x1080 at (2560,180).
+-- Flameshot 14 on Wayland: monitor picker first, then a capture window on that
+-- monitor. Selections can't span monitors any more, so no 4480px span rule.
 hl.window_rule({
-    name = "flameshot-multi-display",
+    name = "flameshot-picker",
     match = { class = "^flameshot$", title = "^flameshot$" },
     float = true,
     pin = true,
+    center = true,
     no_anim = true,
     rounding = 0,
     border_size = 0,
-    no_blur = true,
-    no_shadow = true,
-    fullscreen_state = "0 0",
-    monitor = "DP-1",
-    move = { 0, 0 },
-    size = { 4480, 1440 },
 })
 
 -- Looking Glass opens fullscreen on the LG 1080p monitor.

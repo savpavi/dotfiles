@@ -15,6 +15,23 @@ Row {
 
     spacing: 4
 
+    // Window counts come from IPC, so re-read them when windows open, close or move
+    Component.onCompleted: Hyprland.refreshWorkspaces()
+
+    Timer {
+        id: refreshTimer
+        interval: 100
+        onTriggered: Hyprland.refreshWorkspaces()
+    }
+
+    Connections {
+        target: Hyprland
+        function onRawEvent(event) {
+            if (["openwindow", "closewindow", "movewindow", "movewindowv2"].includes(event.name))
+                refreshTimer.restart();
+        }
+    }
+
     Repeater {
         model: root.workspaces
 
@@ -40,7 +57,9 @@ Row {
                 font.weight: dot.current ? Font.Bold : Font.Normal
                 color: dot.current ? Theme.onPrimary : Theme.fg
                 // empty workspaces fade back
-                opacity: dot.current || dot.modelData.toplevels.values.length > 0 ? 1 : 0.4
+                // lastIpcObject, not toplevels: Quickshell 0.3.2 can't map windows to
+                // named workspaces on Hyprland 0.57 ("not previously tracked")
+                opacity: dot.current || (dot.modelData.lastIpcObject?.windows ?? 0) > 0 ? 1 : 0.4
             }
 
             MouseArea {
