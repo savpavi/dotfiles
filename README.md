@@ -26,6 +26,8 @@ git clone https://github.com/savpavi/dotfiles.git ~/dotfiles
 export PATH="$HOME/dotfiles/bin:$PATH"
 ```
 
+On a fresh Arch install (after `archinstall`, as the normal user) `install/arch/install.sh` installs the packages in `install/arch/{pacman,aur,flatpak}.txt`, runs `dot-link` and enables the services. Stages are idempotent and can be named individually; `--dry-run` prints what would happen. The `disks` and `home` stages (fstab entries for my `/srv` disks, home restore from my backup) are opt-in and specific to my machine. VFIO and Looking Glass are not covered.
+
 `dot-link` moves anything already in `~/.config` to `~/.local/share/dotfiles-backup/<date>/` before linking. `dot-link --unlink` removes the links and copies the repo content back.
 
 ## savpavi-shell

@@ -1,0 +1,36 @@
+# Official repo packages (core/extra/multilib). One per line or space separated; # starts a comment.
+# -- build / base
+base-devel git cmake ninja dkms linux-headers rust nodejs npm uv python-pip python-pipx python-gobject python-secretstorage python-pyqt6 shellcheck shfmt
+# -- Hyprland session + savpavi-shell
+hyprland hypridle hyprpicker hyprpolkitagent hyprland-guiutils uwsm quickshell sddm
+xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-user-dirs xdg-utils xorg-xwayland xwayland-satellite
+qt6-wayland qt5-wayland qt6ct qt5ct qt6-imageformats qt6-svg qt6-multimedia breeze breeze-icons papirus-icon-theme
+cliphist wl-clipboard grim slurp satty flameshot wtype ydotool xdotool xclip brightnessctl pamixer playerctl
+cava matugen fuzzel zenity libnotify dex socat jq bc
+# -- audio / bluetooth / network
+pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber pavucontrol easyeffects
+bluez bluez-utils networkmanager nm-connection-editor network-manager-applet power-profiles-daemon firewalld openssh
+tailscale syncthing cloudflared rclone inotify-tools kdeconnect
+# -- secrets
+gnome-keyring libsecret seahorse ksshaskpass
+# -- files / storage
+thunar thunar-archive-plugin thunar-volman tumbler ffmpegthumbnailer gvfs gvfs-smb file-roller sushi
+btrfs-progs snapper snap-pac btrfs-assistant compsize smartmontools nfs-utils ntfs-3g exfatprogs dosfstools
+udisks2 upower fwupd zram-generator plocate restic nvme-cli
+# -- terminal / shell
+ghostty kitty zsh zsh-autosuggestions zsh-syntax-highlighting starship eza bat fzf zoxide ripgrep btop fastfetch
+yazi tmux thefuck lazygit github-cli vim nano man-db man-pages wget curl rsync unzip zip 7zip tree lsof dos2unix words
+usbutils pciutils ethtool tcpdump traceroute whois bind mtr nmap
+# -- fonts
+noto-fonts noto-fonts-emoji noto-fonts-cjk ttf-jetbrains-mono-nerd inter-font
+# -- GPU (AMD RX 9070 XT) / CPU
+amd-ucode mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon rocm-opencl-runtime clinfo
+# -- apps
+firefox mpv loupe papers libreoffice-fresh qbittorrent meld qalculate-gtk blender
+tesseract tesseract-data-tur tesseract-data-eng pandoc-cli mkvtoolnix-cli mediainfo ffmpeg wf-recorder
+scrcpy android-tools android-udev solaar headsetcontrol liquidctl lutris wine winetricks
+cups system-config-printer simple-scan
+# -- containers / VM (VFIO + Looking Glass are set up separately)
+podman distrobox flatpak qemu-desktop libvirt virt-manager virt-install edk2-ovmf swtpm dnsmasq spice-protocol nettle
+# -- maintenance
+reflector pacman-contrib
