@@ -1,6 +1,4 @@
-# Flathub apps, installed per user (data lives in ~/.var/app and comes back with the home restore).
-com.discordapp.Discord com.github.Matoking.protontricks com.github.qarmin.czkawka com.github.tchx84.Flatseal
-com.moonlight_stream.Moonlight com.obsproject.Studio com.spotify.Client com.valvesoftware.Steam
-com.vysp3r.ProtonPlus io.github.cboxdoerfer.FSearch md.obsidian.Obsidian org.audacityteam.Audacity
-org.gnome.baobab org.jdownloader.JDownloader org.localsend.localsend_app org.mozilla.thunderbird_esr
-org.telegram.desktop org.waywallen.waywallen
+# Flathub apps kept as Flatpaks, installed per user (data lives in ~/.var/app and comes back with the home restore).
+# Thunderbird: keeps the account/OAuth setup. JDownloader: bundles its own Java. waywallen + LocalSend: user units call the Flatpak.
+org.mozilla.thunderbird_esr org.jdownloader.JDownloader org.waywallen.waywallen org.localsend.localsend_app
+com.github.tchx84.Flatseal

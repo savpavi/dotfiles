@@ -30,6 +30,8 @@ firefox mpv loupe papers libreoffice-fresh qbittorrent meld qalculate-gtk blende
 tesseract tesseract-data-tur tesseract-data-eng pandoc-cli mkvtoolnix-cli mediainfo ffmpeg wf-recorder
 scrcpy android-tools android-udev solaar headsetcontrol liquidctl lutris wine winetricks
 cups system-config-printer simple-scan
+# -- apps that were Flatpaks on Fedora (data is moved over by the migrate stage where it matters)
+steam discord obsidian obs-studio telegram-desktop spotify-launcher moonlight-qt protontricks fsearch audacity baobab
 # -- containers / VM (VFIO + Looking Glass are set up separately)
 podman distrobox flatpak qemu-desktop libvirt virt-manager virt-install edk2-ovmf swtpm dnsmasq spice-protocol nettle
 # -- maintenance

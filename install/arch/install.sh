@@ -7,7 +7,7 @@
 #   install.sh --dry-run ...   print what would run, change nothing
 #   install.sh --list          list stages
 #
-# Default stages: preflight pkgs aur flatpak link shell services tools check
+# Default stages: preflight pkgs aur flatpak link migrate shell services tools check
 # Opt-in stages:  disks (fstab entries for /srv), home (restore ~ from the Lexar backup)
 #
 # Not covered here: VFIO passthrough, Looking Glass, DankMaterialShell + dsearch, Hopper, the Craft apps.
@@ -17,8 +17,8 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOT="$(cd "$HERE/../.." && pwd)"
 BACKUP="${BACKUP:-/srv/lexar/Fedora-to-arch-backup}"
 LOG="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles-install-$(date +%Y%m%d-%H%M%S).log"
-DEFAULT_STAGES=(preflight pkgs aur flatpak link shell services tools check)
-ALL_STAGES=(preflight disks home pkgs aur flatpak link shell services tools check)
+DEFAULT_STAGES=(preflight pkgs aur flatpak link migrate shell services tools check)
+ALL_STAGES=(preflight disks home pkgs aur flatpak link migrate shell services tools check)
 DRY=0
 FAILED=()
 
@@ -134,6 +134,45 @@ stage_link() {
   done
   [[ -e $HOME/.config/mimeapps.list ]] || run cp "$DOT/extras/mimeapps/desktop-apps.list" "$HOME/.config/mimeapps.list"
   run systemctl --user daemon-reload
+}
+
+stage_migrate() {
+  # Apps that were Flatpaks on Fedora and are native here: carry their data over and fix what points at the Flatpak.
+  local var="$HOME/.var/app" src dst pair
+  for pair in \
+    "org.telegram.desktop/data/TelegramDesktop|$HOME/.local/share/TelegramDesktop" \
+    "com.obsproject.Studio/config/obs-studio|$HOME/.config/obs-studio" \
+    "md.obsidian.Obsidian/config/obsidian|$HOME/.config/obsidian"; do
+    src="$var/${pair%%|*}"; dst="${pair##*|}"
+    [[ -d $src ]] || { echo "- no Flatpak data at $src"; continue; }
+    if [[ -e $dst.from-flatpak ]]; then echo "= $dst already migrated"; continue; fi
+    # Anything already at the native path predates the Flatpak era; keep it aside rather than merge.
+    [[ -e $dst ]] && run mv "$dst" "$dst.bak-pre-arch"
+    run mkdir -p "$(dirname "$dst")"
+    run cp -a "$src" "$dst" && run touch "$dst.from-flatpak"
+    echo "+ $dst"
+  done
+
+  # Launcher keybinds in the Hyprland config (this edits the repo file; commit it afterwards).
+  local hypr="$DOT/config/hypr/hyprland.lua" id bin
+  for pair in "com.spotify.Client|spotify-launcher" "org.telegram.desktop|Telegram" \
+              "com.discordapp.Discord|discord" "md.obsidian.Obsidian|obsidian"; do
+    id="${pair%%|*}"; bin="${pair##*|}"
+    grep -q "flatpak run $id" "$hypr" 2>/dev/null || continue
+    if have "$bin" || (( DRY )); then
+      run sed -i "s|flatpak run $id|$bin|" "$hypr"; echo "+ keybind: $id -> $bin"
+    else
+      warn "$bin not installed; keybind for $id left on the Flatpak"
+    fi
+  done
+
+  # Default-app entries that name a Flatpak desktop file with a different native id.
+  local mime="$HOME/.config/mimeapps.list"
+  if [[ -f $mime ]]; then
+    run sed -i 's|com\.discordapp\.Discord\.desktop|discord.desktop|g; s|org\.audacityteam\.Audacity\.desktop|audacity.desktop|g' "$mime"
+  fi
+  echo "Steam: sign in, then add the library folder /srv/lexar/SteamLibrary (Settings > Storage)."
+  echo "Discord and Spotify: sign in again."
 }
 
 stage_shell() {
