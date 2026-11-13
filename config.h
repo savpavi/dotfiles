@@ -25,11 +25,8 @@ static int log_level = WLR_ERROR;
 
 /* Autostart */
 static const char *const autostart[] = {
-	"quickshell", "-p", "/home/savpavi/Projects/dwl/bar", NULL,
-	"dunst", "-conf", "/home/savpavi/.local/state/dwl-theme/dunstrc", NULL,
-	"sh", "-c", "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP", NULL,
-	"/usr/lib/polkit-kde-authentication-agent-1", NULL,  /* hyprpolkitagent dwl altinda cokuyor */
-	"solaar", "--window=hide", NULL,                     /* fare DPI/tekerlek ayarlari */
+	/* her sey bin/dwl-autostart icinde; orayi degistirmek yeniden derleme istemez */
+	"/home/savpavi/Projects/dwl/bin/dwl-autostart", NULL,
 	NULL /* terminate */
 };
 
@@ -153,7 +150,16 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_d,           spawn,            SHCMD("discord") },
 	{ MODKEY,                    XKB_KEY_z,           spawn,            SHCMD("zed") },
 	{ MODKEY,                    XKB_KEY_o,           spawn,            SHCMD("obsidian") },
-	{ 0,                         XKB_KEY_Print,       spawn,            SHCMD("grim -g \"$(slurp)\" - | wl-copy") },
+	{ 0,                         XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot region") },
+	{ WLR_MODIFIER_SHIFT,        XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot edit") },
+	{ MODKEY,                    XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot screen") },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_d,           spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-grab") },
+	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_d,           spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-grab --clip") },
+	{ MODKEY,                    XKB_KEY_x,           spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-clip") },
+	{ MODKEY,                    XKB_KEY_k,           spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-keys") },
+	{ MODKEY,                    XKB_KEY_l,           spawn,            SHCMD("quickshell ipc -p /home/savpavi/Projects/dwl/bar call lock lock") },
+	{ MODKEY,                    XKB_KEY_Escape,      spawn,            SHCMD("quickshell ipc -p /home/savpavi/Projects/dwl/bar call panel toggle power") },
+	{ MODKEY,                    XKB_KEY_n,           spawn,            SHCMD("quickshell ipc -p /home/savpavi/Projects/dwl/bar call panel toggle notif") },
 
 	{ MODKEY,                    XKB_KEY_Right,       focusstack,       {.i = +1} },
 	{ MODKEY,                    XKB_KEY_Down,        focusstack,       {.i = +1} },

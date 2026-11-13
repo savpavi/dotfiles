@@ -1,0 +1,16 @@
+#!/bin/sh
+# Pano geçmişi: cliphist kayıtlarını temalı fuzzel'de listeler, seçileni panoya koyar.
+#   dwl-clip          seç ve kopyala
+#   dwl-clip clear    geçmişi sil
+cfg="${XDG_STATE_HOME:-$HOME/.local/state}/dwl-theme/fuzzel.ini"
+
+if [ "$1" = clear ]; then
+	cliphist wipe
+	exit
+fi
+
+set -- fuzzel --dmenu --prompt "pano > " --width 72 --lines 14
+[ -f "$cfg" ] && set -- "$@" "--config=$cfg"
+
+sel=$(cliphist list | "$@") || exit 0
+[ -n "$sel" ] && printf '%s\n' "$sel" | cliphist decode | wl-copy

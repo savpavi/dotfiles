@@ -1,0 +1,35 @@
+#!/bin/sh
+# dwl açılınca çalışan her şey burada (config.h'deki tek autostart girdisi bunu çağırır).
+# Buradaki değişiklikler yeniden derleme istemez; bir sonraki girişte geçerli olur.
+#
+# DWL_NESTED=1 ile (pencere içinde deneme oturumu) yalnız bar başlar: polkit ajanı,
+# bildirim servisi, pano izleyici gibi oturum servisleri gerçek oturumunkilerle çakışmasın.
+
+here=$(dirname "$(readlink -f "$0")")
+state="${XDG_STATE_HOME:-$HOME/.local/state}/dwl-theme"
+pids=""
+
+run() {
+	"$@" &
+	pids="$pids $!"
+}
+
+# dwl kapanırken bu betiğe TERM yollar; çocukları da kapat.
+trap 'kill $pids 2>/dev/null; exit 0' TERM INT
+
+run quickshell -p "$here/../bar"
+
+if [ -z "$DWL_NESTED" ]; then
+	dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+	# Portal servisi oturumlar arasında yaşıyor; dwl ayarını (ekran paylaşımı = wlr) okusun diye yenile.
+	systemctl --user stop xdg-desktop-portal-hyprland.service 2>/dev/null
+	systemctl --user restart xdg-desktop-portal.service 2>/dev/null &
+	run dunst -conf "$state/dunstrc"
+	systemctl --user start localsend.service 2>/dev/null &   # telefondan/başka cihazdan dosya alma
+	run /usr/lib/polkit-kde-authentication-agent-1          # parola/yetki pencereleri
+	run solaar --window=hide                                # fare DPI/tekerlek ayarları
+	run wl-paste --watch cliphist store                     # pano geçmişi: metin
+	run wl-paste --type image --watch cliphist store        # pano geçmişi: görsel
+fi
+
+wait

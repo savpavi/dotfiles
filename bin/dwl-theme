@@ -164,6 +164,14 @@ radius={menu['radius']}
     write("dunstrc", dunst)
     write("theme.json", json.dumps(dict(t, id=tid), ensure_ascii=False, indent=2) + "\n")
     write("current", tid + "\n")
+    # SDDM giriş ekranı da etkin temayı izlesin (sddm/install.sh kurduysa dosya bize ait).
+    sddm = Path("/usr/share/sddm/themes/dwl/theme.conf.user")
+    if os.access(sddm, os.W_OK):
+        sddm.write_text("[General]\n" + "".join(f"{k}={v}\n" for k, v in (
+            ("bg", wm["root"]), ("fg", menu["text"]), ("accent", menu["match"]),
+            ("border", menu["border"]), ("panel", menu["bg"]),
+            ("borderpx", menu["borderpx"]), ("radius", menu["radius"]))))
+
     write("dwl.conf", dwl)  # en son: dwl bunu görünce yeniden yükler
 
 
@@ -240,6 +248,8 @@ def wall_stop():
 def wall_show():
     """Etkin temanın seçili hareketli duvarını gösterir; yoksa katmanı kapatır."""
     import time
+    if os.environ.get("DWL_THEME_NO_WALL"):  # iç içe deneme oturumları gerçek duvara dokunmasın
+        return
     st = wall_state()
     tid = current()
     ids = themes().get(tid, {}).get("live", [])

@@ -27,7 +27,7 @@ PopupWindow {
     // Açıkken boyutu değişen popup bozuk çiziliyor (dwl/wlroots); bu yüzden içerik
     // her değiştiğinde popup kapanır, yeni boyutu alır ve yeniden açılır.
     readonly property bool wanted: kind !== "" && sh.panelScreen === output
-    readonly property int wantW: kind === "notif" ? 380 : 260
+    readonly property int wantW: kind === "notif" ? 380 : kind === "drive" || kind === "send" ? 320 : 260
     readonly property int wantH: body.implicitHeight + 2 * pad
     property bool settled: false
     property int w: 260
@@ -233,7 +233,186 @@ PopupWindow {
                 onActivated: pop.sh.clearNotifs()
             }
 
+            // --- Claude kullanımı ---
+            Item {
+                visible: pop.kind === "claude"
+                width: body.width
+                height: pop.rowH
+                Label {
+                    anchors { left: parent.left; leftMargin: 8; verticalCenter: parent.verticalCenter }
+                    text: "Claude kullanımı"
+                    font.bold: true
+                }
+            }
+            Repeater {
+                model: pop.kind === "claude" && pop.sh.claude ? [
+                    { label: "5 saatlik", block: pop.sh.claude.five_hour },
+                    { label: "7 günlük", block: pop.sh.claude.seven_day }
+                ].filter(r => r.block) : []
+                Item {
+                    id: lim
+                    required property var modelData
+                    width: body.width
+                    height: 46
+                    Label {
+                        id: limName
+                        x: 8; y: 4
+                        text: lim.modelData.label
+                    }
+                    Label {
+                        anchors { right: parent.right; rightMargin: 8 }
+                        y: 4
+                        text: "%" + lim.modelData.block.used_percentage
+                        font.bold: true
+                        color: lim.modelData.block.used_percentage >= 80 ? pop.m.match : pop.m.text
+                    }
+                    Rectangle {
+                        x: 8; y: 25
+                        width: parent.width - 16; height: 4
+                        color: "transparent"
+                        border.width: 1
+                        border.color: pop.m.border
+                        Rectangle {
+                            width: parent.width * Math.min(100, lim.modelData.block.used_percentage) / 100
+                            height: parent.height
+                            color: lim.modelData.block.used_percentage >= 80 ? pop.m.match : pop.m.text
+                        }
+                    }
+                    Label {
+                        x: 8; y: 31
+                        font.pixelSize: 11
+                        opacity: 0.7
+                        text: "sıfırlanma: " + pop.sh.resetText(lim.modelData.block)
+                    }
+                }
+            }
+            Label {
+                visible: pop.kind === "claude" && !pop.sh.claude
+                width: body.width
+                height: pop.rowH
+                leftPadding: 8
+                verticalAlignment: Text.AlignVCenter
+                text: "Veri alınamadı"
+                opacity: 0.6
+            }
+
+            // --- Google Drive ---
+            Item {
+                visible: pop.kind === "drive"
+                width: body.width
+                height: pop.rowH
+                Label {
+                    anchors { left: parent.left; leftMargin: 8; verticalCenter: parent.verticalCenter }
+                    text: "Google Drive"
+                    font.bold: true
+                }
+                Label {
+                    anchors { right: parent.right; rightMargin: 8; verticalCenter: parent.verticalCenter }
+                    color: pop.m.match
+                    text: !pop.sh.drive.active ? "kapalı"
+                        : !pop.sh.drive.mounted ? "bağlı değil"
+                        : pop.sh.drive.errored > 0 ? pop.sh.drive.errored + " hata"
+                        : pop.sh.drive.uploading + pop.sh.drive.queued > 0
+                            ? (pop.sh.drive.uploading + pop.sh.drive.queued) + " yükleniyor"
+                        : "güncel"
+                }
+            }
+            Repeater {
+                model: pop.kind === "drive" ? pop.sh.drive.syncs : []
+                Item {
+                    id: syncRow
+                    required property var modelData
+                    width: body.width
+                    height: 24
+                    Label {
+                        anchors { left: parent.left; leftMargin: 8; right: syncState.left; rightMargin: 6
+                                  verticalCenter: parent.verticalCenter }
+                        text: "senkron: " + syncRow.modelData.name
+                        font.pixelSize: 12
+                        opacity: 0.8
+                    }
+                    Label {
+                        id: syncState
+                        anchors { right: parent.right; rightMargin: 8; verticalCenter: parent.verticalCenter }
+                        font.pixelSize: 12
+                        color: pop.m.match
+                        text: syncRow.modelData.state === "running" ? "sürüyor"
+                            : syncRow.modelData.state === "error" ? "hata"
+                            : syncRow.modelData.lastOk
+                                ? Qt.formatTime(new Date(syncRow.modelData.lastOk * 1000), "HH:mm") + " tamam"
+                            : syncRow.modelData.state
+                    }
+                }
+            }
+            Label {
+                visible: pop.kind === "drive" && pop.sh.drive.lastError !== ""
+                width: body.width
+                leftPadding: 8
+                rightPadding: 8
+                wrapMode: Text.Wrap
+                maximumLineCount: 3
+                font.pixelSize: 12
+                text: pop.sh.drive.lastError
+                color: pop.m.match
+            }
+            Rule { visible: pop.kind === "drive" }
+            Entry {
+                visible: pop.kind === "drive"
+                text: "Klasörü aç"
+                onActivated: { pop.sh.closePanel(); pop.sh.driveCmd(["open"]); }
+            }
+            Entry {
+                visible: pop.kind === "drive"
+                text: "Web'de aç"
+                onActivated: { pop.sh.closePanel(); pop.sh.driveCmd(["web"]); }
+            }
+            Entry {
+                visible: pop.kind === "drive"
+                text: "Şimdi senkronla"
+                onActivated: pop.sh.driveCmd(["sync"])
+            }
+            Entry {
+                visible: pop.kind === "drive"
+                text: "Bağlantıyı yenile"
+                onActivated: pop.sh.driveCmd(["restart"])
+            }
+
+            // --- Telefona gönder ---
+            Item {
+                visible: pop.kind === "send"
+                width: body.width
+                height: pop.rowH
+                Label {
+                    anchors { left: parent.left; leftMargin: 8; right: phoneState.left; rightMargin: 6
+                              verticalCenter: parent.verticalCenter }
+                    text: pop.sh.phone.device !== "" ? pop.sh.phone.device : "Telefon"
+                    font.bold: true
+                }
+                Label {
+                    id: phoneState
+                    anchors { right: parent.right; rightMargin: 8; verticalCenter: parent.verticalCenter }
+                    color: pop.m.match
+                    text: pop.sh.phone.reachable ? "bağlı" : pop.sh.phone.paired ? "ulaşılamıyor" : "eşleşmemiş"
+                }
+            }
+            Rule { visible: pop.kind === "send" }
+            Entry {
+                visible: pop.kind === "send"
+                text: "Dosya gönder (KDE Connect)"
+                onActivated: pop.sh.sendCmd([])
+            }
+            Entry {
+                visible: pop.kind === "send"
+                text: "LocalSend'i aç"
+                onActivated: pop.sh.sendCmd(["localsend"])
+            }
+
             // --- Güç ---
+            Entry {
+                visible: pop.kind === "power"
+                text: "Kilitle"
+                onActivated: pop.sh.lockNow()
+            }
             Repeater {
                 model: pop.kind === "power" ? [
                     { label: "Oturumu kapat", cmd: ["pkill", "-TERM", "-x", "dwl"] },
@@ -246,8 +425,10 @@ PopupWindow {
                     text: pop.armed === index ? "Emin misin? Tekrar tıkla" : modelData.label
                     marked: pop.armed === index
                     onActivated: {
-                        if (pop.armed === index)
+                        if (pop.armed === index) {
+                            pop.sh.closePanel();
                             Quickshell.execDetached(modelData.cmd);
+                        }
                         else
                             pop.armed = index;
                     }

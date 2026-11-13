@@ -133,6 +133,23 @@ Item {
             font.pixelSize: rail.b.fontPx - 2
             color: rail.sh.cpu >= 85 ? rail.b.urgent : rail.b.title
         }
+        Label {
+            visible: rail.sh.claude5h >= 0
+            text: "cl\n" + rail.sh.claude5h + (rail.sh.claude7d >= 0 ? "\n" + rail.sh.claude7d : "")
+            lineHeight: 0.95
+            font.pixelSize: rail.b.fontPx - 2
+            color: rail.sh.claudeMax >= 80 ? rail.b.urgent : rail.b.title
+            MouseArea {
+                anchors.fill: parent
+                onClicked: rail.sh.togglePanel("claude", rail.output)
+            }
+        }
+        Label {
+            text: "ram\n" + rail.sh.ram
+            lineHeight: 0.95
+            font.pixelSize: rail.b.fontPx - 2
+            color: rail.sh.ram >= 90 ? rail.b.urgent : rail.b.title
+        }
         Tray {
             sh: rail.sh; output: rail.output; vertical: true
             cell: rail.cell

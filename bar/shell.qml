@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Pipewire
+import Quickshell.Wayland
 
 ShellRoot {
     id: root
@@ -21,6 +22,19 @@ ShellRoot {
         border: "#1B1A17", borderpx: 2, radius: 0
     })
     property var m: fallbackMenu
+    property var wm: ({ root: "#ECE6D9" })
+
+    // Boşta kalınca: önce kilit, sonra ekranları kapat (ikincisi wlopm kuruluysa çalışır)
+    readonly property int idleLockSec: 600
+    readonly property int idleScreenOffSec: 900
+    property bool idleEnabled: true // bardaki fincan düğmesi kapatır ("uyanık kal")
+    function toggleIdle() {
+        idleEnabled = !idleEnabled;
+        Quickshell.execDetached(["notify-send", "-t", "3000", "Boşta kilit",
+            idleEnabled ? "Açık: 10 dk'da kilitler, 15 dk'da ekranı kapatır"
+                        : "Kapalı: ekran açık kalır, kilitlenmez"]);
+    }
+    function lockNow() { closePanel(); lock.lock(); }
 
     // Açık panel: "" | "theme" | "notif" | "power", ve hangi ekranın barında
     property string panelKind: ""
@@ -40,6 +54,8 @@ ShellRoot {
         panelScreen = screen;
         if (kind === "theme") themeList.running = true;
         if (kind === "notif") notifHistory.running = true;
+        if (kind === "drive") drivePoll.running = true;
+        if (kind === "send") phonePoll.running = true;
     }
     function closePanel() { panelKind = ""; }
     function applyTheme(id) { themeRun.command = [themeBin, "apply", id]; themeRun.running = true; }
@@ -56,6 +72,34 @@ ShellRoot {
     // output adı -> dwl-bar-ipc'nin son JSON satırı
     property var outputs: ({})
     property int cpu: 0
+    property int ram: 0
+    // Claude kullanım limiti: dotfiles'taki claude-usage.sh, önbelleği Hyprland barıyla ortak
+    // (uç nokta sık sorulunca 429 veriyor; script 150 sn içinde önbelleği yeniden kullanır).
+    property var claude: null // { five_hour: {used_percentage, resets_at}, seven_day: {...} }
+    readonly property int claude5h: claude && claude.five_hour ? claude.five_hour.used_percentage : -1
+    readonly property int claude7d: claude && claude.seven_day ? claude.seven_day.used_percentage : -1
+    readonly property int claudeMax: Math.max(claude5h, claude7d)
+    // barda: "58% · 50%" (5 saatlik · haftalık); haftalık yoksa yalnız ilki
+    function claudeText(sep) {
+        return claude5h + "%" + (claude7d >= 0 ? sep + claude7d + "%" : "");
+    }
+    function resetText(block) {
+        if (!block || !block.resets_at)
+            return "";
+        const d = new Date(block.resets_at * 1000);
+        const sameDay = d.toDateString() === new Date().toDateString();
+        return Qt.locale("tr_TR").toString(d, sameDay ? "HH:mm" : "ddd HH:mm");
+    }
+    // Google Drive (dot-drive) ve telefona gönderme (dot-send) durumları
+    readonly property string dotBin: Quickshell.env("HOME") + "/dotfiles/bin/"
+    property var drive: ({ active: false, mounted: false, uploading: 0, queued: 0, errored: 0, lastError: "", syncs: [] })
+    property var phone: ({ reachable: false, device: "", paired: false, localsend: false })
+    readonly property bool driveBusy: drive.uploading > 0 || drive.queued > 0
+        || drive.syncs.some(s => s.state === "running")
+    readonly property bool driveBad: !drive.active || !drive.mounted || drive.errored > 0
+        || drive.syncs.some(s => s.state === "error")
+    function driveCmd(args) { driveRun.command = [dotBin + "dot-drive"].concat(args); driveRun.running = true; }
+    function sendCmd(args) { closePanel(); Quickshell.execDetached([dotBin + "dot-send"].concat(args)); }
     property var cpuPrev: null
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property bool hasSink: sink !== null && sink.audio !== null
@@ -87,6 +131,7 @@ ShellRoot {
                 const t = JSON.parse(text());
                 root.b = Object.assign({}, root.fallbackBar, t.bar);
                 root.m = Object.assign({}, root.fallbackMenu, t.menu);
+                root.wm = t.wm;
             } catch (e) {
                 console.warn("theme.json okunamadı:", e);
             }
@@ -103,6 +148,44 @@ ShellRoot {
         }
     }
     Process { id: themeRun; onExited: themeList.running = true }
+
+    Process {
+        id: drivePoll
+        command: [root.dotBin + "dot-drive", "status"]
+        stdout: StdioCollector {
+            onStreamFinished: { try { root.drive = JSON.parse(text); } catch (e) {} }
+        }
+    }
+    Process { id: driveRun; onExited: drivePoll.running = true }
+
+    Process {
+        id: claudePoll
+        command: ["sh", "-c", "CACHE_FILE=\"${XDG_CACHE_HOME:-$HOME/.cache}/savpavi-shell/claude-usage.json\" "
+            + "exec \"$HOME/dotfiles/config/savpavi-shell/scripts/claude-usage.sh\""]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const d = JSON.parse(text);
+                    if (d && d.five_hour) root.claude = d;
+                } catch (e) {}
+            }
+        }
+    }
+    Timer {
+        interval: 300000; running: true; repeat: true; triggeredOnStart: true
+        onTriggered: claudePoll.running = true
+    }
+    Process {
+        id: phonePoll
+        command: [root.dotBin + "dot-send", "status"]
+        stdout: StdioCollector {
+            onStreamFinished: { try { root.phone = JSON.parse(text); } catch (e) {} }
+        }
+    }
+    Timer {
+        interval: 15000; running: true; repeat: true; triggeredOnStart: true
+        onTriggered: { drivePoll.running = true; phonePoll.running = true; }
+    }
 
     Process {
         id: notifHistory
@@ -143,6 +226,25 @@ ShellRoot {
         onTriggered: notifPoll.running = true
     }
 
+    Lock { id: lock; sh: root }
+    IpcHandler {
+        target: "lock"
+        function lock(): void { root.lockNow(); }
+    }
+    IdleMonitor {
+        enabled: root.idleEnabled
+        timeout: root.idleLockSec
+        respectInhibitors: true
+        onIsIdleChanged: if (isIdle) root.lockNow()
+    }
+    IdleMonitor {
+        enabled: root.idleEnabled
+        timeout: root.idleScreenOffSec
+        respectInhibitors: true
+        onIsIdleChanged: Quickshell.execDetached(["sh", "-c",
+            "command -v wlopm >/dev/null && wlopm " + (isIdle ? "--off" : "--on") + " '*'"])
+    }
+
     // Kısayoldan/terminalden panel açmak için: quickshell ipc -p <bar> call panel toggle theme|notif|power
     IpcHandler {
         target: "panel"
@@ -179,6 +281,7 @@ ShellRoot {
     Timer { id: restart; interval: 2000; onTriggered: watcher.running = true }
 
     FileView { id: stat; path: "/proc/stat"; blockLoading: true }
+    FileView { id: mem; path: "/proc/meminfo"; blockLoading: true }
     Timer {
         interval: 2000; running: true; repeat: true; triggeredOnStart: true
         onTriggered: {
@@ -189,6 +292,15 @@ ShellRoot {
             if (root.cpuPrev && total > root.cpuPrev.total)
                 root.cpu = Math.round(100 * (1 - (idle - root.cpuPrev.idle) / (total - root.cpuPrev.total)));
             root.cpuPrev = { idle: idle, total: total };
+
+            mem.reload();
+            const mi = {};
+            for (const l of mem.text().split("\n")) {
+                const p = l.split(/[:\s]+/);
+                mi[p[0]] = Number(p[1]);
+            }
+            if (mi.MemTotal > 0)
+                root.ram = Math.round(100 * (mi.MemTotal - mi.MemAvailable) / mi.MemTotal);
         }
     }
 

@@ -10,7 +10,7 @@ Grid {
     property color fg: sh.b.fg
     property color active: sh.b.accent
 
-    columns: vertical ? 1 : 3
+    columns: vertical ? 1 : 6
     spacing: vertical ? 4 : 0
 
     component Btn: Item {
@@ -18,7 +18,10 @@ Grid {
         required property string kind
         required property string glyph
         property string badge: ""
-        readonly property bool open: tray.sh.panelKind === kind && tray.sh.panelScreen === tray.output
+        property bool alert: false // sorun var: simge vurgu renginde
+        // "idle" panel açmaz: boşta kilitlemeyi açıp kapatır, kapalıyken vurgulu görünür
+        readonly property bool open: kind === "idle" ? !tray.sh.idleEnabled
+            : tray.sh.panelKind === kind && tray.sh.panelScreen === tray.output
 
         width: tray.vertical ? tray.cell : Math.max(tray.cell, row.implicitWidth + 14)
         height: tray.cell
@@ -31,7 +34,7 @@ Grid {
                 text: btn.glyph
                 font.family: "JetBrainsMono Nerd Font"
                 font.pixelSize: tray.sh.b.fontPx + 2
-                color: btn.open ? tray.active : tray.fg
+                color: btn.open || btn.alert ? tray.active : tray.fg
             }
             Text {
                 visible: btn.badge !== "" && !tray.vertical
@@ -50,10 +53,17 @@ Grid {
         }
         MouseArea {
             anchors.fill: parent
-            onClicked: tray.sh.togglePanel(btn.kind, tray.output)
+            onClicked: btn.kind === "idle" ? tray.sh.toggleIdle() : tray.sh.togglePanel(btn.kind, tray.output)
         }
     }
 
+    Btn { kind: "idle"; glyph: "\u{F0176}" }
+    Btn {
+        kind: "drive"
+        glyph: tray.sh.driveBad ? "\u{F09E0}" : tray.sh.driveBusy ? "\u{F063F}" : "\u{F0160}"
+        alert: tray.sh.driveBad
+    }
+    Btn { kind: "send"; glyph: "\u{F09D5}"; alert: false; opacity: tray.sh.phone.reachable ? 1 : 0.55 }
     Btn { kind: "theme"; glyph: "\u{F03D8}" }
     Btn {
         kind: "notif"

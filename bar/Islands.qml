@@ -127,6 +127,19 @@ Item {
                 text: "cpu  " + isl.sh.cpu + "%"
                 color: isl.sh.cpu >= 85 ? isl.b.urgent : isl.b.accent
             }
+            Label {
+                visible: isl.sh.claude5h >= 0
+                text: "claude  " + isl.sh.claudeText(" · ")
+                color: isl.sh.claudeMax >= 80 ? isl.b.urgent : isl.b.fg
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: isl.sh.togglePanel("claude", isl.output)
+                }
+            }
+            Label {
+                text: "ram  " + isl.sh.ram + "%"
+                color: isl.sh.ram >= 90 ? isl.b.urgent : isl.b.accent
+            }
             Tray { sh: isl.sh; output: isl.output; cell: isl.h }
         }
     }

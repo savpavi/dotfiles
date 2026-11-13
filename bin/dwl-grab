@@ -1,0 +1,35 @@
+#!/bin/sh
+# dwl-grab: odaktaki tarayıcı sekmesini (ya da panodaki linki) dot-grab ile indirir.
+# dot-grab'in sekme modu hyprctl'e bağlı; dwl'de aynı işi wtype ile yapıyoruz:
+# adres çubuğunu seç (Ctrl+L), kopyala (Ctrl+C), çık (Esc), sonra panodan indir.
+#   dwl-grab          tarayıcı odaktaysa sekme, değilse pano
+#   dwl-grab --clip   her zaman pano
+here=$(dirname "$(readlink -f "$0")")
+grab="$HOME/dotfiles/bin/dot-grab"
+
+if [ "$1" != "--clip" ]; then
+	# Odaktaki pencerenin uygulama kimliği (etkin ekranın son durum satırından)
+	appid=$(timeout 0.4 "$here/../bar/ipc/dwl-bar-ipc" 2>/dev/null |
+		sed -n 's/.*"active":1,.*"appid":"\([^"]*\)".*/\1/p' | tail -n 1)
+	case "$appid" in
+	*[Bb]rave* | *firefox* | *chromium* | *zen*)
+		old=$(wl-paste --no-newline 2>/dev/null)
+		sleep 0.4 # kısayolun tuşları bırakılsın, yoksa Ctrl+L'ye karışır
+		wtype -M ctrl -k l -m ctrl
+		sleep 0.15
+		wtype -M ctrl -k c -m ctrl
+		sleep 0.2
+		wtype -k Escape
+		url=$(wl-paste --no-newline 2>/dev/null)
+		# Panoyu eski haline döndür; linki dot-grab'e doğrudan ver.
+		printf '%s' "$old" | wl-copy
+		case "$url" in
+		http://* | https://*) exec "$grab" "$url" ;;
+		esac
+		notify-send -a Grab "Sekme adresi alınamadı" "Linki kopyalayıp Super+Ctrl+D'yi dene."
+		exit 1
+		;;
+	esac
+fi
+
+exec "$grab" --clip

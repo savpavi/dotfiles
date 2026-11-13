@@ -3171,9 +3171,11 @@ void
 tile(Monitor *m)
 {
 	/* savpavi: gappx is both the outer and the inner gap */
-	int g = (int)gappx, i, n = 0, k, mw, my, ty, h;
-	int ax = m->w.x + g, ay = m->w.y + g;
-	int aw = m->w.width - 2 * g, ah = m->w.height - 2 * g;
+	int og = (int)gappx, i, n = 0, k, mw, my, ty, h;
+	/* with no gap, neighbours overlap by one border so the line between them stays single */
+	int g = og ? og : -(int)borderpx;
+	int ax = m->w.x + og, ay = m->w.y + og;
+	int aw = m->w.width - 2 * og, ah = m->w.height - 2 * og;
 	Client *c;
 
 	wl_list_for_each(c, &clients, link)
