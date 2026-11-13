@@ -157,15 +157,19 @@ hl.curve("easeInOutCubic", { type = "bezier", points = { {0.65, 0.05}, {0.36, 1}
 hl.curve("linear",         { type = "bezier", points = { {0, 0},       {1, 1}       } })
 hl.curve("almostLinear",   { type = "bezier", points = { {0.5, 0.5},   {0.75, 1}    } })
 hl.curve("quick",          { type = "bezier", points = { {0.15, 0},    {0.1, 1}     } })
+-- Pencere acilis "pop" efekti: y > 1 hedefi hafif asip geri oturtur
+hl.curve("popSmooth",      { type = "bezier", points = { {0.22, 1},    {0.1, 1.1}   } })
+hl.curve("popQuick",       { type = "bezier", points = { {0.15, 0.85}, {0.25, 1.0}  } })
 
 -- Default springs
 hl.curve("easy",           { type = "spring", mass = 1, stiffness = 238.1191, dampening = 24.21279333 })
 
 hl.animation({ leaf = "global",        enabled = true,  speed = 10,   bezier = "default" })
 hl.animation({ leaf = "border",        enabled = true,  speed = 5.39, bezier = "easeOutQuint" })
-hl.animation({ leaf = "windows",       enabled = true,  speed = 4.79, spring = "easy" })
-hl.animation({ leaf = "windowsIn",     enabled = true,  speed = 4.1,  spring = "easy",         style = "popin 87%" })
-hl.animation({ leaf = "windowsOut",    enabled = true,  speed = 1.49, bezier = "linear",       style = "popin 87%" })
+hl.animation({ leaf = "windows",       enabled = true,  speed = 4,    bezier = "popSmooth",    style = "popin 95%" })
+hl.animation({ leaf = "windowsIn",     enabled = true,  speed = 4,    bezier = "popSmooth",    style = "popin 85%" })
+hl.animation({ leaf = "windowsOut",    enabled = true,  speed = 3,    bezier = "popQuick",     style = "popin 90%" })
+hl.animation({ leaf = "windowsMove",   enabled = true,  speed = 3,    bezier = "popQuick" })
 hl.animation({ leaf = "fadeIn",        enabled = true,  speed = 1.73, bezier = "almostLinear" })
 hl.animation({ leaf = "fadeOut",       enabled = true,  speed = 1.46, bezier = "almostLinear" })
 hl.animation({ leaf = "fade",          enabled = true,  speed = 3.03, bezier = "quick" })
