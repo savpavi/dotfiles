@@ -6,7 +6,8 @@
     "focus": "#9BE22D",
     "urgent": "#FF7A1A",
     "borderpx": 2,
-    "gap": 6
+    "gap": 6,
+    "anim": 260
   },
   "bar": {
     "layout": "strip",

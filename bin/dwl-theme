@@ -155,7 +155,7 @@ radius={menu['radius']}
     timeout = 0
 """
 
-    dwl = "".join(f"{k}={wm[k]}\n" for k in ("root", "border", "focus", "urgent", "borderpx", "gap"))
+    dwl = "".join(f"{k}={wm[k]}\n" for k in ("root", "border", "focus", "urgent", "borderpx", "gap", "anim") if k in wm)
 
     STATE.mkdir(parents=True, exist_ok=True)
     write("ghostty", "\n".join(ghostty) + "\n")

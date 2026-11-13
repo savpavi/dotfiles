@@ -6,7 +6,8 @@
     "focus": "#F2A541",
     "urgent": "#E0533D",
     "borderpx": 2,
-    "gap": 10
+    "gap": 10,
+    "anim": 260
   },
   "bar": {
     "layout": "islands",
