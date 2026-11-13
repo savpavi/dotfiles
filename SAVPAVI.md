@@ -64,6 +64,7 @@ Tam liste Super+K ile açılır (`config.h`'den üretilir). En sık kullanılanl
 | Super+F / Super+M | tek pencere / döşeme |
 | Super+L / Super+Esc | kilitle / güç menüsü |
 | Super+X / Print | pano geçmişi / ekran görüntüsü |
+| iki Shift birlikte | klavye düzeni tr / us |
 | Super+Shift+Q | oturumu kapat |
 
 ## Deneme (çıkış yapmadan)

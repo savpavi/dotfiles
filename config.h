@@ -39,6 +39,7 @@ static const Rule rules[] = {
 	/* ASUS XG27ACS = DP-1, LG UltraGear = DP-3 */
 	{ "looking-glass-client",  NULL,  1 << 2,  0,  "DP-3" },
 	{ "claude",                NULL,  1 << 0,  0,  "DP-3" },
+	{ "telegram",              NULL,  1 << 1,  0,  "DP-3" },
 	{ "discord",               NULL,  1 << 2,  0,  "DP-1" },
 	{ "spotify",               NULL,  1 << 1,  0,  "DP-1" },
 	{ "obsidian",              NULL,  1 << 3,  0,  "DP-1" },
@@ -92,7 +93,8 @@ static const struct xkb_rule_names xkb_rules = {
 	.options = "ctrl:nocaps",
 	*/
 	.layout = "tr,us",
-	.options = "grp:win_space_toggle",
+	/* iki Shift birlikte: tr <-> us. Super+Space cok kolay kazara basiliyordu. */
+	.options = "grp:shifts_toggle",
 };
 
 static const int repeat_rate = 35;

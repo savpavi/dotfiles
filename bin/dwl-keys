@@ -94,7 +94,8 @@ def rows():
             continue
         mods, key, func, arg = m.groups()
         out.append((combo(mods, key), describe(func, arg)))
-    out += [("Super+1..9", "Tag'e geç"), ("Super+Shift+1..9", "Pencereyi tag'e taşı"),
+    out += [("Sol Shift+Sağ Shift", "Klavye düzeni: tr / us"),
+            ("Super+1..9", "Tag'e geç"), ("Super+Shift+1..9", "Pencereyi tag'e taşı"),
             ("Super+Ctrl+1..9", "Tag'i görünüme ekle/çıkar"),
             ("Super+sol tık", "Pencereyi taşı"), ("Super+sağ tık", "Pencereyi boyutlandır"),
             ("Super+tekerlek", "Pencereler arasında gez")]
