@@ -23,7 +23,7 @@ kaydedilince kendini yeniden yükler.
 
 | Yol | İçerik |
 |---|---|
-| `dwl.c`, `config.h` | compositor ve tuşlar. Yamalar: ipc, monitorconfig, autostart, animation |
+| `dwl.c`, `config.h` | compositor ve tuşlar. Yamalar: ipc, monitorconfig, autostart, animation, scenefx |
 | `bin/dwl-session` | SDDM'in çalıştırdığı sarmalayıcı: ekran kartını sabitler, ortamı kurar |
 | `bin/dwl-autostart` | oturumla başlayan her şey (bar, bildirim, polkit, pano...) |
 | `bin/dwl-theme` | tema seçici ve üretici |
@@ -41,6 +41,9 @@ Sekiz tema var: Mürekkep, Kor, Fener, Birim 01, Bakır, Kar, Neon, Yosun.
 - Tema değişince birlikte dönenler: pencere kenarlığı ve boşluğu, animasyon süresi, bar düzeni,
   Alacritty, fuzzel, dunst, hareketli duvar, kilit ekranı, giriş ekranı, Qt/KDE/GTK uygulama renkleri.
 - Üretilen dosyalar `~/.local/state/dwl-theme/` altında; elle düzenlenmez.
+
+Yuvarlak köşe, gölge ve blur (scenefx) tema başına açılır: `wm.radius`, `wm.shadow`, `wm.blur`
+(yoksa kapalı). Şu an Kor ve Bakır kullanıyor; `term.opacity` terminali saydamlaştırır ki blur görünsün.
 
 Yeni tema: `themes/` altına bir JSON kopyala, renkleri değiştir. `bar.layout` üç düzenden biri:
 `strip` (üstte şerit), `islands` (yüzen adacıklar), `rail` (solda dikey ray). `live` listesi

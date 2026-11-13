@@ -17,6 +17,16 @@ static float urgentcolor[]           = COLOR(0x2B4C7Eff);
 /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
 static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
 
+/* rounded corners, shadows and blur (scenefx patch). Off here; a theme turns them on with
+ * "radius", "shadow" and "blur" in dwl.conf. */
+static int corner_radius                   = 0;  /* radius of the corners of window contents, 0 disables them */
+static const int corner_radius_only_floating = 0; /* 1 means only floating windows have rounded corners */
+static int shadow_sigma                    = 0;  /* blur sigma and size of window shadows, 0 disables them */
+static const float shadow_color[]          = COLOR(0x00000090);
+/* blur behind translucent windows. num_passes 0 disables it */
+static struct blur_data blur_data          = { .num_passes = 0, .radius = 5, .noise = 0.02f,
+                                               .brightness = 0.9f, .contrast = 0.9f, .saturation = 1.1f };
+
 /* animation (animation patch); the theme's "anim" value overrides the duration, 0 = off */
 static unsigned int animation_duration = 160; /* ms */
 static const float animation_curve[4] = {0.0f, 0.85f, 0.2f, 1.0f}; /* cubic-bezier x1, y1, x2, y2 */

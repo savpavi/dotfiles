@@ -24,6 +24,11 @@ WLR_LIBS = `$(PKG_CONFIG) --libs wlroots-0.20`
 #	-I$(PWD)/wlroots/0.20/include/wlroots-0.20
 #WLR_LIBS = -Wl,-rpath,$(PWD)/wlroots/0.20/lib64 -L$(PWD)/wlroots/0.20/lib64 -lwlroots-0.20
 
+# scenefx's headers are included with -isystem to hide their -Wpedantic warnings,
+# and after WLR_INCS so they don't override an alternative wlroots installation.
+FX_INCS = -isystem `$(PKG_CONFIG) --variable=includedir scenefx-0.5`/scenefx-0.5
+FX_LIBS = `$(PKG_CONFIG) --libs scenefx-0.5`
+
 # Uncomment to build XWayland support
 XWAYLAND = -DXWAYLAND
 XLIBS = xcb xcb-icccm

@@ -78,7 +78,7 @@ def render(tid, t):
         "live_config_reload = true",
         "",
         "[window]",
-        "opacity = 1.0",
+        f"opacity = {term.get('opacity', 1.0)}",
         "blur = false",
         "padding = { x = 10, y = 8 }",
         "",
@@ -157,6 +157,8 @@ radius={menu['radius']}
 """
 
     dwl = "".join(f"{k}={wm[k]}\n" for k in ("root", "border", "focus", "urgent", "borderpx", "gap", "anim") if k in wm)
+    # scenefx: köşe yarıçapı, gölge ve blur. Temada yoksa 0 yazılır ki önceki temadan kalmasın.
+    dwl += "".join(f"{k}={wm.get(k, 0)}\n" for k in ("radius", "shadow", "blur"))
 
     STATE.mkdir(parents=True, exist_ok=True)
     write("ghostty", "\n".join(ghostty) + "\n")

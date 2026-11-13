@@ -13,8 +13,8 @@ DWLDEVCFLAGS = -g -Wpedantic -Wall -Wextra -Wdeclaration-after-statement \
 
 # CFLAGS / LDFLAGS
 PKGS      = wayland-server xkbcommon libinput $(XLIBS)
-DWLCFLAGS = `$(PKG_CONFIG) --cflags $(PKGS)` $(WLR_INCS) $(DWLCPPFLAGS) $(DWLDEVCFLAGS) $(CFLAGS)
-LDLIBS    = `$(PKG_CONFIG) --libs $(PKGS)` $(WLR_LIBS) -lm $(LIBS)
+DWLCFLAGS = `$(PKG_CONFIG) --cflags $(PKGS)` $(WLR_INCS) $(FX_INCS) $(DWLCPPFLAGS) $(DWLDEVCFLAGS) $(CFLAGS)
+LDLIBS    = `$(PKG_CONFIG) --libs $(PKGS)` $(FX_LIBS) $(WLR_LIBS) -lm $(LIBS)
 
 all: dwl
 dwl: dwl.c client.h config.h ime.h util.h config.mk cursor-shape-v1-protocol.h \

@@ -30,7 +30,7 @@ if [ "$here" != "$want" ]; then
 fi
 
 # Resmî depodaki paketler. brave-origin-bin AUR'da; burada kurulmaz.
-PKGS="wlroots0.20 wayland-protocols xorg-xwayland xorg-xrandr
+PKGS="wlroots0.20 scenefx wayland-protocols xorg-xwayland xorg-xrandr
 quickshell alacritty fuzzel dunst libnotify
 grim slurp satty wl-clipboard cliphist wtype wlopm
 xdg-desktop-portal-wlr xdg-desktop-portal-gtk polkit-kde-agent

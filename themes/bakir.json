@@ -7,7 +7,10 @@
     "urgent": "#E5C45A",
     "borderpx": 2,
     "gap": 10,
-    "anim": 260
+    "anim": 260,
+    "radius": 10,
+    "shadow": 14,
+    "blur": 3
   },
   "bar": {
     "layout": "islands",
@@ -53,7 +56,8 @@
       "#D9A6C6",
       "#74D8C8",
       "#D7E4DF"
-    ]
+    ],
+    "opacity": 0.92
   },
   "menu": {
     "bg": "#142523",
