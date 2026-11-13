@@ -5,6 +5,7 @@ Item {
     id: strip
     required property var sh
     required property string output
+    required property var win
 
     readonly property var b: sh.b
     readonly property var st: sh.outputs[output] ?? null
@@ -100,6 +101,7 @@ Item {
         anchors.right: parent.right
         height: strip.cellH
 
+        Media { sh: strip.sh; height: strip.cellH; fg: strip.b.fg; dim: strip.b.faded }
         Cell {
             visible: strip.sh.hasSink
             text: strip.sh.muted ? "ses --" : "ses " + strip.sh.volume
@@ -127,6 +129,12 @@ Item {
             text: "ram " + strip.sh.ram + "%"
             color: strip.sh.ram >= 90 ? strip.b.accent : strip.b.fg
         }
+        Cell {
+            visible: strip.sh.kb !== ""
+            text: strip.sh.kb
+            color: strip.sh.kb === "tr" ? strip.b.fg : strip.b.accent
+        }
+        SysTray { win: strip.win; cell: strip.cellH }
         Tray { sh: strip.sh; output: strip.output; cell: strip.cellH }
         Rectangle {
             height: strip.cellH

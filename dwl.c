@@ -393,6 +393,7 @@ static void startdrag(struct wl_listener *listener, void *data);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tile(Monitor *m);
+static void kblayoutwrite(uint32_t idx);
 static void themeread(void);
 static void themeapply(void);
 static int themeevent(int fd, uint32_t mask, void *data);
@@ -2200,6 +2201,8 @@ keypressmod(struct wl_listener *listener, void *data)
 	if (input_method_keyboard_grab_forward_modifiers(group))
 		return;
 
+	kblayoutwrite(group->wlr_group->keyboard.modifiers.group);
+
 	wlr_seat_set_keyboard(seat, &group->wlr_group->keyboard);
 	/* Send modifiers to the client. */
 	wlr_seat_keyboard_notify_modifiers(seat,
@@ -3011,6 +3014,7 @@ setup(void)
 	/* Initialize the scene graph used to lay out windows */
 	themeread();
 	themewatch();
+	kblayoutwrite(0);
 	scene = wlr_scene_create();
 	root_bg = wlr_scene_rect_create(&scene->tree, 0, 0, rootcolor);
 	for (i = 0; i < NUM_LAYERS; i++)
@@ -3320,6 +3324,35 @@ tile(Monitor *m)
 		resize(c, geo, 0);
 		i++;
 	}
+}
+
+/* savpavi: publish the active keyboard layout ("tr", "us", ...) for the bar.
+ * dwl-ipc has no layout event, so the short name from xkb_rules.layout is written to
+ * $XDG_RUNTIME_DIR/dwl-kblayout whenever the effective group changes. */
+void
+kblayoutwrite(uint32_t idx)
+{
+	static uint32_t last = UINT32_MAX;
+	const char *dir = getenv("XDG_RUNTIME_DIR"), *p = xkb_rules.layout, *end;
+	char path[PATH_MAX], tmp[PATH_MAX];
+	uint32_t i;
+	FILE *f;
+
+	if (idx == last || !dir || !p)
+		return;
+	last = idx;
+	for (i = 0; i < idx && (p = strchr(p, ',')); i++)
+		p++;
+	if (!p)
+		return;
+	end = strchr(p, ',');
+	snprintf(path, sizeof(path), "%s/dwl-kblayout", dir);
+	snprintf(tmp, sizeof(tmp), "%s/dwl-kblayout.tmp", dir);
+	if (!(f = fopen(tmp, "w")))
+		return;
+	fprintf(f, "%.*s\n", end ? (int)(end - p) : (int)strlen(p), p);
+	fclose(f);
+	rename(tmp, path);
 }
 
 /* savpavi: runtime theme. The file holds "key=value" lines:

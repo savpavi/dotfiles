@@ -27,7 +27,7 @@ PopupWindow {
     // Açıkken boyutu değişen popup bozuk çiziliyor (dwl/wlroots); bu yüzden içerik
     // her değiştiğinde popup kapanır, yeni boyutu alır ve yeniden açılır.
     readonly property bool wanted: kind !== "" && sh.panelScreen === output
-    readonly property int wantW: kind === "notif" ? 380 : kind === "drive" || kind === "send" ? 320 : 260
+    readonly property int wantW: kind === "notif" ? 380 : kind === "drive" || kind === "send" || kind === "net" ? 320 : 260
     readonly property int wantH: body.implicitHeight + 2 * pad
     property bool settled: false
     property int w: 260
@@ -294,6 +294,49 @@ PopupWindow {
                 verticalAlignment: Text.AlignVCenter
                 text: "Veri alınamadı"
                 opacity: 0.6
+            }
+
+            // --- Ağ ---
+            Item {
+                visible: pop.kind === "net"
+                width: body.width
+                height: pop.rowH
+                Label {
+                    anchors { left: parent.left; leftMargin: 8; right: netState.left; rightMargin: 6
+                              verticalCenter: parent.verticalCenter }
+                    text: pop.sh.net.name !== "" ? pop.sh.net.name : "Ağ"
+                    font.bold: true
+                }
+                Label {
+                    id: netState
+                    anchors { right: parent.right; rightMargin: 8; verticalCenter: parent.verticalCenter }
+                    color: pop.m.match
+                    text: pop.sh.net.type === "ethernet" ? "kablolu" : pop.sh.net.type === "wifi" ? "kablosuz" : "bağlı değil"
+                }
+            }
+            Repeater {
+                model: pop.kind === "net" ? [
+                    { k: "IP", v: pop.sh.net.ip !== "" ? pop.sh.net.ip : "yok" },
+                    { k: "Tailscale", v: pop.sh.net.tailscale === "Running" ? "açık"
+                        : pop.sh.net.tailscale === "" ? "bilinmiyor" : "kapalı" }
+                ] : []
+                Item {
+                    id: netRow
+                    required property var modelData
+                    width: body.width
+                    height: 24
+                    Label {
+                        anchors { left: parent.left; leftMargin: 8; verticalCenter: parent.verticalCenter }
+                        text: netRow.modelData.k
+                        font.pixelSize: 12
+                        opacity: 0.8
+                    }
+                    Label {
+                        anchors { right: parent.right; rightMargin: 8; verticalCenter: parent.verticalCenter }
+                        text: netRow.modelData.v
+                        font.pixelSize: 12
+                    }
+                }
             }
 
             // --- Google Drive ---

@@ -5,6 +5,7 @@ Item {
     id: rail
     required property var sh
     required property string output
+    required property var win
 
     readonly property var b: sh.b
     readonly property var st: sh.outputs[output] ?? null
@@ -149,6 +150,21 @@ Item {
             lineHeight: 0.95
             font.pixelSize: rail.b.fontPx - 2
             color: rail.sh.ram >= 90 ? rail.b.urgent : rail.b.title
+        }
+        Label {
+            visible: rail.sh.kb !== ""
+            text: rail.sh.kb
+            font.pixelSize: rail.b.fontPx - 2
+            color: rail.sh.kb === "tr" ? rail.b.title : rail.b.accent
+        }
+        Media {
+            sh: rail.sh; glyphOnly: true
+            width: rail.width; height: rail.cell
+            fg: rail.b.accent; dim: rail.b.title
+        }
+        SysTray {
+            win: rail.win; vertical: true; cell: rail.cell
+            anchors.horizontalCenter: parent.horizontalCenter
         }
         Tray {
             sh: rail.sh; output: rail.output; vertical: true

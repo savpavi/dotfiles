@@ -5,6 +5,7 @@ Item {
     id: isl
     required property var sh
     required property string output
+    required property var win
 
     readonly property var b: sh.b
     readonly property var st: sh.outputs[output] ?? null
@@ -113,6 +114,7 @@ Item {
                     onClicked: isl.sh.cycleLayout(isl.output, isl.st ? isl.st.layout : "")
                 }
             }
+            Media { sh: isl.sh; height: isl.h; fg: isl.b.fg; dim: isl.b.faded; maxWidth: 260 }
             Label {
                 visible: isl.sh.hasSink
                 text: isl.sh.muted ? "ses  –" : "ses  " + isl.sh.volume
@@ -140,6 +142,12 @@ Item {
                 text: "ram  " + isl.sh.ram + "%"
                 color: isl.sh.ram >= 90 ? isl.b.urgent : isl.b.accent
             }
+            Label {
+                visible: isl.sh.kb !== ""
+                text: isl.sh.kb
+                color: isl.sh.kb === "tr" ? isl.b.faded : isl.b.accent
+            }
+            SysTray { win: isl.win; cell: isl.h }
             Tray { sh: isl.sh; output: isl.output; cell: isl.h }
         }
     }

@@ -3,6 +3,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
 import Quickshell.Wayland
 
@@ -55,6 +56,7 @@ ShellRoot {
         if (kind === "theme") themeList.running = true;
         if (kind === "notif") notifHistory.running = true;
         if (kind === "drive") drivePoll.running = true;
+        if (kind === "net") netPoll.running = true;
         if (kind === "send") phonePoll.running = true;
     }
     function closePanel() { panelKind = ""; }
@@ -73,6 +75,15 @@ ShellRoot {
     property var outputs: ({})
     property int cpu: 0
     property int ram: 0
+    // Çalan parça: önce çalan oynatıcı, yoksa ilk oynatıcı
+    readonly property var player: {
+        const ps = Mpris.players.values;
+        return ps.find(p => p.isPlaying) ?? (ps.length > 0 ? ps[0] : null);
+    }
+    // Klavye düzeni: dwl etkin düzeni $XDG_RUNTIME_DIR/dwl-kblayout dosyasına yazar
+    property string kb: ""
+    // Ağ: { type: "ethernet"|"wifi"|"", name, ip, tailscale }
+    property var net: ({ type: "", name: "", ip: "", tailscale: "" })
     // Claude kullanım limiti: dotfiles'taki claude-usage.sh, önbelleği Hyprland barıyla ortak
     // (uç nokta sık sorulunca 429 veriyor; script 150 sn içinde önbelleği yeniden kullanır).
     property var claude: null // { five_hour: {used_percentage, resets_at}, seven_day: {...} }
@@ -157,6 +168,36 @@ ShellRoot {
         }
     }
     Process { id: driveRun; onExited: drivePoll.running = true }
+
+    FileView {
+        path: Quickshell.env("XDG_RUNTIME_DIR") + "/dwl-kblayout"
+        watchChanges: true
+        onFileChanged: reload()
+        onLoaded: root.kb = text().trim()
+    }
+    Process {
+        id: netPoll
+        command: ["sh", "-c",
+            "nmcli -t -f TYPE,STATE,CONNECTION device status 2>/dev/null | grep -E '^(ethernet|wifi):connected' | head -n1; echo; "
+            + "ip -4 -o addr show scope global 2>/dev/null | grep -vE 'tailscale|virbr|docker|br-' | awk '{print $4}' | head -n1; echo; "
+            + "tailscale status --json 2>/dev/null | sed -n 's/.*\"BackendState\": *\"\\([^\"]*\\)\".*/\\1/p' | head -n1"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const l = text.split("\n").map(x => x.trim()).filter(x => x !== "");
+                const conn = (l.find(x => /^(ethernet|wifi):connected/.test(x)) ?? "").split(":");
+                root.net = {
+                    type: conn[0] ?? "",
+                    name: conn.slice(2).join(":"),
+                    ip: l.find(x => /^\d+\.\d+\.\d+\.\d+\//.test(x)) ?? "",
+                    tailscale: l.find(x => /^(Running|Stopped|NeedsLogin|Starting|NoState)$/.test(x)) ?? ""
+                };
+            }
+        }
+    }
+    Timer {
+        interval: 10000; running: true; repeat: true; triggeredOnStart: true
+        onTriggered: netPoll.running = true
+    }
 
     Process {
         id: claudePoll
@@ -324,8 +365,8 @@ ShellRoot {
                 anchors.fill: parent
                 sourceComponent: root.b.layout === "islands" ? islands : strip
             }
-            Component { id: strip; Strip { sh: root; output: modelData.name } }
-            Component { id: islands; Islands { sh: root; output: modelData.name } }
+            Component { id: strip; Strip { sh: root; output: modelData.name; win: topBar } }
+            Component { id: islands; Islands { sh: root; output: modelData.name; win: topBar } }
             Panel { sh: root; win: topBar; output: topBar.modelData.name }
         }
     }
@@ -346,7 +387,7 @@ ShellRoot {
             Loader {
                 anchors.fill: parent
                 active: parent.visible
-                sourceComponent: Rail { sh: root; output: modelData.name }
+                sourceComponent: Rail { sh: root; output: modelData.name; win: railBar }
             }
             Panel { sh: root; win: railBar; output: railBar.modelData.name; rail: true }
         }

@@ -10,7 +10,7 @@ Grid {
     property color fg: sh.b.fg
     property color active: sh.b.accent
 
-    columns: vertical ? 1 : 6
+    columns: vertical ? 1 : 7
     spacing: vertical ? 4 : 0
 
     component Btn: Item {
@@ -58,6 +58,11 @@ Grid {
     }
 
     Btn { kind: "idle"; glyph: "\u{F0176}" }
+    Btn {
+        kind: "net"
+        glyph: tray.sh.net.type === "wifi" ? "\u{F05A9}" : tray.sh.net.type === "ethernet" ? "\u{F0200}" : "\u{F05AA}"
+        alert: tray.sh.net.type === ""
+    }
     Btn {
         kind: "drive"
         glyph: tray.sh.driveBad ? "\u{F09E0}" : tray.sh.driveBusy ? "\u{F063F}" : "\u{F0160}"
