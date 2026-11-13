@@ -285,8 +285,11 @@ ShellRoot {
         enabled: root.idleEnabled
         timeout: root.idleScreenOffSec
         respectInhibitors: true
-        onIsIdleChanged: Quickshell.execDetached(["sh", "-c",
-            "command -v wlopm >/dev/null && wlopm " + (isIdle ? "--off" : "--on") + " '*'"])
+        // Ekranlar geri açılınca hareketli duvar katmanı bazı ekranlarda geri gelmiyor;
+        // uyanınca katmanı baştan başlat.
+        onIsIdleChanged: Quickshell.execDetached(["sh", "-c", isIdle
+            ? "command -v wlopm >/dev/null && wlopm --off '*'"
+            : "command -v wlopm >/dev/null && wlopm --on '*'; sleep 2; \"" + root.themeBin + "\" wall restart"])
     }
 
     // Kısayoldan/terminalden panel açmak için: quickshell ipc -p <bar> call panel toggle theme|notif|power

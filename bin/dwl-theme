@@ -6,7 +6,7 @@
   dwl-theme apply KIMLIK  temayı uygula
   dwl-theme pick          fuzzel ile seç ve uygula
   dwl-theme init          durum dosyaları yoksa etkin (ya da varsayılan) temayı yaz
-  dwl-theme wall show|next|off|on|toggle   hareketli duvar kağıdı (waywallen)
+  dwl-theme wall show|next|off|on|toggle|restart   hareketli duvar kağıdı (waywallen)
   dwl-theme list --json   bar için tema listesi
   dwl-theme host-restore  Qt/KDE/GTK renklerini dwl'den önceki haline döndür (dwl-session çağırır)
 
@@ -549,6 +549,11 @@ def wall(cmd):
         st["off"] = False
     elif cmd == "toggle":
         st["off"] = not st.get("off", False)
+    elif cmd == "restart":
+        # Ekranlar kapanıp açılınca katman bazı ekranlarda geri gelmiyor; baştan başlat.
+        import time
+        quiet("pkill", "-f", "^" + str(WW_SHELL) + "$")
+        time.sleep(0.6)
     elif cmd != "show":
         sys.exit(__doc__)
     STATE.mkdir(parents=True, exist_ok=True)
