@@ -19,7 +19,7 @@ btrfs-progs snapper snap-pac btrfs-assistant compsize smartmontools nfs-utils nt
 udisks2 upower fwupd zram-generator plocate restic nvme-cli
 # -- terminal / shell
 alacritty zsh zsh-autosuggestions zsh-syntax-highlighting starship eza bat fzf zoxide ripgrep btop fastfetch
-yazi tmux thefuck lazygit github-cli vim nano man-db man-pages wget curl rsync unzip zip 7zip tree lsof dos2unix words
+yazi tmux thefuck lazygit github-cli vim neovim nano man-db man-pages wget curl rsync unzip zip 7zip tree lsof dos2unix words
 usbutils pciutils ethtool tcpdump traceroute whois bind mtr nmap
 # -- fonts
 noto-fonts noto-fonts-emoji noto-fonts-cjk ttf-jetbrains-mono-nerd inter-font
