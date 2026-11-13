@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Service
 MimeType=all/all;
-Actions=drivelink;driveshare;zed
+Actions=drivelink;driveshare
 Icon=folder-cloud
 
 [Desktop Action drivelink]
@@ -13,8 +13,3 @@ Exec=/home/savpavi/dotfiles/bin/dot-drive link %F
 Name=Drive'da herkese açık paylaş
 Icon=document-share
 Exec=/home/savpavi/dotfiles/bin/dot-drive share %F
-
-[Desktop Action zed]
-Name=Zed ile aç
-Icon=zed
-Exec=/home/savpavi/.local/bin/zed %F

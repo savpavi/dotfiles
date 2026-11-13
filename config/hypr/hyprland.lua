@@ -36,7 +36,7 @@ end
 ---------------------
 
 -- Set programs that you use
-local terminal    = "ghostty"
+local terminal    = "alacritty"
 local fileManager = "dolphin"
 local menu        = "dot-shell launcher"
 
@@ -272,7 +272,7 @@ hl.gesture({
 local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 
 -- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
-hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))  -- Terminal (Ghostty)
+hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))  -- Terminal (Alacritty)
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())  -- Pencereyi kapat
 -- closeWindowBind:set_enabled(false)
 -- Super+M pencere duzeni: window-mode.lua; cikis Super+Escape menusunde.
@@ -282,13 +282,12 @@ hl.bind("ALT + SPACE", hl.dsp.exec_cmd(menu))  -- Uygulama başlatıcı
 hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("dot-shell clipboard"))  -- Pano geçmişi
 hl.bind(mainMod .. " + K", hl.dsp.exec_cmd("dot-keys"))  -- Kısayol penceresi
 hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("espanso cmd search"))  -- Espanso snippet araması
-hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("gtk-launch org.mozilla.firefox"))  -- Tarayıcı (Firefox)
+hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("gtk-launch brave-origin"))  -- Tarayıcı (Brave Origin)
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("/home/savpavi/.local/bin/start-windows-looking-glass"))  -- Windows VM (Looking Glass)
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("spotify-launcher"))  -- Spotify
 hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("Telegram"))  -- Telegram
 hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("flatpak run org.mozilla.thunderbird_esr"))  -- Thunderbird (mail/takvim)
 hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("discord"))  -- Discord
-hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd("zed"))  -- Zed editör
 hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("obsidian"))  -- Obsidian
 hl.bind(mainMod .. " + N", hl.dsp.window.move({ workspace = "special:minimized" }))  -- Pencereyi küçült (gizli alana at)
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.workspace.toggle_special("minimized"))  -- Küçültülen pencereleri göster/gizle
@@ -299,14 +298,14 @@ hl.bind(mainMod .. " + escape", hl.dsp.exec_cmd("dot-shell session"))  -- Oturum
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())  -- Sahte döşeme (pseudo)
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))  -- Bölme yönünü değiştir
 hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd("dot-shell bar"))  -- Barı göster/gizle
-hl.bind(mainMod .. " + SHIFT + D", hl.dsp.exec_cmd("dot-grab"))  -- İndir: Firefox sekmesi ya da panodaki link
+hl.bind(mainMod .. " + SHIFT + D", hl.dsp.exec_cmd("dot-grab"))  -- İndir: Brave sekmesi ya da panodaki link
 hl.bind(mainMod .. " + CTRL + D", hl.dsp.exec_cmd("dot-grab --clip"))  -- İndir: panodaki link
 hl.bind(mainMod .. " + SHIFT + space", hl.dsp.exec_cmd("dot-shell dig"))  -- DigUp: dosya içeriğinde ara
 
 -- Klavyede Print yok: Insert ekran goruntusu. Shift+Insert bos (terminal yapistirma).
-hl.bind("Insert", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))  -- Ekran görüntüsü (Flameshot)
-hl.bind("Print", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))  -- Ekran görüntüsü (Flameshot)
-hl.bind("SHIFT + Print", hl.dsp.exec_cmd("env QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui"))  -- Ekran görüntüsü (Flameshot)
+hl.bind("Insert", hl.dsp.exec_cmd("dot-shot"))  -- Ekran görüntüsü: bölge seç → satty
+hl.bind("Print", hl.dsp.exec_cmd("dot-shot"))  -- Ekran görüntüsü: bölge seç → satty
+hl.bind("SHIFT + Print", hl.dsp.exec_cmd("dot-shot --full"))  -- Ekran görüntüsü: odaktaki monitör → satty
 
 -- Move focus with mainMod + arrow keys
 hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))  -- Odak: sol pencere
@@ -364,18 +363,6 @@ local suppressMaximizeRule = hl.window_rule({
 })
 -- suppressMaximizeRule:set_enabled(false)
 
--- Flameshot 14 on Wayland: monitor picker first, then a capture window on that
--- monitor. Selections can't span monitors any more, so no 4480px span rule.
-hl.window_rule({
-    name = "flameshot-picker",
-    match = { class = "^flameshot$", title = "^flameshot$" },
-    float = true,
-    pin = true,
-    center = true,
-    no_anim = true,
-    rounding = 0,
-    border_size = 0,
-})
 
 -- Looking Glass opens fullscreen on the LG 1080p monitor.
 hl.window_rule({

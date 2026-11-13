@@ -8,12 +8,12 @@ These are personal configs. Monitor names (`DP-1`, `DP-3`), paths and app choice
 
 | Path | What it holds |
 |---|---|
-| `config/` | App configs, symlinked into `~/.config/<name>` by `dot-link` (Hyprland, savpavi-shell, DankMaterialShell, Ghostty, Kitty, Alacritty, Waybar, Rofi, SwayNC, btop, fastfetch, Starship, …) |
+| `config/` | App configs, symlinked into `~/.config/<name>` by `dot-link` (Hyprland, savpavi-shell, DankMaterialShell, Alacritty, Waybar, Rofi, SwayNC, btop, fastfetch, Starship, …) |
 | `bin/` | `dot-*` helper scripts (add to `PATH`) |
 | `themes/` | 22 colour themes adapted from Omarchy |
 | `templates/` | `*.tpl` files rendered by `dot-theme`; `templates/apps/` app colour templates filled by `dot-shell-theme` |
 | `tests/` | Unit tests for the helper scripts |
-| `extras/` | Pieces installed by hand: Firefox Nord theme, `.desktop` launchers, MIME defaults, systemd user units, Dolphin service menus, Thunar actions |
+| `extras/` | Pieces installed by hand: Firefox Nord theme, `.desktop` launchers, MIME defaults, systemd user units, Dolphin service menus |
 | `shell/` | Bash snippets for `~/.bashrc.d/` |
 | `docs/` | Desktop tools, Hyprland cheatsheet (mostly in Turkish) |
 
@@ -47,7 +47,7 @@ dot-shell-theme apply dwm-nord
 dot-shell-theme wall        # next wallpaper of the active theme
 ```
 
-`dot-shell-theme` reads `config/savpavi-shell/themes/` (theme list + palettes) and writes the shell palette, Hyprland border colours and cursor, and app colours for GTK 3/4, Qt5/6ct, KDE, Ghostty, kitty, Alacritty, Vesktop/Vencord, Zed and btop from `templates/apps/`. For KDE apps such as Dolphin it also sets `[UiSettings] ColorScheme` in `~/.config/kdeglobals`: outside Plasma they only load a colour scheme that is selected by name and otherwise fall back to Breeze, ignoring the qt6ct palette. Running KDE apps pick up a theme change after a restart. With waywallen installed it also opens the theme's Wallpaper Engine wallpaper.
+`dot-shell-theme` reads `config/savpavi-shell/themes/` (theme list + palettes) and writes the shell palette, Hyprland border colours and cursor, and app colours for GTK 3/4, Qt5/6ct, KDE, Alacritty, Vesktop/Vencord and btop from `templates/apps/`. For KDE apps such as Dolphin it also sets `[UiSettings] ColorScheme` in `~/.config/kdeglobals`: outside Plasma they only load a colour scheme that is selected by name and otherwise fall back to Breeze, ignoring the qt6ct palette. Running KDE apps pick up a theme change after a restart. With waywallen installed it also opens the theme's Wallpaper Engine wallpaper.
 
 ## Themes (dot-theme, older)
 
@@ -67,13 +67,13 @@ dot-theme reapply         # re-render the active theme
 |---|---|
 | `dot-shell <action>` | Shared shortcut actions (launcher, clipboard, lock, bar, volume, settings, themes…) routed to savpavi-shell or the DMS fallback; `dot-shell switch` toggles between them |
 | `dot-shell-theme` | Themes for savpavi-shell and the apps (see above) |
-| `dot-grab` | Download the focused Firefox tab or the clipboard link: video sites via yt-dlp, galleries via gallery-dl, unknown sites try both, then fall back to the direct file links found on the page (videos and archives first, otherwise images; saved under a folder named after the page title). Uses the browser's cookies and reports through notifications (Super+Shift+D tab, Super+Ctrl+D clipboard) |
+| `dot-grab` | Download the focused Brave Origin tab or the clipboard link: video sites via yt-dlp, galleries via gallery-dl, unknown sites try both, then fall back to the direct file links found on the page (videos and archives first, otherwise images; saved under a folder named after the page title). Uses the browser's cookies and reports through notifications (Super+Shift+D tab, Super+Ctrl+D clipboard) |
 | `dot-health` | *Legacy, Niri-only:* read-only desktop health report from the Niri setup (checks `niri validate`, Niri IPC); never restarts or repairs anything. Not updated for Hyprland |
 | `dot-record` | *Legacy, Niri-only:* screen recording via Niri IPC + wf-recorder; the same command starts and stops. Does not work under Hyprland |
-| `dot-resolve [FILE…]` | Prepare a video for DaVinci Resolve: copy the video stream, PCM audio, write `<name>_resolve.mov` (Thunar action) |
-| `dot-quicklook FILE` | Quick Look-style preview through GNOME Sushi; bound to Space in Thunar, pressing again closes it |
+| `dot-resolve [FILE…]` | Prepare a video for DaVinci Resolve: copy the video stream, PCM audio, write `<name>_resolve.mov` |
+| `dot-quicklook FILE` | Quick Look-style preview through GNOME Sushi; available from the Dolphin service menu |
 | `dot-send [FILE…]` | Send files to the paired phone over KDE Connect (file picker without arguments); bar widget `dotSend`: left click sends, right click opens LocalSend |
-| `dot-drive <action>` | Google Drive mounted at `~/GoogleDrive` with rclone: `status` (JSON for the bar's Drive widget), `link FILE…` copies the Drive link without changing sharing, `share FILE…` creates a public link after confirming, `sync [NAME]` two-way folder sync with rclone bisync, `open`, `web`, `restart` (Thunar actions for link and share) |
+| `dot-drive <action>` | Google Drive mounted at `~/GoogleDrive` with rclone: `status` (JSON for the bar's Drive widget), `link FILE…` copies the Drive link without changing sharing, `share FILE…` creates a public link after confirming, `sync [NAME]` two-way folder sync with rclone bisync, `open`, `web`, `restart` (Dolphin actions for link and share) |
 | `dot-ocr` | Select a region, OCR it with Tesseract, copy the text |
 | `dot-webapp Name https://url` | Create a Brave Origin web-app launcher (never overwrites) |
 | `dot-keys` | Keybind sheet of savpavi-shell, read from the Hyprland Lua config and its comments (Super+K); `--text` prints it |
@@ -86,7 +86,7 @@ dot-theme reapply         # re-render the active theme
 
 Folder sync (like "back up folders from my computer" in Drive for Windows) is configured in `~/.config/dot-drive/sync.conf`, one `NAME<TAB>LOCAL<TAB>REMOTE` line per pair with optional filters in `NAME.filter`. The first run and any filter change do a `--resync` automatically; conflicts keep the newer copy and rename the other `.conflictN`. `extras/systemd/dot-drive-sync.{service,timer}` runs it every 10 minutes and `dot-drive-watch.service` (needs `inotify-tools`) triggers it 45 s after local changes settle.
 
-`dot-quicklook` needs the `sushi` package. Append `extras/thunar/accels-quicklook.scm` to `~/.config/Thunar/accels.scm` while Thunar is closed to get the Space binding.
+`dot-quicklook` needs the `sushi` package.
 
 `dot-grab` needs `yt-dlp[default]` (for YouTube's JS challenge) and `gallery-dl`, e.g. via `uv tool install`. Extra gallery-dl domains can be listed one per line in `~/.config/dot-grab/gallery-domains`, outside the repo.
 

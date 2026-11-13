@@ -82,13 +82,9 @@ APP_OUTPUTS = [
     ('kcolorscheme.colors', DATA/'color-schemes/Savpavi.colors'),
     ('light-kcolorscheme.colors', DATA/'color-schemes/SavpaviLight.colors'),
     ('dark-kcolorscheme.colors', DATA/'color-schemes/SavpaviDark.colors'),
-    ('kitty.conf', CFG/'kitty/savpavi-theme.conf'),
-    ('kitty-tabs.conf', CFG/'kitty/savpavi-tabs.conf'),
-    ('ghostty-theme', CFG/'ghostty/savpavi-theme'),
     ('alacritty.toml', CFG/'alacritty/savpavi-theme.toml'),
     ('vesktop.css', CFG/'vesktop/themes/savpavi.css'),
     ('vesktop.css', CFG/'Vencord/themes/savpavi.css'),
-    ('dank-zed.json', CFG/'zed/themes/savpavi.json'),
     ('zen-userchrome.css', DATA/'savpavi-shell/zen.css'),
     ('hypr-colors.lua', CFG/'hypr/savpavi/colors.lua'),
     ('btop.theme', CFG/'btop/themes/savpavi.theme'),
@@ -203,7 +199,7 @@ def render_apps(tid, mode):
     outputs = APP_OUTPUTS + [('gtk-light-colors.css' if mode == 'light' else 'gtk-colors.css', CFG/'gtk-3.0/savpavi-colors.css')]
     for src, dst in outputs:
         text = pat.sub(sub, (APP_TEMPLATES/src).read_text())
-        # şablonlardaki DMS adları: Zed tema adı, KDE şema adı
+        # şablonlardaki DMS adları: KDE şema adı
         text = (text.replace('DankShell', 'Savpavi').replace('DankMatugen', 'Savpavi')
                 .replace('DMS Matugen hook', 'dot-shell-theme').replace('require("dms.colors")', 'require("savpavi.colors")'))
         left = re.findall(r'\{\{[^}]*\}\}', text)
@@ -212,9 +208,7 @@ def render_apps(tid, mode):
         dst.parent.mkdir(parents=True, exist_ok=True)
         dst.write_text(text)
     kde_globals(DATA/'color-schemes/Savpavi.colors')
-    # açık uygulamaları tazele: ghostty (SIGUSR2), kitty (SIGUSR1), Hyprland kenarlıkları, GTK
-    sp.run(['pkill', '-USR2', '-x', 'ghostty'], capture_output=True)
-    sp.run(['pkill', '-USR1', '-x', 'kitty'], capture_output=True)
+    # açık uygulamaları tazele: Hyprland kenarlıkları, GTK
     sp.run(['hyprctl', 'reload', 'config-only'], capture_output=True)
     sp.run(['gsettings', 'set', 'org.gnome.desktop.interface', 'color-scheme',
             'prefer-light' if mode == 'light' else 'prefer-dark'], capture_output=True)

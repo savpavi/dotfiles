@@ -4,9 +4,7 @@
 .cache/
 
 # dot-theme tarafından üretilen dosyalar (tema değiştikçe yeniden yazılır)
-config/kitty/active-theme.conf
 config/alacritty/active-theme.toml
-config/ghostty/theme.conf
 config/btop/themes/dot-theme.theme
 config/waybar/colors.css
 config/rofi/colors.rasi
@@ -32,12 +30,9 @@ __pycache__/
 config/hypr/dms/colors.lua
 config/hypr/hyprland.lua.backup*
 config/hypr/hyprland.lua.dmsbackup*
-config/kitty/dank-*.conf
 config/hypr/dms/cursor.lua
 
 # dot-shell-theme tarafından üretilen dosyalar (savpavi-shell)
 config/hypr/savpavi/
-config/kitty/savpavi-*.conf
-config/ghostty/savpavi-theme
 config/alacritty/savpavi-theme.toml
 config/btop/themes/savpavi.theme

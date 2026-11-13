@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# dot-shot — ekran görüntüsü: grim ile yakala, satty'de düzenle.
+# Kullanım: dot-shot          bölge seç (slurp)
+#           dot-shot --full   odaktaki monitörün tamamı
+# satty: Enter panoya kopyalar, Ctrl+S ~/Pictures/Screenshots altına kaydeder.
+set -euo pipefail
+
+dir="$HOME/Pictures/Screenshots"
+mkdir -p "$dir"
+
+if [[ ${1:-} == "--full" ]]; then
+  output=$(hyprctl -j monitors | jq -r '.[] | select(.focused) | .name')
+  shot() { grim -o "$output" -; }
+else
+  # Esc ile seçim iptal edilirse sessizce çık.
+  geometry=$(slurp -d) || exit 0
+  shot() { grim -g "$geometry" -; }
+fi
+
+shot | satty --filename - \
+  --output-filename "$dir/%Y-%m-%d_%H-%M-%S.png" \
+  --copy-command wl-copy \
+  --actions-on-enter save-to-clipboard \
+  --early-exit
