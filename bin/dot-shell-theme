@@ -85,6 +85,7 @@ APP_OUTPUTS = [
     ('kitty.conf', CFG/'kitty/savpavi-theme.conf'),
     ('kitty-tabs.conf', CFG/'kitty/savpavi-tabs.conf'),
     ('ghostty-theme', CFG/'ghostty/savpavi-theme'),
+    ('alacritty.toml', CFG/'alacritty/savpavi-theme.toml'),
     ('vesktop.css', CFG/'vesktop/themes/savpavi.css'),
     ('vesktop.css', CFG/'Vencord/themes/savpavi.css'),
     ('dank-zed.json', CFG/'zed/themes/savpavi.json'),
@@ -137,6 +138,50 @@ def fmt(hexc, field):
         return h
     return str(int(h[{'red': 0, 'green': 2, 'blue': 4}[field]:][:2], 16))
 
+def kde_globals(scheme):
+    """Şemanın renk gruplarını ~/.config/kdeglobals içine işler.
+
+    Plasma dışında (qt6ct) Dolphin gibi KDE uygulamaları düğme/menü renklerini qt6ct'den,
+    dosya görünümü ve seçim renklerini ise kdeglobals'tan okur; orası eski kalırsa
+    koyu temada beyaz paneller çıkar. Diğer gruplara dokunulmaz."""
+    import configparser
+    def load(path):
+        c = configparser.RawConfigParser(delimiters=('=',), strict=False, interpolation=None)
+        c.optionxform = str
+        if path.exists():
+            c.read(path, encoding='utf-8')
+        return c
+    target = CFG/'kdeglobals'
+    src, dst = load(scheme), load(target)
+    groups = [s for s in src.sections() if s.startswith(('Colors:', 'ColorEffects:')) or s == 'WM']
+    if not groups:
+        return
+    backup = target.with_name('kdeglobals.bak-dot-shell-theme')
+    if target.exists() and not backup.exists():
+        backup.write_bytes(target.read_bytes())
+    for g in groups:
+        if dst.has_section(g):
+            dst.remove_section(g)
+        dst.add_section(g)
+        for k, v in src.items(g):
+            dst.set(g, k, v)
+    if not dst.has_section('General'):
+        dst.add_section('General')
+    dst.set('General', 'ColorScheme', 'Savpavi')
+    dst.remove_option('General', 'ColorSchemeHash')
+    # Asıl anahtar bu: Plasma dışında KColorSchemeManager yalnız açıkça seçilmiş şemayı
+    # (dosya adı = kimlik) yükler; seçim yoksa Breeze Light/Dark'a düşer ve yukarıdaki
+    # renk gruplarını da qt6ct paletini de yok sayar. kdeglobals'ta durunca tüm KDE
+    # uygulamaları için geçerli olur (Dolphin, Ark, Okular...).
+    if not dst.has_section('UiSettings'):
+        dst.add_section('UiSettings')
+    dst.set('UiSettings', 'ColorScheme', scheme.stem)
+    with target.open('w', encoding='utf-8') as f:
+        dst.write(f, space_around_delimiters=False)
+    # açık KDE uygulamalarına "palet değişti" sinyali
+    sp.run(['dbus-send', '--type=signal', '/KGlobalSettings',
+            'org.kde.KGlobalSettings.notifyChange', 'int32:0', 'int32:0'], capture_output=True)
+
 def render_apps(tid, mode):
     """Aktif temanın renklerini uygulama config'lerine yazar, açık olanları tazeler."""
     import re
@@ -166,6 +211,7 @@ def render_apps(tid, mode):
             print(f"uyarı: {src} içinde doldurulmayan {len(left)} yer tutucu: {left[0]}", file=sys.stderr)
         dst.parent.mkdir(parents=True, exist_ok=True)
         dst.write_text(text)
+    kde_globals(DATA/'color-schemes/Savpavi.colors')
     # açık uygulamaları tazele: ghostty (SIGUSR2), kitty (SIGUSR1), Hyprland kenarlıkları, GTK
     sp.run(['pkill', '-USR2', '-x', 'ghostty'], capture_output=True)
     sp.run(['pkill', '-USR1', '-x', 'kitty'], capture_output=True)

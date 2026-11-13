@@ -14,11 +14,11 @@ tailscale syncthing cloudflared rclone inotify-tools kdeconnect
 # -- secrets
 gnome-keyring libsecret seahorse ksshaskpass
 # -- files / storage
-thunar thunar-archive-plugin thunar-volman tumbler ffmpegthumbnailer gvfs gvfs-smb file-roller sushi
+dolphin kio-extras thunar thunar-archive-plugin thunar-volman tumbler ffmpegthumbnailer gvfs gvfs-smb file-roller sushi
 btrfs-progs snapper snap-pac btrfs-assistant compsize smartmontools nfs-utils ntfs-3g exfatprogs dosfstools
 udisks2 upower fwupd zram-generator plocate restic nvme-cli
 # -- terminal / shell
-ghostty kitty zsh zsh-autosuggestions zsh-syntax-highlighting starship eza bat fzf zoxide ripgrep btop fastfetch
+ghostty kitty alacritty zsh zsh-autosuggestions zsh-syntax-highlighting starship eza bat fzf zoxide ripgrep btop fastfetch
 yazi tmux thefuck lazygit github-cli vim nano man-db man-pages wget curl rsync unzip zip 7zip tree lsof dos2unix words
 usbutils pciutils ethtool tcpdump traceroute whois bind mtr nmap
 # -- fonts

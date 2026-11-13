@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Service
+MimeType=all/allfiles;
+Actions=quicklook
+
+[Desktop Action quicklook]
+Name=Hızlı önizleme
+Icon=view-preview
+Exec=/home/savpavi/dotfiles/bin/dot-quicklook %f

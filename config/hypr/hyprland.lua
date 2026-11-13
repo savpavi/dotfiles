@@ -37,7 +37,7 @@ end
 
 -- Set programs that you use
 local terminal    = "ghostty"
-local fileManager = "thunar"
+local fileManager = "dolphin"
 local menu        = "dot-shell launcher"
 
 
@@ -272,7 +272,7 @@ hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))  -- Terminal (Ghostty)
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())  -- Pencereyi kapat
 -- closeWindowBind:set_enabled(false)
 -- Super+M pencere duzeni: window-mode.lua; cikis Super+Escape menusunde.
-hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))  -- Dosya yöneticisi (Thunar)
+hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))  -- Dosya yöneticisi (Dolphin)
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))  -- Pencereyi serbest/döşeli yap
 hl.bind("ALT + SPACE", hl.dsp.exec_cmd(menu))  -- Uygulama başlatıcı
 hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("dot-shell clipboard"))  -- Pano geçmişi

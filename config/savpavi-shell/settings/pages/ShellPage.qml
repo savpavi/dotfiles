@@ -11,7 +11,7 @@ Column {
         BarButton {
             Icon { name: "folder_open"; anchors.verticalCenter: parent.verticalCenter }
             Label { text: "Klasörü aç"; anchors.verticalCenter: parent.verticalCenter }
-            onClicked: Quickshell.execDetached(["thunar", Quickshell.shellDir])
+            onClicked: Quickshell.execDetached(["xdg-open", Quickshell.shellDir])
         }
     }
     SettingRow {

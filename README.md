@@ -13,7 +13,7 @@ These are personal configs. Monitor names (`DP-1`, `DP-3`), paths and app choice
 | `themes/` | 22 colour themes adapted from Omarchy |
 | `templates/` | `*.tpl` files rendered by `dot-theme`; `templates/apps/` app colour templates filled by `dot-shell-theme` |
 | `tests/` | Unit tests for the helper scripts |
-| `extras/` | Pieces installed by hand: Firefox Nord theme, `.desktop` launchers, MIME defaults, systemd user units, Thunar actions |
+| `extras/` | Pieces installed by hand: Firefox Nord theme, `.desktop` launchers, MIME defaults, systemd user units, Dolphin service menus, Thunar actions |
 | `shell/` | Bash snippets for `~/.bashrc.d/` |
 | `docs/` | Desktop tools, Hyprland cheatsheet (mostly in Turkish) |
 
@@ -47,7 +47,7 @@ dot-shell-theme apply dwm-nord
 dot-shell-theme wall        # next wallpaper of the active theme
 ```
 
-`dot-shell-theme` reads `config/savpavi-shell/themes/` (theme list + palettes) and writes the shell palette, Hyprland border colours and cursor, and app colours for GTK 3/4, Qt5/6ct, KDE, Ghostty, kitty, Vesktop/Vencord, Zed and btop from `templates/apps/`. With waywallen installed it also opens the theme's Wallpaper Engine wallpaper.
+`dot-shell-theme` reads `config/savpavi-shell/themes/` (theme list + palettes) and writes the shell palette, Hyprland border colours and cursor, and app colours for GTK 3/4, Qt5/6ct, KDE, Ghostty, kitty, Alacritty, Vesktop/Vencord, Zed and btop from `templates/apps/`. For KDE apps such as Dolphin it also sets `[UiSettings] ColorScheme` in `~/.config/kdeglobals`: outside Plasma they only load a colour scheme that is selected by name and otherwise fall back to Breeze, ignoring the qt6ct palette. Running KDE apps pick up a theme change after a restart. With waywallen installed it also opens the theme's Wallpaper Engine wallpaper.
 
 ## Themes (dot-theme, older)
 

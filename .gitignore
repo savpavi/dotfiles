@@ -39,4 +39,5 @@ config/hypr/dms/cursor.lua
 config/hypr/savpavi/
 config/kitty/savpavi-*.conf
 config/ghostty/savpavi-theme
+config/alacritty/savpavi-theme.toml
 config/btop/themes/savpavi.theme

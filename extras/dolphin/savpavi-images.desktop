@@ -1,0 +1,26 @@
+[Desktop Entry]
+Type=Service
+MimeType=image/*;
+Actions=resize;upscale;webp;copyimg
+X-KDE-Submenu=Görsel
+Icon=image-x-generic
+
+[Desktop Action resize]
+Name=Yeniden boyutlandır
+Icon=transform-scale
+Exec=/home/savpavi/.local/bin/resize-selected %F
+
+[Desktop Action upscale]
+Name=Büyüt (Real-ESRGAN)
+Icon=zoom-in
+Exec=/home/savpavi/.local/bin/upscale-selected %F
+
+[Desktop Action webp]
+Name=WebP'ye dönüştür
+Icon=document-export
+Exec=/home/savpavi/.local/bin/convert-to-webp %F
+
+[Desktop Action copyimg]
+Name=Görseli panoya kopyala
+Icon=edit-copy
+Exec=/home/savpavi/.local/bin/copy-selected %F

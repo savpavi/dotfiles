@@ -133,6 +133,18 @@ stage_link() {
     [[ -e "$dst/$(basename "$u")" ]] || run cp "$u" "$dst/"
   done
   [[ -e $HOME/.config/mimeapps.list ]] || run cp "$DOT/extras/mimeapps/desktop-apps.list" "$HOME/.config/mimeapps.list"
+  # Dolphin: right-click actions (KF6 only loads executable service menus) and folders open in it.
+  local sm="$HOME/.local/share/kio/servicemenus"
+  run mkdir -p "$sm"
+  for u in "$DOT"/extras/dolphin/*.desktop; do run install -m755 "$u" "$sm/"; done
+  run xdg-mime default org.kde.dolphin.desktop inode/directory
+  # Outside Plasma XDG_MENU_PREFIX is "hyprland-", for which no applications.menu exists, so KDE apps
+  # find no applications and Dolphin's "Open With" is empty. Point that name at Plasma's menu.
+  if [[ -e /etc/xdg/menus/plasma-applications.menu && ! -e $HOME/.config/menus/hyprland-applications.menu ]]; then
+    run mkdir -p "$HOME/.config/menus"
+    run ln -s /etc/xdg/menus/plasma-applications.menu "$HOME/.config/menus/hyprland-applications.menu"
+  fi
+  have kbuildsycoca6 && run kbuildsycoca6 --noincremental
   run systemctl --user daemon-reload
 }
 

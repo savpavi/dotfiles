@@ -2,10 +2,10 @@
 live_config_reload = true
 working_directory = "None"
 
-# Active theme — managed by theme-apply.sh, do not edit manually.
-# Change the theme in ~/.config/dwm-titus/themes.toml instead.
+# Colours come from savpavi-theme.toml, written by dot-shell-theme on every theme change
+# (alacritty reloads it live). Do not edit that file by hand.
 import = [
-  "~/.config/alacritty/active-theme.toml",
+  "~/.config/alacritty/savpavi-theme.toml",
   "~/.config/alacritty/keybinds.toml"
 ]
 
