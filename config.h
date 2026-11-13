@@ -54,6 +54,7 @@ static const Rule rules[] = {
 	{ "discord",               NULL,  1 << 2,  0,  "DP-1" },
 	{ "spotify",               NULL,  1 << 1,  0,  "DP-1" },
 	{ "obsidian",              NULL,  1 << 3,  0,  "DP-1" },
+	{ "mailcraft",             NULL,  1 << 4,  0,  "DP-1" },
 	/* kucuk araclar dosenmesin */
 	{ "kcalc",                 NULL,  0,       1,  NULL },
 	{ "calculator",            NULL,  0,       1,  NULL },
@@ -68,6 +69,7 @@ static const Rule rules[] = {
 	{ "polkit",                NULL,  0,       1,  NULL },
 	{ "xdg-desktop-portal",    NULL,  0,       1,  NULL },
 	{ "kdeconnect",            NULL,  0,       1,  NULL },
+	{ "digup",                 NULL,  0,       1,  NULL },
 };
 
 /* layout(s) */
@@ -194,6 +196,7 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot screen") },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_d,           spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-grab") },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_d,           spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-grab --clip") },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,       spawn,            SHCMD("/home/savpavi/Applications/DigUp.AppImage --toggle") },
 	{ MODKEY,                    XKB_KEY_x,           spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-clip") },
 	{ MODKEY,                    XKB_KEY_k,           spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-keys") },
 	{ MODKEY,                    XKB_KEY_l,           spawn,            SHCMD("quickshell ipc -p /home/savpavi/Projects/dwl/bar call lock lock") },
@@ -210,7 +213,8 @@ static const Key keys[] = {
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Down,        incnmaster,       {.i = -1} },
 	{ MODKEY,                    XKB_KEY_Return,      zoom,             {0} },
 	{ MODKEY,                    XKB_KEY_Tab,         view,             {0} },
-	{ MODKEY,                    XKB_KEY_m,           setlayout,        {.v = &layouts[0]} },
+	{ MODKEY,                    XKB_KEY_m,           focusorspawn,     APP("mailcraft", "flatpak run io.github.billsecond.mailcraft") },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_m,           setlayout,        {.v = &layouts[0]} },
 	{ MODKEY,                    XKB_KEY_f,           setlayout,        {.v = &layouts[2]} },
 	{ MODKEY,                    XKB_KEY_v,           togglefloating,   {0} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_f,           togglefullscreen, {0} },
