@@ -114,6 +114,7 @@ Item {
             text: "cpu " + strip.sh.cpu + "%"
             color: strip.sh.cpu >= 85 ? strip.b.accent : strip.b.fg
         }
+        Tray { sh: strip.sh; output: strip.output; cell: strip.cellH }
         Rectangle {
             height: strip.cellH
             width: clockText.implicitWidth

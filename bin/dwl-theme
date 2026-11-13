@@ -6,6 +6,8 @@
   dwl-theme apply KIMLIK  temayı uygula
   dwl-theme pick          fuzzel ile seç ve uygula
   dwl-theme init          durum dosyaları yoksa etkin (ya da varsayılan) temayı yaz
+  dwl-theme wall show|next|off|on|toggle   hareketli duvar kağıdı (waywallen)
+  dwl-theme list --json   bar için tema listesi
 
 Temalar themes/*.json içinde. Uygulanınca ~/.local/state/dwl-theme/ altına
 dwl.conf, theme.json, alacritty.toml, ghostty, fuzzel.ini ve dunstrc üretilir; dwl ve bar bu
@@ -133,6 +135,7 @@ radius={menu['radius']}
     width = 360
     offset = (12, 12)
     origin = top-right
+    follow = mouse
     frame_width = 2
     frame_color = "{note['frame']}"
     corner_radius = {note['radius']}
@@ -183,6 +186,115 @@ def apply(tid, live=True):
                           stdout=subprocess.DEVNULL).returncode == 0:
             quiet("dunstctl", "reload", str(STATE / "dunstrc"))
         quiet("pkill", "-USR2", "-f", "^ghostty .*dwl-theme/ghostty")
+        wall_async()
+
+
+# --- Hareketli duvar kağıdı: waywallen (Flatpak daemon) + waywallen-layer-shell ---
+# Temanın "live" listesi Wallpaper Engine Workshop kimlikleridir.
+WW_DB = Path.home() / ".var/app/org.waywallen.waywallen/data/waywallen/waywallen-v2.db"
+WW_SHELL = Path.home() / ".local/bin/waywallen-layer-shell"
+WW_SOCK = Path(os.environ.get("XDG_RUNTIME_DIR", "/run/user/%d" % os.getuid())) / "waywallen/display.sock"
+
+
+def ww(method, *args):
+    try:
+        r = subprocess.run(["gdbus", "call", "--session", "-d", "org.waywallen.waywallen.Daemon",
+                            "-o", "/org/waywallen/waywallen/Daemon",
+                            "-m", f"org.waywallen.waywallen.Daemon1.{method}", *args],
+                           capture_output=True, text=True, timeout=20)
+        return r.returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def ww_item(wid):
+    """Workshop kimliği -> waywallen katalog kimliği (indirilmemişse None)."""
+    import sqlite3
+    try:
+        db = sqlite3.connect(f"file:{WW_DB}?mode=ro", uri=True, timeout=5)
+        row = db.execute("SELECT id FROM item WHERE external_id = ? OR path LIKE ? ORDER BY id LIMIT 1",
+                         (str(wid), f"%/431960/{wid}/%")).fetchone()
+        db.close()
+        return row[0] if row else None
+    except sqlite3.Error:
+        return None
+
+
+def wall_state():
+    try:
+        return json.loads((STATE / "wall.json").read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def wall_running():
+    return subprocess.run(["pgrep", "-f", "^" + str(WW_SHELL) + "$"],
+                          stdout=subprocess.DEVNULL).returncode == 0
+
+
+def wall_stop():
+    quiet("pkill", "-f", "^" + str(WW_SHELL) + "$")
+    ww("Pause")
+
+
+def wall_show():
+    """Etkin temanın seçili hareketli duvarını gösterir; yoksa katmanı kapatır."""
+    import time
+    st = wall_state()
+    tid = current()
+    ids = themes().get(tid, {}).get("live", [])
+    if st.get("off") or not ids or not WW_SHELL.exists():
+        wall_stop()
+        return
+    quiet("systemctl", "--user", "start", "waywallen.service")
+    start = st.get("index", {}).get(tid, 0)
+    item = None
+    for k in range(len(ids)):
+        item = ww_item(ids[(start + k) % len(ids)])
+        if item is not None:
+            break
+    if item is None:
+        wall_stop()
+        return
+    fresh = not wall_running()
+    if fresh:
+        for _ in range(50):
+            if WW_SOCK.exists():
+                break
+            time.sleep(0.2)
+        subprocess.Popen([str(WW_SHELL)], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, start_new_session=True)
+        # Katman yeni bağlanınca waywallen son duvarı geri çağırıp seçimi eziyor.
+        time.sleep(2.5)
+    ww("ApplyById", str(item))
+    ww("Resume")
+
+
+def wall_async():
+    """Tema değişimini bekletmemek için duvar işini arka plana atar."""
+    subprocess.Popen([sys.executable, __file__, "wall", "show"], stdin=subprocess.DEVNULL,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+
+def wall(cmd):
+    st = wall_state()
+    tid = current()
+    n = len(themes().get(tid, {}).get("live", []))
+    if cmd == "next" and n:
+        idx = st.setdefault("index", {})
+        idx[tid] = (idx.get(tid, 0) + 1) % n
+        st["off"] = False
+    elif cmd == "off":
+        st["off"] = True
+    elif cmd == "on":
+        st["off"] = False
+    elif cmd == "toggle":
+        st["off"] = not st.get("off", False)
+    elif cmd != "show":
+        sys.exit(__doc__)
+    STATE.mkdir(parents=True, exist_ok=True)
+    write("wall.json", json.dumps(st) + "\n")
+    wall_show()
 
 
 def pick():
@@ -205,6 +317,18 @@ def main():
         cur = current()
         for i, t in themes().items():
             print(("* " if i == cur else "  ") + f"{i:10} {t['name']}")
+    elif a == ["list", "--json"]:
+        cur = current()
+        st = wall_state()
+        print(json.dumps({
+            "current": cur,
+            "wallOff": bool(st.get("off")),
+            "themes": [{"id": i, "name": t["name"], "active": i == cur,
+                        "accent": t["bar"]["accent"], "bg": t["wm"]["root"],
+                        "walls": len(t.get("live", []))} for i, t in themes().items()],
+        }, ensure_ascii=False))
+    elif len(a) == 2 and a[0] == "wall":
+        wall(a[1])
     elif a == ["current"]:
         print(current())
     elif len(a) == 2 and a[0] == "apply":

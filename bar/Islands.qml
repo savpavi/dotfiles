@@ -127,6 +127,7 @@ Item {
                 text: "cpu  " + isl.sh.cpu + "%"
                 color: isl.sh.cpu >= 85 ? isl.b.urgent : isl.b.accent
             }
+            Tray { sh: isl.sh; output: isl.output; cell: isl.h }
         }
     }
 }

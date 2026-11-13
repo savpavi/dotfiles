@@ -16,6 +16,37 @@ ShellRoot {
         clockFormat: "ddd d MMM HH:mm", zeroPad: false
     })
     property var b: fallbackBar
+    readonly property var fallbackMenu: ({
+        bg: "#ECE6D9", text: "#1B1A17", match: "#D2452D", selBg: "#1B1A17", selText: "#ECE6D9",
+        border: "#1B1A17", borderpx: 2, radius: 0
+    })
+    property var m: fallbackMenu
+
+    // Açık panel: "" | "theme" | "notif" | "power", ve hangi ekranın barında
+    property string panelKind: ""
+    property string panelScreen: ""
+    property var themeData: ({ current: "", wallOff: false, themes: [] })
+    property var notifs: []
+    property int notifCount: 0
+    property bool notifPaused: false
+    readonly property string themeBin: Quickshell.shellDir + "/../bin/dwl-theme"
+
+    function togglePanel(kind, screen) {
+        if (panelKind === kind && panelScreen === screen) {
+            closePanel();
+            return;
+        }
+        panelKind = kind;
+        panelScreen = screen;
+        if (kind === "theme") themeList.running = true;
+        if (kind === "notif") notifHistory.running = true;
+    }
+    function closePanel() { panelKind = ""; }
+    function applyTheme(id) { themeRun.command = [themeBin, "apply", id]; themeRun.running = true; }
+    function wall(cmd) { themeRun.command = [themeBin, "wall", cmd]; themeRun.running = true; }
+    function removeNotif(id) { notifRun.command = ["dunstctl", "history-rm", String(id)]; notifRun.running = true; }
+    function clearNotifs() { notifRun.command = ["dunstctl", "history-clear"]; notifRun.running = true; }
+    function toggleNotifPause() { notifRun.command = ["dunstctl", "set-paused", "toggle"]; notifRun.running = true; }
     readonly property int minTags: 5 // boş olsa da her zaman görünen tag sayısı
 
     readonly property string ipc: Quickshell.shellDir + "/ipc/dwl-bar-ipc"
@@ -53,12 +84,79 @@ ShellRoot {
         onFileChanged: reload()
         onLoaded: {
             try {
-                root.b = Object.assign({}, root.fallbackBar, JSON.parse(text()).bar);
+                const t = JSON.parse(text());
+                root.b = Object.assign({}, root.fallbackBar, t.bar);
+                root.m = Object.assign({}, root.fallbackMenu, t.menu);
             } catch (e) {
                 console.warn("theme.json okunamadı:", e);
             }
         }
     }
+
+    Process {
+        id: themeList
+        command: [root.themeBin, "list", "--json"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try { root.themeData = JSON.parse(text); } catch (e) { console.warn("tema listesi:", e); }
+            }
+        }
+    }
+    Process { id: themeRun; onExited: themeList.running = true }
+
+    Process {
+        id: notifHistory
+        command: ["dunstctl", "history"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const rows = JSON.parse(text).data[0] || [];
+                    root.notifs = rows.slice(0, 8).map(n => ({
+                        id: n.id.data,
+                        summary: n.summary.data,
+                        body: (n.body.data || "").replace(/<[^>]*>/g, ""),
+                        app: n.appname.data
+                    }));
+                } catch (e) {
+                    root.notifs = [];
+                }
+            }
+        }
+    }
+    Process {
+        id: notifRun
+        onExited: { notifHistory.running = true; notifPoll.running = true; }
+    }
+    Process {
+        id: notifPoll
+        command: ["sh", "-c", "dunstctl count history; dunstctl is-paused"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const l = text.trim().split("\n");
+                root.notifCount = parseInt(l[0]) || 0;
+                root.notifPaused = l[1] === "true";
+            }
+        }
+    }
+    Timer {
+        interval: 4000; running: true; repeat: true; triggeredOnStart: true
+        onTriggered: notifPoll.running = true
+    }
+
+    // Kısayoldan/terminalden panel açmak için: quickshell ipc -p <bar> call panel toggle theme|notif|power
+    IpcHandler {
+        target: "panel"
+        function toggle(kind: string): void {
+            let screen = "";
+            for (const name in root.outputs)
+                if (root.outputs[name].active === 1) screen = name;
+            if (screen !== "") root.togglePanel(kind, screen);
+        }
+        function close(): void { root.closePanel(); }
+    }
+
+    // Oturum açılışında etkin temanın hareketli duvarını başlat
+    Component.onCompleted: Quickshell.execDetached([themeBin, "wall", "show"])
 
     Process {
         id: watcher
@@ -102,6 +200,7 @@ ShellRoot {
         model: Quickshell.screens
 
         PanelWindow {
+            id: topBar
             required property var modelData
             screen: modelData
             visible: root.b.layout !== "rail"
@@ -115,6 +214,7 @@ ShellRoot {
             }
             Component { id: strip; Strip { sh: root; output: modelData.name } }
             Component { id: islands; Islands { sh: root; output: modelData.name } }
+            Panel { sh: root; win: topBar; output: topBar.modelData.name }
         }
     }
 
@@ -123,6 +223,7 @@ ShellRoot {
         model: Quickshell.screens
 
         PanelWindow {
+            id: railBar
             required property var modelData
             screen: modelData
             visible: root.b.layout === "rail"
@@ -135,6 +236,7 @@ ShellRoot {
                 active: parent.visible
                 sourceComponent: Rail { sh: root; output: modelData.name }
             }
+            Panel { sh: root; win: railBar; output: railBar.modelData.name; rail: true }
         }
     }
 }

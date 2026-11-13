@@ -133,6 +133,12 @@ Item {
             font.pixelSize: rail.b.fontPx - 2
             color: rail.sh.cpu >= 85 ? rail.b.urgent : rail.b.title
         }
+        Tray {
+            sh: rail.sh; output: rail.output; vertical: true
+            cell: rail.cell
+            anchors.horizontalCenter: parent.horizontalCenter
+            fg: rail.b.title
+        }
         Label {
             text: rail.sh.clockText()
             lineHeight: 0.95
