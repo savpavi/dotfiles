@@ -280,12 +280,12 @@ hl.bind(mainMod .. " + K", hl.dsp.exec_cmd("dot-keys"))  -- Kısayol penceresi
 hl.bind(mainMod .. " + period", hl.dsp.exec_cmd("espanso cmd search"))  -- Espanso snippet araması
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("gtk-launch org.mozilla.firefox"))  -- Tarayıcı (Firefox)
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("/home/savpavi/.local/bin/start-windows-looking-glass"))  -- Windows VM (Looking Glass)
-hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("flatpak run com.spotify.Client"))  -- Spotify
-hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("flatpak run org.telegram.desktop"))  -- Telegram
+hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("spotify-launcher"))  -- Spotify
+hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("Telegram"))  -- Telegram
 hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("flatpak run org.mozilla.thunderbird_esr"))  -- Thunderbird (mail/takvim)
-hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("flatpak run com.discordapp.Discord"))  -- Discord
+hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("discord"))  -- Discord
 hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd("zed"))  -- Zed editör
-hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("flatpak run md.obsidian.Obsidian"))  -- Obsidian
+hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("obsidian"))  -- Obsidian
 hl.bind(mainMod .. " + N", hl.dsp.window.move({ workspace = "special:minimized" }))  -- Pencereyi küçült (gizli alana at)
 hl.bind(mainMod .. " + SHIFT + N", hl.dsp.workspace.toggle_special("minimized"))  -- Küçültülen pencereleri göster/gizle
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" }))  -- Pencereyi büyüt

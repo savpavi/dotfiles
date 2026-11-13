@@ -10,7 +10,7 @@ Type=notify
 # rclone ani ölürse mount noktası "Transport endpoint is not connected" kalır; önce temizle
 ExecStartPre=-/usr/bin/fusermount3 -uz %h/GoogleDrive
 ExecStartPre=/usr/bin/rm -f %t/rclone-gdrive.sock
-ExecStartPre=/usr/bin/mkdir -p %h/GoogleDrive
+ExecStartPre=/usr/bin/mkdir -p %h/GoogleDrive %h/.cache/rclone
 ExecStart=/usr/bin/rclone mount gdrive: %h/GoogleDrive \
     --vfs-cache-mode full \
     --vfs-cache-max-size 20G \
