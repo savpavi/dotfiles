@@ -1,0 +1,82 @@
+{
+  "name": "Bakır",
+  "wm": {
+    "root": "#0C1716",
+    "border": "#1E3331",
+    "focus": "#D98A4E",
+    "urgent": "#E5C45A",
+    "borderpx": 2,
+    "gap": 10,
+    "anim": 260
+  },
+  "bar": {
+    "layout": "islands",
+    "size": 30,
+    "margin": 8,
+    "radius": 15,
+    "font": "Inter",
+    "fontPx": 13,
+    "bg": "#142523",
+    "fg": "#D7E4DF",
+    "faded": "#5F7F79",
+    "accent": "#D98A4E",
+    "onAccent": "#0C1716",
+    "urgent": "#E5C45A",
+    "title": "#9DB8B1",
+    "line": "",
+    "clockBg": "#142523",
+    "clockFg": "#D7E4DF",
+    "clockFormat": "HH:mm  ·  ddd d MMM",
+    "zeroPad": false
+  },
+  "term": {
+    "bg": "#101E1C",
+    "fg": "#D7E4DF",
+    "cursor": "#D98A4E",
+    "cursorText": "#101E1C",
+    "selBg": "#D98A4E",
+    "selFg": "#0C1716",
+    "palette": [
+      "#0C1716",
+      "#E0705A",
+      "#6FBF9A",
+      "#E5C45A",
+      "#5FA8B8",
+      "#C58BB0",
+      "#4FC1B0",
+      "#A9BDB7",
+      "#45605B",
+      "#F08A75",
+      "#8FD6B4",
+      "#F0D57C",
+      "#7FC3D1",
+      "#D9A6C6",
+      "#74D8C8",
+      "#D7E4DF"
+    ]
+  },
+  "menu": {
+    "bg": "#142523",
+    "text": "#D7E4DF",
+    "match": "#D98A4E",
+    "selBg": "#D98A4E",
+    "selText": "#0C1716",
+    "border": "#D98A4E",
+    "borderpx": 2,
+    "radius": 12
+  },
+  "notify": {
+    "bg": "#142523",
+    "fg": "#D7E4DF",
+    "low": "#8AA59E",
+    "frame": "#1E3331",
+    "critical": "#E0705A",
+    "radius": 12
+  },
+  "live": [
+    "3140318938",
+    "3318017378",
+    "2673316243",
+    "3437582225"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "name": "Yosun",
+  "wm": {
+    "root": "#121A14",
+    "border": "#263326",
+    "focus": "#A8C66C",
+    "urgent": "#E0A458",
+    "borderpx": 2,
+    "gap": 6,
+    "anim": 260
+  },
+  "bar": {
+    "layout": "strip",
+    "size": 26,
+    "font": "JetBrainsMono Nerd Font",
+    "fontPx": 13,
+    "bg": "#1A241B",
+    "fg": "#E3E6D4",
+    "faded": "#5E6E58",
+    "accent": "#A8C66C",
+    "onAccent": "#121A14",
+    "urgent": "#E0A458",
+    "title": "#E3E6D4",
+    "line": "",
+    "clockBg": "#A8C66C",
+    "clockFg": "#121A14",
+    "clockFormat": "ddd d MMM HH:mm",
+    "zeroPad": false
+  },
+  "term": {
+    "bg": "#161F17",
+    "fg": "#E3E6D4",
+    "cursor": "#A8C66C",
+    "cursorText": "#161F17",
+    "selBg": "#A8C66C",
+    "selFg": "#121A14",
+    "palette": [
+      "#121A14",
+      "#D9735B",
+      "#A8C66C",
+      "#E0A458",
+      "#7FA7B5",
+      "#B58DAE",
+      "#7FBFA0",
+      "#B7BCA6",
+      "#5E6E58",
+      "#E8907A",
+      "#C1DA8C",
+      "#EDBB7C",
+      "#9DC0CC",
+      "#CBA8C5",
+      "#9DD4B8",
+      "#E3E6D4"
+    ]
+  },
+  "menu": {
+    "bg": "#1A241B",
+    "text": "#E3E6D4",
+    "match": "#A8C66C",
+    "selBg": "#A8C66C",
+    "selText": "#121A14",
+    "border": "#A8C66C",
+    "borderpx": 2,
+    "radius": 0
+  },
+  "notify": {
+    "bg": "#1A241B",
+    "fg": "#E3E6D4",
+    "low": "#8C977F",
+    "frame": "#263326",
+    "critical": "#D9735B",
+    "radius": 0
+  },
+  "live": [
+    "1269545194",
+    "3424247436",
+    "2565333087",
+    "1973794409"
+  ]
+}

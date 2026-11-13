@@ -1,0 +1,80 @@
+{
+  "name": "Neon",
+  "wm": {
+    "root": "#0D0B1E",
+    "border": "#2A2550",
+    "focus": "#FF4FA3",
+    "urgent": "#FFD166",
+    "borderpx": 2,
+    "gap": 8,
+    "anim": 260
+  },
+  "bar": {
+    "layout": "strip",
+    "size": 28,
+    "font": "JetBrainsMono Nerd Font",
+    "fontPx": 13,
+    "bg": "#14112B",
+    "fg": "#E4DEFF",
+    "faded": "#5A5488",
+    "accent": "#FF4FA3",
+    "onAccent": "#0D0B1E",
+    "urgent": "#FFD166",
+    "title": "#3DE0E8",
+    "line": "#3DE0E8",
+    "clockBg": "#3DE0E8",
+    "clockFg": "#0D0B1E",
+    "clockFormat": "ddd d MMM HH:mm",
+    "zeroPad": false
+  },
+  "term": {
+    "bg": "#120F27",
+    "fg": "#E4DEFF",
+    "cursor": "#FF4FA3",
+    "cursorText": "#120F27",
+    "selBg": "#FF4FA3",
+    "selFg": "#0D0B1E",
+    "palette": [
+      "#0D0B1E",
+      "#FF5C7A",
+      "#5CF2A5",
+      "#FFD166",
+      "#6C8CFF",
+      "#FF4FA3",
+      "#3DE0E8",
+      "#BDB6E6",
+      "#5A5488",
+      "#FF8097",
+      "#8DF7C1",
+      "#FFE08F",
+      "#93AAFF",
+      "#FF82BE",
+      "#7CECF2",
+      "#F3F0FF"
+    ]
+  },
+  "menu": {
+    "bg": "#14112B",
+    "text": "#E4DEFF",
+    "match": "#3DE0E8",
+    "selBg": "#FF4FA3",
+    "selText": "#0D0B1E",
+    "border": "#FF4FA3",
+    "borderpx": 2,
+    "radius": 0
+  },
+  "notify": {
+    "bg": "#14112B",
+    "fg": "#E4DEFF",
+    "low": "#8E87BD",
+    "frame": "#3DE0E8",
+    "critical": "#FF5C7A",
+    "radius": 0
+  },
+  "live": [
+    "3234465928",
+    "3488572271",
+    "2292462916",
+    "3336571356"
+  ]
+}

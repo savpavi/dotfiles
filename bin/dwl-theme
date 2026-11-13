@@ -187,7 +187,8 @@ def apply(tid, live=True):
     if tid not in all_:
         sys.exit(f"dwl-theme: böyle bir tema yok: {tid} (var olanlar: {', '.join(all_)})")
     render(tid, all_[tid])
-    if live:
+    # DWL_NESTED: deneme oturumu; gerçek oturumun dunst'ına, terminallerine, duvarına dokunma
+    if live and not os.environ.get("DWL_NESTED"):
         # Yalnız bu temayla başlatılmış süreçlere dokun; başka oturumun
         # terminallerini ve bildirim servisini rahat bırak.
         if subprocess.run(["pgrep", "-f", "dunst -conf .*dwl-theme/dunstrc"],

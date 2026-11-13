@@ -1,0 +1,80 @@
+{
+  "name": "Kar",
+  "wm": {
+    "root": "#E6EBF0",
+    "border": "#B4C0CC",
+    "focus": "#1F4FD8",
+    "urgent": "#D9482B",
+    "borderpx": 2,
+    "gap": 6,
+    "anim": 260
+  },
+  "bar": {
+    "layout": "rail",
+    "size": 40,
+    "font": "JetBrainsMono Nerd Font",
+    "fontPx": 13,
+    "bg": "#F4F7FA",
+    "fg": "#1C2530",
+    "faded": "#A3AFBC",
+    "accent": "#1F4FD8",
+    "onAccent": "#FFFFFF",
+    "urgent": "#D9482B",
+    "title": "#5C6B7A",
+    "line": "#C9D3DD",
+    "clockBg": "#F4F7FA",
+    "clockFg": "#1F4FD8",
+    "clockFormat": "HH\nmm",
+    "zeroPad": false
+  },
+  "term": {
+    "bg": "#F7F9FB",
+    "fg": "#1C2530",
+    "cursor": "#1F4FD8",
+    "cursorText": "#F7F9FB",
+    "selBg": "#1F4FD8",
+    "selFg": "#FFFFFF",
+    "palette": [
+      "#1C2530",
+      "#C0392B",
+      "#2E7D4F",
+      "#9A6A00",
+      "#1F4FD8",
+      "#7B3FA0",
+      "#0F7C8C",
+      "#B4C0CC",
+      "#6B7785",
+      "#D9482B",
+      "#3B9460",
+      "#B58100",
+      "#3D6BEA",
+      "#9550BD",
+      "#1594A6",
+      "#F4F7FA"
+    ]
+  },
+  "menu": {
+    "bg": "#F4F7FA",
+    "text": "#1C2530",
+    "match": "#1F4FD8",
+    "selBg": "#1F4FD8",
+    "selText": "#FFFFFF",
+    "border": "#1C2530",
+    "borderpx": 1,
+    "radius": 3
+  },
+  "notify": {
+    "bg": "#F4F7FA",
+    "fg": "#1C2530",
+    "low": "#6B7785",
+    "frame": "#B4C0CC",
+    "critical": "#D9482B",
+    "radius": 3
+  },
+  "live": [
+    "828722349",
+    "1214148605",
+    "1851524277",
+    "3319296899"
+  ]
+}
