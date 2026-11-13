@@ -9,7 +9,7 @@ grab="$HOME/dotfiles/bin/dot-grab"
 # yt-dlp ve gallery-dl ~/.local/bin altında (uv tool); oturum PATH'inde olmayabilir.
 case ":$PATH:" in
 *":$HOME/.local/bin:"*) ;;
-*) export PATH="$HOME/.local/bin:$PATH" ;;
+*) export PATH="$PATH:$HOME/.local/bin" ;;  # sona: ~/.local/bin sistem komutlarını gölgelemesin (ör. obsidian CLI)
 esac
 
 if [ "$1" != "--clip" ]; then

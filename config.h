@@ -188,7 +188,7 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_z,           focusorspawn,     APP("dev.zed", "zeditor") },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_z,           focusorspawn,     APP("dev.zed", "zeditor") },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_c,           focusorspawn,     APP("claude", "claude-desktop") },
-	{ MODKEY,                    XKB_KEY_o,           focusorspawn,     APP("obsidian", "obsidian") },
+	{ MODKEY,                    XKB_KEY_o,           focusorspawn,     APP("obsidian", "/usr/bin/obsidian") },
 	{ 0,                         XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot region") },
 	{ WLR_MODIFIER_SHIFT,        XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot edit") },
 	{ MODKEY,                    XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot screen") },

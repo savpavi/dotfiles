@@ -12,7 +12,7 @@ gpu=$(readlink -f /dev/dri/by-path/pci-0000:03:00.0-card 2>/dev/null)
 # SDDM oturumu ~/.local/bin'i PATH'e koymuyor; yt-dlp, gallery-dl ve dwl-* komutları orada.
 case ":$PATH:" in
 *":$HOME/.local/bin:"*) ;;
-*) export PATH="$HOME/.local/bin:$PATH" ;;
+*) export PATH="$PATH:$HOME/.local/bin" ;;  # sona: ~/.local/bin sistem komutlarını gölgelemesin (ör. obsidian CLI)
 esac
 
 export XDG_CURRENT_DESKTOP=dwl
