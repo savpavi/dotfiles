@@ -1,0 +1,323 @@
+#!/usr/bin/env python3
+"""dot-spin: spinning ASCII art in the terminal, optionally as fastfetch's logo.
+
+Shapes: "arch" (extruded Arch Linux logo, Arch blue) and "donut" (a1k0n's
+donut.c math, Nord colours).
+
+Usage:
+  dot-spin [--shape arch|donut]   spin forever (Ctrl+C or q to quit)
+  dot-spin -t 2                   spin for 2 seconds, then exit
+  dot-spin --fetch                print it next to fastfetch's info and keep it
+                                  spinning in the background at its screen spot
+                                  until the shell kills it (zsh preexec hook,
+                                  see ~/.zshrc) or the terminal is resized
+  --pidfile FILE                  with --fetch: write the spinner's PID here
+"""
+import argparse
+import math
+import os
+import re
+import select
+import shutil
+import signal
+import subprocess
+import sys
+import termios
+import time
+import tty
+
+W, H = 44, 20                     # frame size in cells
+CHARS = ".,-~:;=!*#$@"
+PALETTES = {
+    # Nord: polar night grey, frost blues, snow
+    "donut": [(76, 86, 106), (94, 129, 172), (129, 161, 193),
+              (136, 192, 208), (143, 188, 187), (216, 222, 233), (236, 239, 244)],
+    # Arch blue (#1793d1) from deep to icy
+    "arch": [(12, 52, 84), (16, 84, 130), (20, 118, 175), (23, 147, 209),
+             (74, 176, 228), (140, 205, 240), (215, 238, 252)],
+}
+FPS = 30
+LIVE_FPS = 20                     # background spinner, kept light on CPU
+CSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+SHAPE = "arch"
+
+# Silhouette of the Arch Linux logo (shape of the classic neofetch/fastfetch
+# ASCII logo); any non-space cell is solid.
+ARCH_MASK = """\
+                  -`
+                 .o+`
+                `ooo/
+               `+oooo:
+              `+oooooo:
+              -+oooooo+:
+            `/:-:++oooo+:
+           `/++++/+++++++:
+          `/++++++++++++++:
+         `/+++ooooooooooooo/`
+        ./ooosssso++osssssso+`
+       .oossssso-````/ossssss+`
+      -osssssso.      :ssssssso.
+     :osssssss/        osssso+++.
+    /ossssssss/        +ssssooo/-
+  `/ossssso+/:-        -:/+osssso+-
+ `+sso+:-`                 `.-/+oso:
+`++:.                           `-/+/
+.`                                 `/"""
+
+
+def _arch_points():
+    """Extrude the mask into a slab: list of (x, y, z, nx, ny, nz, shade).
+
+    The face shade comes from the original ASCII glyph, which brings back the
+    logo's diagonal stripe (lighter 's'/'o' body, darker '+' band)."""
+    rows = ARCH_MASK.split("\n")
+    R, C = len(rows), max(len(r) for r in rows)
+    solid = lambda i, j: 0 <= i < R and 0 <= j < len(rows[i]) and rows[i][j] != " "
+    sx, sy, t = 1.0, 2.0, 2.2                  # cells are ~2:1, slab half-thickness
+    cx, cy = C / 2, R / 2
+    pts, sub = [], (0.17, 0.5, 0.83)
+    for i in range(R):
+        for j in range(C):
+            if not solid(i, j):
+                continue
+            f = GLYPH_SHADE.get(rows[i][j], 0.6)
+            for u in sub:
+                for v in sub:
+                    x, y = (j + u - cx) * sx, (cy - i - v) * sy
+                    pts.append((x, y, -t, 0, 0, -1, f))   # front face
+                    pts.append((x, y, t, 0, 0, 1, f))     # back face
+            for di, dj, nx, ny in ((0, -1, -1, 0), (0, 1, 1, 0), (-1, 0, 0, 1), (1, 0, 0, -1)):
+                if solid(i + di, j + dj):
+                    continue
+                for u in sub:                          # side wall facing the gap
+                    if dj:
+                        x, y = (j + (dj > 0) - cx) * sx, (cy - i - u) * sy
+                    else:
+                        x, y = (j + u - cx) * sx, (cy - i - (di > 0)) * sy
+                    for k in range(5):
+                        pts.append((x, y, -t + 2 * t * k / 4, nx, ny, 0, 1.0))
+    return pts
+
+
+GLYPH_SHADE = {"s": 1.0, "o": 0.88, "+": 0.62, "/": 0.72, ":": 0.66}
+_ARCH = None
+LIGHT = (-0.45, 0.55, -0.7)                    # from the viewer's upper left
+_ln = math.sqrt(sum(c * c for c in LIGHT))
+LIGHT = tuple(c / _ln for c in LIGHT)
+
+
+def arch_grid(a, b):
+    global _ARCH
+    if _ARCH is None:
+        _ARCH = _arch_points()
+    lum = [[-1.0] * W for _ in range(H)]
+    zbuf = [[0.0] * W for _ in range(H)]
+    ca, sa = math.cos(a), math.sin(a)           # spin around the vertical axis
+    tilt = 0.18 * math.sin(b)                   # gentle nod so it feels 3D
+    ct, st = math.cos(tilt), math.sin(tilt)
+    k2, scale = 70.0, 1.08
+    lx, ly, lz = LIGHT
+    for x, y, z, nx, ny, nz, f in _ARCH:
+        x1, z1 = x * ca + z * sa, -x * sa + z * ca
+        y2, z2 = y * ct - z1 * st, y * st + z1 * ct
+        nx1, nz1 = nx * ca + nz * sa, -nx * sa + nz * ca
+        ny2, nz2 = ny * ct - nz1 * st, ny * st + nz1 * ct
+        if nz2 > 0.05:                          # facing away from the viewer
+            continue
+        ooz = 1 / (k2 + z2)
+        xp = int(W / 2 + scale * k2 * ooz * x1)
+        yp = int(H / 2 - scale * k2 * ooz * y2 / 2)
+        if 0 <= xp < W and 0 <= yp < H and ooz > zbuf[yp][xp]:
+            zbuf[yp][xp] = ooz
+            # a little top-to-bottom sheen on top of the diffuse light
+            sheen = 1.25 + 0.15 * y / 19
+            lum[yp][xp] = max(0.12, (nx1 * lx + ny2 * ly + nz2 * lz) * f * sheen)
+    return lum
+
+
+def donut_grid(a, b):
+    lum = [[-1.0] * W for _ in range(H)]
+    zbuf = [[0.0] * W for _ in range(H)]
+    ca, sa, cb, sb = math.cos(a), math.sin(a), math.cos(b), math.sin(b)
+    k2 = 5.0
+    k1 = W * 0.42                 # scale: torus fits the frame at any angle
+    theta = 0.0
+    while theta < 2 * math.pi:
+        ct, st = math.cos(theta), math.sin(theta)
+        phi = 0.0
+        while phi < 2 * math.pi:
+            cp, sp = math.cos(phi), math.sin(phi)
+            cx, cy = 2 + ct, st                     # R2=2, R1=1
+            x = cx * (cb * cp + sa * sb * sp) - cy * ca * sb
+            y = cx * (sb * cp - sa * cb * sp) + cy * ca * cb
+            z = k2 + ca * cx * sp + cy * sa
+            ooz = 1 / z
+            xp = int(W / 2 + k1 * ooz * x)
+            yp = int(H / 2 - k1 * ooz * y / 2)      # cells are ~2:1
+            L = cp * ct * sb - ca * ct * sp - sa * st + cb * (sa * ct * sp - ca * st)
+            if L > 0 and 0 <= xp < W and 0 <= yp < H and ooz > zbuf[yp][xp]:
+                zbuf[yp][xp] = ooz
+                lum[yp][xp] = L / 1.42
+            phi += 0.04
+        theta += 0.1
+    return lum
+
+
+def frame(a, b):
+    lum = arch_grid(a, b) if SHAPE == "arch" else donut_grid(a, b)
+    pal = PALETTES[SHAPE]
+    lines = []
+    for r in range(H):
+        s, last = [], None
+        for c in range(W):
+            L = lum[r][c]
+            if L < 0:
+                s.append(" ")
+                continue
+            L = min(L, 0.999)
+            col = pal[int(L * len(pal))]
+            if col != last:
+                s.append("\x1b[38;2;%d;%d;%dm" % col)
+                last = col
+            s.append(CHARS[int(L * len(CHARS))])
+        lines.append("".join(s).rstrip() + "\x1b[0m")
+    return lines
+
+
+def key_pressed():
+    return select.select([sys.stdin], [], [], 0)[0] and sys.stdin.read(1) in ("q", "\x1b")
+
+
+def spin(seconds, pad_left=2):
+    a = b = 0.0
+    end = time.monotonic() + seconds if seconds else None
+    pad = " " * pad_left
+    old = None
+    if sys.stdin.isatty():
+        old = termios.tcgetattr(sys.stdin)
+        tty.setcbreak(sys.stdin)
+    sys.stdout.write("\x1b[?25l" + "\n" * H + "\x1b[%dA\x1b7" % H)  # reserve area
+    lines = frame(a, b)
+    try:
+        while end is None or time.monotonic() < end:
+            t0 = time.monotonic()
+            lines = frame(a, b)
+            sys.stdout.write("\x1b8" + "".join(pad + l + "\x1b[K\n" for l in lines))
+            sys.stdout.flush()
+            a += 0.07
+            b += 0.03
+            if old and key_pressed():
+                break
+            time.sleep(max(0, 1 / FPS - (time.monotonic() - t0)))
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if old:
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old)
+        sys.stdout.write("\x1b[?25h")
+        sys.stdout.flush()
+    return lines
+
+
+def cursor_row():
+    """Ask the terminal where the cursor is (DSR). Returns 1-based row or None."""
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setcbreak(fd)
+        sys.stdout.write("\x1b[6n")
+        sys.stdout.flush()
+        buf, end = "", time.monotonic() + 0.5
+        while not buf.endswith("R") and time.monotonic() < end:
+            if select.select([fd], [], [], 0.05)[0]:
+                buf += os.read(fd, 32).decode(errors="ignore")
+        if "[" in buf and buf.endswith("R"):
+            return int(buf.rsplit("[", 1)[1].split(";")[0])
+    except (OSError, ValueError):
+        pass
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+    return None
+
+
+def fetch_live(pidfile):
+    info = subprocess.run(["fastfetch", "--logo-type", "none", "--pipe", "false"],
+                          capture_output=True, text=True).stdout.rstrip("\n").split("\n")
+    pad, gap = 2, 3
+    top = max(0, (len(info) - H) // 2)          # art vertically centred on the info
+    block_h = max(len(info), top + H)
+    a = b = 0.0
+    lines = frame(a, b)
+    out = []
+    for r in range(block_h):
+        d = r - top
+        left = " " * pad + (lines[d] if 0 <= d < H else "")
+        # info column placed by absolute column (CHA), so colour codes don't matter
+        out.append(left + "\x1b[0m\x1b[%dG" % (pad + W + gap + 1) + (info[r] if r < len(info) else ""))
+    sys.stdout.write("\n".join(out) + "\n")
+    sys.stdout.flush()
+
+    row = cursor_row()
+    if row is None:
+        return
+    first = row - block_h + top                 # absolute screen row of the art's line 0
+    if first + H < 1:
+        return                                  # art already scrolled off screen
+
+    pid = os.fork()
+    if pid:
+        if pidfile:
+            with open(pidfile, "w") as f:
+                f.write(str(pid))
+        return
+    os.setsid()
+    signal.signal(signal.SIGHUP, lambda *_: os._exit(0))
+    fd = sys.stdout.fileno()
+    size = os.get_terminal_size(fd)
+    try:
+        while True:
+            t0 = time.monotonic()
+            # after setsid we no longer get SIGWINCH: poll the size instead,
+            # a resize reflows the screen and the art's spot is gone
+            if os.get_terminal_size(fd) != size:
+                break
+            a += 0.07
+            b += 0.03
+            lines = frame(a, b)
+            buf = ["\x1b7\x1b[?25l"]
+            for i, l in enumerate(lines):
+                r = first + i
+                if r >= 1:
+                    # rewrite the whole donut cell range: lines are rstripped,
+                    # so blank out the rest of the W columns explicitly
+                    vis = len(CSI_RE.sub("", l))
+                    buf.append("\x1b[%d;1H%s%s\x1b[0m%s" % (r, " " * pad, l, " " * (W - vis)))
+            buf.append("\x1b8\x1b[?25h")
+            os.write(fd, "".join(buf).encode())
+            time.sleep(max(0, 1 / LIVE_FPS - (time.monotonic() - t0)))
+    except OSError:
+        pass
+    os._exit(0)
+
+
+def main():
+    global SHAPE
+    p = argparse.ArgumentParser(description="Spinning ASCII art")
+    p.add_argument("-s", "--shape", choices=sorted(PALETTES), default="arch")
+    p.add_argument("-t", "--time", type=float, default=None, help="seconds to spin")
+    p.add_argument("--fetch", action="store_true", help="art + fastfetch, keeps spinning")
+    p.add_argument("--pidfile", help="with --fetch: write the spinner PID here")
+    args = p.parse_args()
+    SHAPE = args.shape
+
+    if args.fetch:
+        if (shutil.get_terminal_size().columns < W + 50 or not sys.stdout.isatty()
+                or not sys.stdin.isatty()):
+            os.execvp("fastfetch", ["fastfetch"])
+        fetch_live(args.pidfile)
+        return
+    spin(args.time)
+
+
+if __name__ == "__main__":
+    main()
