@@ -9,6 +9,12 @@
 gpu=$(readlink -f /dev/dri/by-path/pci-0000:03:00.0-card 2>/dev/null)
 [ -c "$gpu" ] && export WLR_DRM_DEVICES="$gpu"
 
+# SDDM oturumu ~/.local/bin'i PATH'e koymuyor; yt-dlp, gallery-dl ve dwl-* komutları orada.
+case ":$PATH:" in
+*":$HOME/.local/bin:"*) ;;
+*) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
 export XDG_CURRENT_DESKTOP=dwl
 export XCURSOR_THEME="${XCURSOR_THEME:-Nordzy-cursors}"
 export XCURSOR_SIZE="${XCURSOR_SIZE:-24}"

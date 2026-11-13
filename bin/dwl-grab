@@ -6,6 +6,11 @@
 #   dwl-grab --clip   her zaman pano
 here=$(dirname "$(readlink -f "$0")")
 grab="$HOME/dotfiles/bin/dot-grab"
+# yt-dlp ve gallery-dl ~/.local/bin altında (uv tool); oturum PATH'inde olmayabilir.
+case ":$PATH:" in
+*":$HOME/.local/bin:"*) ;;
+*) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
 
 if [ "$1" != "--clip" ]; then
 	# Odaktaki pencerenin uygulama kimliği (etkin ekranın son durum satırından)
