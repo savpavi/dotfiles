@@ -1,0 +1,223 @@
+#!/usr/bin/env python3
+"""dwl-theme: dwl oturumu için tema seçici.
+
+  dwl-theme list          temaları listele (* = etkin)
+  dwl-theme current       etkin temanın kimliği
+  dwl-theme apply KIMLIK  temayı uygula
+  dwl-theme pick          fuzzel ile seç ve uygula
+  dwl-theme init          durum dosyaları yoksa etkin (ya da varsayılan) temayı yaz
+
+Temalar themes/*.json içinde. Uygulanınca ~/.local/state/dwl-theme/ altına
+dwl.conf, theme.json, alacritty.toml, ghostty, fuzzel.ini ve dunstrc üretilir; dwl ve bar bu
+dosyaları izler, yeniden başlatma gerekmez.
+"""
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+THEMES = ROOT / "themes"
+STATE = Path(os.environ.get("XDG_STATE_HOME") or Path.home() / ".local/state") / "dwl-theme"
+DEFAULT = "murekkep"
+
+
+def themes():
+    out = {}
+    for f in sorted(THEMES.glob("*.json")):
+        out[f.stem] = json.loads(f.read_text())
+    return out
+
+
+def current():
+    try:
+        return (STATE / "current").read_text().strip()
+    except OSError:
+        return ""
+
+
+def write(name, text):
+    """Atomic replace, so watchers never see a half-written file."""
+    tmp = STATE / (name + ".tmp")
+    tmp.write_text(text)
+    tmp.replace(STATE / name)
+
+
+def hx(c):
+    return c.lstrip("#").lower()
+
+
+def render(tid, t):
+    wm, term, menu, note, bar = t["wm"], t["term"], t["menu"], t["notify"], t["bar"]
+
+    ghostty = [
+        f"# {t['name']} — dwl-theme tarafından üretildi, elle düzenleme",
+        f"background = {term['bg']}",
+        f"foreground = {term['fg']}",
+        f"cursor-color = {term['cursor']}",
+        f"cursor-text = {term['cursorText']}",
+        f"selection-background = {term['selBg']}",
+        f"selection-foreground = {term['selFg']}",
+        "background-opacity = 1",
+        "window-padding-x = 10",
+        "window-padding-y = 8",
+        "app-notifications = no-clipboard-copy,no-config-reload",
+    ] + [f"palette = {i}={c}" for i, c in enumerate(term["palette"])]
+
+    names = ("black", "red", "green", "yellow", "blue", "magenta", "cyan", "white")
+    pal = term["palette"]
+    alacritty = "\n".join([
+        f"# {t['name']} — dwl-theme tarafından üretildi, elle düzenleme",
+        "# Yazı tipi, tuşlar vb. kullanıcının kendi ayarından gelir; burada yalnız görünüm ezilir.",
+        "[general]",
+        'import = ["~/.config/alacritty/alacritty.toml"]',
+        "live_config_reload = true",
+        "",
+        "[window]",
+        "opacity = 1.0",
+        "blur = false",
+        "padding = { x = 10, y = 8 }",
+        "",
+        "[colors.primary]",
+        f'background = "{term["bg"]}"',
+        f'foreground = "{term["fg"]}"',
+        "",
+        "[colors.cursor]",
+        f'cursor = "{term["cursor"]}"',
+        f'text = "{term["cursorText"]}"',
+        "",
+        "[colors.selection]",
+        f'background = "{term["selBg"]}"',
+        f'text = "{term["selFg"]}"',
+        "",
+        "[colors.normal]",
+        *[f'{n} = "{pal[i]}"' for i, n in enumerate(names)],
+        "",
+        "[colors.bright]",
+        *[f'{n} = "{pal[i + 8]}"' for i, n in enumerate(names)],
+        "",
+    ])
+
+    fuzzel = f"""# {t['name']} — dwl-theme tarafından üretildi, elle düzenleme
+[main]
+font=JetBrainsMono Nerd Font:size=11
+lines=10
+width=44
+horizontal-pad=14
+vertical-pad=10
+inner-pad=8
+icons-enabled=no
+prompt="> "
+
+[colors]
+background={hx(menu['bg'])}ff
+text={hx(menu['text'])}ff
+prompt={hx(menu['match'])}ff
+input={hx(menu['text'])}ff
+match={hx(menu['match'])}ff
+selection={hx(menu['selBg'])}ff
+selection-text={hx(menu['selText'])}ff
+selection-match={hx(menu['selText'])}ff
+border={hx(menu['border'])}ff
+
+[border]
+width={menu['borderpx']}
+radius={menu['radius']}
+"""
+
+    # Bildirimler barın altına/yanına denk gelsin diye küçük bir pay bırakılır.
+    dunst = f"""# {t['name']} — dwl-theme tarafından üretildi, elle düzenleme
+[global]
+    font = JetBrainsMono Nerd Font 10
+    width = 360
+    offset = (12, 12)
+    origin = top-right
+    frame_width = 2
+    frame_color = "{note['frame']}"
+    corner_radius = {note['radius']}
+    gap_size = 6
+    padding = 10
+    horizontal_padding = 12
+    icon_position = off
+    background = "{note['bg']}"
+    foreground = "{note['fg']}"
+    format = "<b>%s</b>\\n%b"
+
+[urgency_low]
+    foreground = "{note['low']}"
+
+[urgency_critical]
+    frame_color = "{note['critical']}"
+    timeout = 0
+"""
+
+    dwl = "".join(f"{k}={wm[k]}\n" for k in ("root", "border", "focus", "urgent", "borderpx", "gap"))
+
+    STATE.mkdir(parents=True, exist_ok=True)
+    write("ghostty", "\n".join(ghostty) + "\n")
+    write("alacritty.toml", alacritty)  # alacritty dosyayı izler, kendiliğinden yeniler
+    write("fuzzel.ini", fuzzel)
+    write("dunstrc", dunst)
+    write("theme.json", json.dumps(dict(t, id=tid), ensure_ascii=False, indent=2) + "\n")
+    write("current", tid + "\n")
+    write("dwl.conf", dwl)  # en son: dwl bunu görünce yeniden yükler
+
+
+def quiet(*cmd):
+    try:
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+
+def apply(tid, live=True):
+    all_ = themes()
+    if tid not in all_:
+        sys.exit(f"dwl-theme: böyle bir tema yok: {tid} (var olanlar: {', '.join(all_)})")
+    render(tid, all_[tid])
+    if live:
+        # Yalnız bu temayla başlatılmış süreçlere dokun; başka oturumun
+        # terminallerini ve bildirim servisini rahat bırak.
+        if subprocess.run(["pgrep", "-f", "dunst -conf .*dwl-theme/dunstrc"],
+                          stdout=subprocess.DEVNULL).returncode == 0:
+            quiet("dunstctl", "reload", str(STATE / "dunstrc"))
+        quiet("pkill", "-USR2", "-f", "^ghostty .*dwl-theme/ghostty")
+
+
+def pick():
+    all_ = themes()
+    cur = current()
+    ids = list(all_)
+    lines = "\n".join(all_[i]["name"] + ("  (etkin)" if i == cur else "") for i in ids)
+    cfg = STATE / "fuzzel.ini"
+    cmd = ["fuzzel", "--dmenu", "--index", "--prompt", "tema > ", "--lines", str(len(ids))]
+    if cfg.exists():
+        cmd.append(f"--config={cfg}")
+    r = subprocess.run(cmd, input=lines, capture_output=True, text=True)
+    if r.returncode == 0 and r.stdout.strip().isdigit():
+        apply(ids[int(r.stdout.strip())])
+
+
+def main():
+    a = sys.argv[1:]
+    if a == ["list"]:
+        cur = current()
+        for i, t in themes().items():
+            print(("* " if i == cur else "  ") + f"{i:10} {t['name']}")
+    elif a == ["current"]:
+        print(current())
+    elif len(a) == 2 and a[0] == "apply":
+        apply(a[1])
+    elif a == ["pick"]:
+        pick()
+    elif a == ["init"]:
+        cur = current()
+        if not (STATE / "dwl.conf").exists() or cur not in themes():
+            apply(cur if cur in themes() else DEFAULT, live=False)
+    else:
+        sys.exit(__doc__)
+
+
+if __name__ == "__main__":
+    main()

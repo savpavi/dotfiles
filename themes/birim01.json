@@ -1,0 +1,73 @@
+{
+  "name": "Birim 01",
+  "wm": {
+    "root": "#0E0A16",
+    "border": "#3A2A5C",
+    "focus": "#9BE22D",
+    "urgent": "#FF7A1A",
+    "borderpx": 2,
+    "gap": 6
+  },
+  "bar": {
+    "layout": "strip",
+    "size": 28,
+    "font": "JetBrainsMono Nerd Font",
+    "fontPx": 13,
+    "bg": "#1D1430",
+    "fg": "#D9CFF0",
+    "faded": "#5E4A85",
+    "accent": "#9BE22D",
+    "onAccent": "#0E0A16",
+    "urgent": "#FF7A1A",
+    "title": "#FF7A1A",
+    "line": "#7B4BC4",
+    "clockBg": "#7B4BC4",
+    "clockFg": "#0E0A16",
+    "clockFormat": "dd.MM // HH:mm",
+    "zeroPad": true
+  },
+  "term": {
+    "bg": "#150F22",
+    "fg": "#D9CFF0",
+    "cursor": "#9BE22D",
+    "cursorText": "#0E0A16",
+    "selBg": "#7B4BC4",
+    "selFg": "#0E0A16",
+    "palette": [
+      "#0E0A16",
+      "#FF4D4D",
+      "#9BE22D",
+      "#FF7A1A",
+      "#7B4BC4",
+      "#C77DFF",
+      "#4DD6C1",
+      "#B8A9D9",
+      "#5E4A85",
+      "#FF7373",
+      "#B8F25E",
+      "#FF9A4D",
+      "#9D74E0",
+      "#DDA8FF",
+      "#7FE8D8",
+      "#EDE6FA"
+    ]
+  },
+  "menu": {
+    "bg": "#1D1430",
+    "text": "#D9CFF0",
+    "match": "#FF7A1A",
+    "selBg": "#9BE22D",
+    "selText": "#0E0A16",
+    "border": "#7B4BC4",
+    "borderpx": 2,
+    "radius": 0
+  },
+  "notify": {
+    "bg": "#1D1430",
+    "fg": "#D9CFF0",
+    "low": "#8E7DB5",
+    "frame": "#7B4BC4",
+    "critical": "#FF7A1A",
+    "radius": 0
+  }
+}

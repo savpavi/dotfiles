@@ -1,0 +1,22 @@
+#!/bin/sh
+# dwl oturum sarmalayıcısı: SDDM bunu çalıştırır (dwl.desktop), ortamı kurar, dwl'ye geçer.
+
+# Yalnız monitörlerin bağlı olduğu ekran kartını kullan (RX 9070 XT, PCI 03:00.0).
+# Aksi halde wlroots anakart üstü Radeon 610M'i de açıyor; istemciler yanlış karta
+# düşüp GPU hızlandırmayı kaybediyor (Claude Desktop "GPU process gone", hyprpolkitagent çöküşü).
+# cardN numarası açılışlar arasında değişebildiği için PCI yolundan çözülür;
+# by-path adı ':' içerdiğinden WLR_DRM_DEVICES'a doğrudan verilemez.
+gpu=$(readlink -f /dev/dri/by-path/pci-0000:03:00.0-card 2>/dev/null)
+[ -c "$gpu" ] && export WLR_DRM_DEVICES="$gpu"
+
+export XDG_CURRENT_DESKTOP=dwl
+export XCURSOR_THEME="${XCURSOR_THEME:-Nordzy-cursors}"
+export XCURSOR_SIZE="${XCURSOR_SIZE:-24}"
+export QT_QPA_PLATFORM=wayland
+export QT_QPA_PLATFORMTHEME=qt6ct
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export TERMINAL=alacritty
+
+"$(dirname "$(readlink -f "$0")")/dwl-theme" init
+
+exec /usr/local/bin/dwl "$@"
