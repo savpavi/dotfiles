@@ -22,6 +22,8 @@ fi
 
 install -d "$dst"
 install -m 644 "$src/Main.qml" "$src/metadata.desktop" "$src/theme.conf" "$dst/"
+# Giriş ekranında en yüksek yenileme hızı (X sunucusu 2K ekranı 60 Hz açıyor)
+install -m 755 "$src/../Xsetup" "$dst/Xsetup"
 
 # dwl-theme her tema değişiminde bu dosyayı yazar; o yüzden kullanıcıya ait.
 [ -e "$dst/theme.conf.user" ] || cp "$src/theme.conf" "$dst/theme.conf.user"
@@ -29,7 +31,7 @@ chown "$owner" "$dst/theme.conf.user"
 chmod 644 "$dst/theme.conf.user"
 
 install -d /etc/sddm.conf.d
-printf '[Theme]\nCurrent=dwl\n' > "$conf"
+printf '[Theme]\nCurrent=dwl\n\n[X11]\nDisplayCommand=%s/Xsetup\n' "$dst" > "$conf"
 
 echo "Kuruldu: $dst"
 echo "Ayar:    $conf"

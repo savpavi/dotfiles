@@ -1,0 +1,34 @@
+#!/bin/sh
+# SDDM giriş ekranı için ekran ayarı (root olarak, giriş penceresinden önce çalışır).
+# X sunucusu her ekranı "tercih edilen" modda açıyor; 2K ekranda bu 60 Hz. Burada her bağlı
+# ekran için, tercih edilen çözünürlükteki en yüksek yenileme hızı seçilir.
+# Deneme:  xrandr | sddm/Xsetup --dry-run     (komutları yalnız yazdırır)
+
+plan() {
+	awk '
+	/ connected/ { out = $1; next }
+	/disconnected/ { out = ""; next }
+	out != "" && /^ +[0-9]+x[0-9]+/ && /\+/ {
+		best = 0
+		for (i = 2; i <= NF; i++) {
+			r = $i
+			gsub(/[*+]/, "", r)
+			if (r + 0 > best) best = r + 0
+		}
+		if (best > 0) printf "%s %s %s\n", out, $1, best
+		out = ""
+	}'
+}
+
+if [ "$1" = "--dry-run" ]; then
+	plan | while read -r out mode rate; do
+		echo xrandr --output "$out" --mode "$mode" --rate "$rate"
+	done
+	exit 0
+fi
+
+command -v xrandr >/dev/null 2>&1 || exit 0
+xrandr 2>/dev/null | plan | while read -r out mode rate; do
+	xrandr --output "$out" --mode "$mode" --rate "$rate" 2>/dev/null
+done
+exit 0
