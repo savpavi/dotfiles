@@ -19,4 +19,8 @@ export TERMINAL=alacritty
 
 "$(dirname "$(readlink -f "$0")")/dwl-theme" init
 
-exec /usr/local/bin/dwl "$@"
+# exec değil: dwl kapanınca Qt/KDE/GTK renklerini önceki oturumun (Hyprland) haline geri koy.
+/usr/local/bin/dwl "$@"
+rc=$?
+"$(dirname "$(readlink -f "$0")")/dwl-theme" host-restore
+exit $rc

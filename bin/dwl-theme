@@ -8,6 +8,7 @@
   dwl-theme init          durum dosyaları yoksa etkin (ya da varsayılan) temayı yaz
   dwl-theme wall show|next|off|on|toggle   hareketli duvar kağıdı (waywallen)
   dwl-theme list --json   bar için tema listesi
+  dwl-theme host-restore  Qt/KDE/GTK renklerini dwl'den önceki haline döndür (dwl-session çağırır)
 
 Temalar themes/*.json içinde. Uygulanınca ~/.local/state/dwl-theme/ altına
 dwl.conf, theme.json, alacritty.toml, ghostty, fuzzel.ini ve dunstrc üretilir; dwl ve bar bu
@@ -175,6 +176,252 @@ radius={menu['radius']}
     write("dwl.conf", dwl)  # en son: dwl bunu görünce yeniden yükler
 
 
+# --- Uygulama renkleri: Qt (qt6ct/qt5ct), KDE (kdeglobals) ve GTK ---
+# Bu dosyalar Hyprland oturumuyla ORTAK (savpavi-shell'in dot-shell-theme'i de aynı yerlere
+# yazar). O yüzden ilk yazmadan önce yedeklenir (host_save) ve dwl kapanınca geri konur
+# (host_restore; bin/dwl-session çağırır). Böylece Hyprland'e dönünce kendi renkleri durur.
+CFG = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
+DATA = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share")
+HOST = STATE / "host-backup"
+HOST_FILES = [
+    CFG / "qt6ct/colors/savpavi.conf", CFG / "qt5ct/colors/savpavi.conf", CFG / "kdeglobals",
+    CFG / "gtk-3.0/savpavi-colors.css", CFG / "gtk-4.0/savpavi-colors.css",
+    CFG / "gtk-3.0/settings.ini", CFG / "gtk-4.0/settings.ini",
+    DATA / "color-schemes/Savpavi.colors",
+]
+
+
+def gsetting(key, value=None):
+    cmd = ["gsettings", "get" if value is None else "set", "org.gnome.desktop.interface", key]
+    if value is not None:
+        cmd.append(value)
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=5).stdout.strip().strip("'")
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+
+def kde_notify():
+    quiet("dbus-send", "--type=signal", "/KGlobalSettings",
+          "org.kde.KGlobalSettings.notifyChange", "int32:0", "int32:0")
+
+
+def host_save():
+    """Ortak dosyaların dwl'den önceki halini bir kez saklar (yedek varsa dokunmaz)."""
+    import shutil
+    if (HOST / "manifest.json").exists():
+        return
+    HOST.mkdir(parents=True, exist_ok=True)
+    saved = {}
+    for i, f in enumerate(HOST_FILES):
+        if f.exists():
+            shutil.copy2(f, HOST / f"{i}.bak")
+            saved[str(f)] = f"{i}.bak"
+        else:
+            saved[str(f)] = None
+    (HOST / "manifest.json").write_text(json.dumps(
+        {"files": saved, "color-scheme": gsetting("color-scheme")}, indent=1))
+
+
+def host_restore():
+    """dwl'den önceki uygulama renklerini geri koyar ve yedeği siler."""
+    import shutil
+    man = HOST / "manifest.json"
+    if not man.exists():
+        return
+    m = json.loads(man.read_text())
+    for f, bak in m["files"].items():
+        if bak and (HOST / bak).exists():
+            shutil.copy2(HOST / bak, f)
+        elif bak is None:
+            Path(f).unlink(missing_ok=True)
+    if m.get("color-scheme"):
+        gsetting("color-scheme", m["color-scheme"])
+    kde_notify()
+    shutil.rmtree(HOST, ignore_errors=True)
+
+
+def rgb(c):
+    c = c.lstrip("#")
+    return tuple(int(c[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def mix(a, b, t):
+    ra, rb = rgb(a), rgb(b)
+    return "#%02x%02x%02x" % tuple(round(x + (y - x) * t) for x, y in zip(ra, rb))
+
+
+def render_apps(t):
+    term, menu, bar = t["term"], t["menu"], t["bar"]
+    bg, view, fg = menu["bg"], term["bg"], menu["text"]
+    accent, on_accent = bar["accent"], bar["onAccent"]
+    pal = term["palette"]
+    dark = sum(rgb(bg)) < 3 * 128
+    faded = mix(fg, bg, 0.45)
+    raised = mix(bg, fg, 0.06)
+    alt = mix(view, fg, 0.04)
+
+    # QPalette sırası: WindowText Button Light Midlight Dark Mid Text BrightText ButtonText Base
+    # Window Shadow Highlight HighlightedText Link LinkVisited AlternateBase NoRole ToolTipBase
+    # ToolTipText PlaceholderText
+    def roles(text, hl, hl_text):
+        return ", ".join([text, raised, mix(bg, fg, 0.18), mix(bg, fg, 0.10), mix(bg, "#000000", 0.35),
+                          mix(bg, fg, 0.25), text, text, text, view, bg, "#000000", hl, hl_text,
+                          pal[4], pal[5], alt, bg, bg, text, faded])
+
+    def tri(c):
+        return ",".join(str(x) for x in rgb(c))
+
+    def group(name, back, back_alt, text, text_active=None):
+        return f"""[Colors:{name}]
+BackgroundAlternate={tri(back_alt)}
+BackgroundNormal={tri(back)}
+DecorationFocus={tri(accent)}
+DecorationHover={tri(accent)}
+ForegroundActive={tri(text_active or accent)}
+ForegroundInactive={tri(faded)}
+ForegroundLink={tri(pal[4])}
+ForegroundNegative={tri(pal[1])}
+ForegroundNeutral={tri(pal[3])}
+ForegroundNormal={tri(text)}
+ForegroundPositive={tri(pal[2])}
+ForegroundVisited={tri(pal[5])}
+"""
+
+    kde = "\n".join([
+        f"""[ColorEffects:Disabled]
+Color={tri(faded)}
+ColorAmount=0
+ColorEffect=0
+ContrastAmount=0.65
+ContrastEffect=1
+IntensityAmount=0.1
+IntensityEffect=2
+
+[ColorEffects:Inactive]
+ChangeSelectionColor=true
+Color={tri(mix(bg, fg, 0.4))}
+ColorAmount=0.025
+ColorEffect=2
+ContrastAmount=0.1
+ContrastEffect=2
+Enable=false
+IntensityAmount=0
+IntensityEffect=0
+""",
+        group("Button", raised, mix(raised, fg, 0.04), fg),
+        group("Complementary", raised, bg, fg),
+        group("Header", bg, bg, fg),
+        group("Header][Inactive", bg, bg, fg),
+        group("Selection", accent, mix(accent, bg, 0.4), on_accent, on_accent),
+        group("Tooltip", bg, bg, fg),
+        group("View", view, alt, fg),
+        group("Window", bg, bg, fg),
+        f"""[WM]
+activeBackground={tri(bg)}
+activeBlend={tri(fg)}
+activeForeground={tri(fg)}
+inactiveBackground={tri(bg)}
+inactiveBlend={tri(faded)}
+inactiveForeground={tri(faded)}
+"""])
+
+    qt = f"""[ColorScheme]
+active_colors={roles(fg, accent, on_accent)}
+disabled_colors={roles(faded, mix(accent, bg, 0.5), faded)}
+inactive_colors={roles(fg, accent, on_accent)}
+
+""" + kde
+
+    scheme = f"[General]\nColorScheme=Savpavi\nName=Savpavi\n\n" + kde
+
+    gtk = f"""/* {t['name']} — dwl-theme tarafından üretildi */
+@define-color destructive_bg_color {pal[1]};
+@define-color destructive_fg_color #ffffff;
+@define-color error_bg_color {pal[1]};
+@define-color error_fg_color #ffffff;
+@define-color accent_fg_color {on_accent};
+@define-color accent_bg_color {accent};
+@define-color accent_color {accent};
+@define-color window_bg_color {bg};
+@define-color window_fg_color {fg};
+@define-color view_bg_color {view};
+@define-color view_fg_color {fg};
+@define-color headerbar_bg_color {bg};
+@define-color headerbar_fg_color {fg};
+@define-color sidebar_bg_color {raised};
+@define-color sidebar_fg_color {fg};
+@define-color secondary_sidebar_bg_color {bg};
+@define-color secondary_sidebar_fg_color {fg};
+@define-color card_bg_color {raised};
+@define-color card_fg_color {fg};
+@define-color overview_bg_color {raised};
+@define-color overview_fg_color {fg};
+@define-color popover_bg_color {raised};
+@define-color popover_fg_color {fg};
+@define-color dialog_bg_color {bg};
+@define-color dialog_fg_color {fg};
+@define-color headerbar_backdrop_color @window_bg_color;
+@define-color sidebar_backdrop_color @sidebar_bg_color;
+@define-color theme_unfocused_fg_color @window_fg_color;
+@define-color theme_unfocused_text_color @view_fg_color;
+@define-color theme_unfocused_bg_color @window_bg_color;
+@define-color theme_unfocused_base_color @window_bg_color;
+@define-color theme_unfocused_selected_bg_color @accent_bg_color;
+@define-color theme_unfocused_selected_fg_color @accent_fg_color;
+"""
+
+    host_save()
+    for f, text in ((CFG / "qt6ct/colors/savpavi.conf", qt), (CFG / "qt5ct/colors/savpavi.conf", qt),
+                    (DATA / "color-schemes/Savpavi.colors", scheme),
+                    (CFG / "gtk-3.0/savpavi-colors.css", gtk), (CFG / "gtk-4.0/savpavi-colors.css", gtk)):
+        if f.parent.is_dir():
+            f.write_text(text)
+
+    # kdeglobals: yalnız renk gruplarını değiştir, gerisine dokunma
+    import configparser
+
+    def load(text=None, path=None):
+        c = configparser.RawConfigParser(delimiters=("=",), strict=False, interpolation=None)
+        c.optionxform = str
+        if text is not None:
+            c.read_string(text)
+        elif path.exists():
+            c.read(path, encoding="utf-8")
+        return c
+
+    target = CFG / "kdeglobals"
+    src, dst = load(text=kde), load(path=target)
+    for g in src.sections():
+        if dst.has_section(g):
+            dst.remove_section(g)
+        dst.add_section(g)
+        for k, v in src.items(g):
+            dst.set(g, k, v)
+    for sec in ("General", "UiSettings"):
+        if not dst.has_section(sec):
+            dst.add_section(sec)
+        dst.set(sec, "ColorScheme", "Savpavi")
+    dst.remove_option("General", "ColorSchemeHash")
+    with target.open("w", encoding="utf-8") as f:
+        dst.write(f, space_around_delimiters=False)
+
+    # GTK açık/koyu tercihi
+    for ini in (CFG / "gtk-3.0/settings.ini", CFG / "gtk-4.0/settings.ini"):
+        if ini.exists():
+            lines = [l for l in ini.read_text().splitlines()
+                     if not l.startswith("gtk-application-prefer-dark-theme")]
+            lines.append("gtk-application-prefer-dark-theme=" + ("true" if dark else "false"))
+            ini.write_text("\n".join(lines) + "\n")
+    gsetting("color-scheme", "prefer-dark" if dark else "prefer-light")
+    # Açık Qt uygulamaları: qt6ct yalnız kendi ayar dosyasını izler; zaman damgasını
+    # güncellemek paleti yeniden okutur. KDE uygulamaları için ayrıca sinyal.
+    for conf in (CFG / "qt6ct/qt6ct.conf", CFG / "qt5ct/qt5ct.conf"):
+        if conf.exists():
+            os.utime(conf)
+    kde_notify()
+
+
 def quiet(*cmd):
     try:
         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
@@ -195,6 +442,7 @@ def apply(tid, live=True):
                           stdout=subprocess.DEVNULL).returncode == 0:
             quiet("dunstctl", "reload", str(STATE / "dunstrc"))
         quiet("pkill", "-USR2", "-f", "^ghostty .*dwl-theme/ghostty")
+        render_apps(all_[tid])
         wall_async()
 
 
@@ -340,6 +588,10 @@ def main():
         }, ensure_ascii=False))
     elif len(a) == 2 and a[0] == "wall":
         wall(a[1])
+    elif a == ["host-save"]:
+        host_save()
+    elif a == ["host-restore"]:
+        host_restore()
     elif a == ["current"]:
         print(current())
     elif len(a) == 2 and a[0] == "apply":
