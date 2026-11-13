@@ -35,10 +35,27 @@ static const char *const autostart[] = {
 };
 
 static const Rule rules[] = {
-	/* app_id             title       tags mask     isfloating   monitor */
-	{ "Gimp_EXAMPLE",     NULL,       0,            1,           -1 }, /* Start on currently visible tags floating, not tiled */
-	{ "firefox_EXAMPLE",  NULL,       1 << 8,       0,           -1 }, /* Start on ONLY tag "9" */
-    /* default/example rule: can be changed but cannot be eliminated; at least one rule must exist */
+	/* app_id (buyuk/kucuk harf fark etmez, parca eslesir)   title  tags     float  ekran */
+	/* ASUS XG27ACS = DP-1, LG UltraGear = DP-3 */
+	{ "looking-glass-client",  NULL,  1 << 2,  0,  "DP-3" },
+	{ "claude",                NULL,  1 << 0,  0,  "DP-3" },
+	{ "discord",               NULL,  1 << 2,  0,  "DP-1" },
+	{ "spotify",               NULL,  1 << 1,  0,  "DP-1" },
+	{ "obsidian",              NULL,  1 << 3,  0,  "DP-1" },
+	/* kucuk araclar dosenmesin */
+	{ "kcalc",                 NULL,  0,       1,  NULL },
+	{ "calculator",            NULL,  0,       1,  NULL },
+	{ "qalculate",             NULL,  0,       1,  NULL },
+	{ "pavucontrol",           NULL,  0,       1,  NULL },
+	{ "pwvucontrol",           NULL,  0,       1,  NULL },
+	{ "solaar",                NULL,  0,       1,  NULL },
+	{ "nm-connection-editor",  NULL,  0,       1,  NULL },
+	{ "blueman",               NULL,  0,       1,  NULL },
+	{ "zenity",                NULL,  0,       1,  NULL },
+	{ "satty",                 NULL,  0,       1,  NULL },
+	{ "polkit",                NULL,  0,       1,  NULL },
+	{ "xdg-desktop-portal",    NULL,  0,       1,  NULL },
+	{ "kdeconnect",            NULL,  0,       1,  NULL },
 };
 
 /* layout(s) */

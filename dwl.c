@@ -12,6 +12,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
@@ -269,7 +270,7 @@ typedef struct {
 	const char *title;
 	uint32_t tags;
 	int isfloating;
-	int monitor;
+	const char *mon; /* savpavi: output name (e.g. "DP-3"), NULL = wherever it opens */
 } Rule;
 
 typedef struct {
@@ -288,6 +289,7 @@ static int animation_tick(void *data);
 static void animation_apply(Client *c, struct wlr_box g);
 static void applybounds(Client *c, struct wlr_box *bbox);
 static void applyrules(Client *c);
+static int cicontains(const char *hay, const char *needle);
 static void arrange(Monitor *m);
 static void arrangelayer(Monitor *m, struct wl_list *list,
 		struct wlr_box *usable_area, int exclusive);
@@ -646,13 +648,26 @@ applybounds(Client *c, struct wlr_box *bbox)
 		c->geom.y = bbox->y;
 }
 
+int
+cicontains(const char *hay, const char *needle)
+{
+	/* savpavi: case-insensitive strstr; app ids differ in case between Wayland and X11 */
+	size_t n = strlen(needle);
+
+	if (!hay)
+		return 0;
+	for (; *hay; hay++)
+		if (!strncasecmp(hay, needle, n))
+			return 1;
+	return n == 0;
+}
+
 void
 applyrules(Client *c)
 {
 	/* rule matching */
 	const char *appid, *title;
 	uint32_t newtags = 0;
-	int i;
 	const Rule *r;
 	Monitor *mon = selmon, *m;
 
@@ -660,15 +675,14 @@ applyrules(Client *c)
 	title = client_get_title(c);
 
 	for (r = rules; r < END(rules); r++) {
-		if ((!r->title || strstr(title, r->title))
-				&& (!r->id || strstr(appid, r->id))) {
+		if ((!r->title || cicontains(title, r->title))
+				&& (!r->id || cicontains(appid, r->id))) {
 			c->isfloating = r->isfloating;
 			newtags |= r->tags;
-			i = 0;
-			wl_list_for_each(m, &mons, link) {
-				if (r->monitor == i++)
-					mon = m;
-			}
+			if (r->mon)
+				wl_list_for_each(m, &mons, link)
+					if (!strcmp(m->wlr_output->name, r->mon))
+						mon = m;
 		}
 	}
 
