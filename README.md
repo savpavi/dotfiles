@@ -77,6 +77,7 @@ dot-theme reapply         # re-render the active theme
 | `dot-ocr` | Select a region, OCR it with Tesseract, copy the text |
 | `dot-webapp Name https://url` | Create a Brave Origin web-app launcher (never overwrites) |
 | `dot-keys` | Keybind sheet of savpavi-shell, read from the Hyprland Lua config and its comments (Super+K); `--text` prints it |
+| `dot-donut [-t SEC] [--fetch]` | Spinning ASCII donut in Nord colours (Ctrl+C or `q` quits); `--fetch` spins briefly, then hands the last frame to fastfetch as its logo. `~/.zshrc` runs `dot-donut --fetch -t 1.5` when a terminal opens |
 | `dot-askpass` | Zenity askpass helper for `sudo -A` |
 
 `dot-send` needs `kdeconnect` and `zenity`. LocalSend runs hidden in the tray through `extras/systemd/localsend.service` (copy to `~/.config/systemd/user/`, then `systemctl --user enable --now localsend.service`).

@@ -1,0 +1,129 @@
+#!/usr/bin/env python3
+"""dot-donut: spinning ASCII donut (a1k0n's donut.c math), Nord-coloured.
+
+Usage:
+  dot-donut                 spin forever (Ctrl+C or q to quit)
+  dot-donut -t 2            spin for 2 seconds, then exit
+  dot-donut --fetch [-t S]  spin S seconds in place, then run fastfetch
+                            with the final frame as the logo
+"""
+import argparse
+import math
+import os
+import select
+import shutil
+import sys
+import termios
+import time
+import tty
+
+W, H = 44, 20                     # frame size in cells
+CHARS = ".,-~:;=!*#$@"
+# Nord: dark -> bright (polar night grey, frost blues, snow)
+PALETTE = [(76, 86, 106), (94, 129, 172), (129, 161, 193),
+           (136, 192, 208), (143, 188, 187), (216, 222, 233), (236, 239, 244)]
+FPS = 30
+
+
+def frame(a, b):
+    out = [[" "] * W for _ in range(H)]
+    lum = [[0.0] * W for _ in range(H)]
+    zbuf = [[0.0] * W for _ in range(H)]
+    ca, sa, cb, sb = math.cos(a), math.sin(a), math.cos(b), math.sin(b)
+    k2 = 5.0
+    k1 = W * 0.42                 # scale: torus fits the frame at any angle
+    theta = 0.0
+    while theta < 2 * math.pi:
+        ct, st = math.cos(theta), math.sin(theta)
+        phi = 0.0
+        while phi < 2 * math.pi:
+            cp, sp = math.cos(phi), math.sin(phi)
+            cx, cy = 2 + ct, st                     # R2=2, R1=1
+            x = cx * (cb * cp + sa * sb * sp) - cy * ca * sb
+            y = cx * (sb * cp - sa * cb * sp) + cy * ca * cb
+            z = k2 + ca * cx * sp + cy * sa
+            ooz = 1 / z
+            xp = int(W / 2 + k1 * ooz * x)
+            yp = int(H / 2 - k1 * ooz * y / 2)      # cells are ~2:1
+            L = cp * ct * sb - ca * ct * sp - sa * st + cb * (sa * ct * sp - ca * st)
+            if L > 0 and 0 <= xp < W and 0 <= yp < H and ooz > zbuf[yp][xp]:
+                zbuf[yp][xp] = ooz
+                out[yp][xp] = CHARS[min(int(L * 8), len(CHARS) - 1)]
+                lum[yp][xp] = L / 1.42
+            phi += 0.04
+        theta += 0.1
+    lines = []
+    for r in range(H):
+        s, last = [], None
+        for c in range(W):
+            ch = out[r][c]
+            if ch == " ":
+                s.append(" ")
+                continue
+            col = PALETTE[min(int(lum[r][c] * len(PALETTE)), len(PALETTE) - 1)]
+            if col != last:
+                s.append("\x1b[38;2;%d;%d;%dm" % col)
+                last = col
+            s.append(ch)
+        lines.append("".join(s).rstrip() + "\x1b[0m")
+    return lines
+
+
+def key_pressed():
+    return select.select([sys.stdin], [], [], 0)[0] and sys.stdin.read(1) in ("q", "\x1b")
+
+
+def spin(seconds, pad_left=2):
+    a = b = 0.0
+    end = time.monotonic() + seconds if seconds else None
+    pad = " " * pad_left
+    old = None
+    if sys.stdin.isatty():
+        old = termios.tcgetattr(sys.stdin)
+        tty.setcbreak(sys.stdin)
+    sys.stdout.write("\x1b[?25l" + "\n" * H + "\x1b[%dA\x1b7" % H)  # reserve area
+    lines = frame(a, b)
+    try:
+        while end is None or time.monotonic() < end:
+            t0 = time.monotonic()
+            lines = frame(a, b)
+            sys.stdout.write("\x1b8" + "".join(pad + l + "\x1b[K\n" for l in lines))
+            sys.stdout.flush()
+            a += 0.07
+            b += 0.03
+            if old and key_pressed():
+                break
+            time.sleep(max(0, 1 / FPS - (time.monotonic() - t0)))
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if old:
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old)
+        sys.stdout.write("\x1b[?25h")
+        sys.stdout.flush()
+    return lines
+
+
+def main():
+    p = argparse.ArgumentParser(description="Spinning ASCII donut")
+    p.add_argument("-t", "--time", type=float, default=None, help="seconds to spin")
+    p.add_argument("--fetch", action="store_true", help="hand the last frame to fastfetch")
+    args = p.parse_args()
+
+    if args.fetch:
+        if shutil.get_terminal_size().columns < W + 50 or not sys.stdout.isatty():
+            os.execvp("fastfetch", ["fastfetch"])
+        lines = spin(args.time if args.time is not None else 2.0)
+        sys.stdout.write("\x1b8\x1b[J")             # wipe the animation area
+        sys.stdout.flush()
+        logo = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "dot-donut-logo.txt")
+        with open(logo, "w") as f:
+            f.write("\n".join(lines) + "\n")
+        # exec (not a child process) so fastfetch's Shell module still sees zsh
+        os.execvp("fastfetch", ["fastfetch", "--logo-type", "file-raw", "--logo", logo,
+                                "--logo-padding-top", "0"])
+    spin(args.time)
+
+
+if __name__ == "__main__":
+    main()
