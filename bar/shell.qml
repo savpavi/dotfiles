@@ -202,7 +202,10 @@ ShellRoot {
     Process {
         id: claudePoll
         command: ["sh", "-c", "CACHE_FILE=\"${XDG_CACHE_HOME:-$HOME/.cache}/savpavi-shell/claude-usage.json\" "
-            + "exec \"$HOME/dotfiles/config/savpavi-shell/scripts/claude-usage.sh\""]
+            + "export CACHE_FILE; "
+            // Uç nokta bazen bir saat 429 veriyor; o zaman script boş döner. Göstergenin
+            // kaybolmaması için son önbelleğe düş (eski de olsa bir değer görünür).
+            + "\"$HOME/dotfiles/config/savpavi-shell/scripts/claude-usage.sh\" || cat \"$CACHE_FILE\""]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {

@@ -41,6 +41,7 @@ SPAWN = [  # komutta geçen parça -> açıklama (ilk eşleşen)
     ("dwl-shot screen", "Ekran görüntüsü: tüm ekran"),
     ("call lock", "Ekranı kilitle"), ("toggle power", "Güç menüsü"),
     ("toggle notif", "Bildirim merkezi"), ("toggle theme", "Tema paneli"),
+    ("claude-desktop", "Claude Desktop"),
     ("dolphin", "Dosya yöneticisi (Dolphin)"), ("brave", "Tarayıcı (Brave Origin)"),
     ("looking-glass", "Windows VM (Looking Glass)"), ("spotify", "Spotify"),
     ("Telegram", "Telegram"), ("discord", "Discord"), ("zed", "Zed editör"), ("obsidian", "Obsidian"),
