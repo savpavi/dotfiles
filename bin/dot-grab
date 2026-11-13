@@ -167,7 +167,15 @@ for t in "${tools[@]}"; do
     # Çıktı önce yakalanıp sonra loga eklenir (aynı pipeline'da $log'u okuyup yazmamak için, SC2094).
     rc=1
     case "$t" in
-        yt) out="$(run_yt 2>>"$log")"; rc=$? ;;
+        yt) out="$(run_yt 2>>"$log")"; rc=$?
+            # Çerezler okunamazsa (ör. anahtarlıkta bozuk kayıt: "Item does not exist!") yt-dlp
+            # hiç denemeden çıkıyor; çerezsiz bir kez daha dene. (13.11.2026)
+            if [ $rc -ne 0 ] && [ ${#cookie_args[@]} -gt 0 ] &&
+               tail -n 3 "$log" | grep -qiE 'Item does not exist|could not (find|decrypt)|cookie'; then
+                echo "== yt: çerezler okunamadı, çerezsiz deneniyor" >>"$log"
+                cookie_args=()
+                out="$(run_yt 2>>"$log")"; rc=$?
+            fi ;;
         gallery) out="$(run_gallery 2>>"$log")"; rc=$? ;;
         direct) out="$(run_direct 2>>"$log")"; rc=$?
             # --ignore-errors: bazı dosyalar inmese de inenler başarı sayılır
