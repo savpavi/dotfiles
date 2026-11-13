@@ -28,7 +28,7 @@ amd-ucode mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon rocm-opencl-runtime 
 # -- apps
 firefox mpv loupe papers libreoffice-fresh qbittorrent meld qalculate-gtk blender
 tesseract tesseract-data-tur tesseract-data-eng pandoc-cli mkvtoolnix-cli mediainfo ffmpeg wf-recorder
-scrcpy android-tools android-udev solaar headsetcontrol liquidctl lutris wine winetricks
+scrcpy android-tools android-udev solaar headsetcontrol liquidctl wine winetricks
 cups system-config-printer simple-scan
 # -- apps that were Flatpaks on Fedora (data is moved over by the migrate stage where it matters)
 steam discord obsidian obs-studio telegram-desktop spotify-launcher moonlight-qt protontricks fsearch audacity baobab

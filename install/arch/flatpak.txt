@@ -1,4 +1,4 @@
 # Flathub apps kept as Flatpaks, installed per user (data lives in ~/.var/app and comes back with the home restore).
-# Thunderbird: keeps the account/OAuth setup. JDownloader: bundles its own Java. waywallen + LocalSend: user units call the Flatpak.
-org.mozilla.thunderbird_esr org.jdownloader.JDownloader org.waywallen.waywallen org.localsend.localsend_app
+# JDownloader: bundles its own Java. waywallen + LocalSend: user units call the Flatpak.
+org.jdownloader.JDownloader org.waywallen.waywallen org.localsend.localsend_app
 com.github.tchx84.Flatseal

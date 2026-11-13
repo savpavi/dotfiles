@@ -286,7 +286,6 @@ hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("gtk-launch brave-origin"))  -- Taray
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("/home/savpavi/.local/bin/start-windows-looking-glass"))  -- Windows VM (Looking Glass)
 hl.bind(mainMod .. " + S", hl.dsp.exec_cmd("spotify-launcher"))  -- Spotify
 hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("Telegram"))  -- Telegram
-hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("flatpak run org.mozilla.thunderbird_esr"))  -- Thunderbird (mail/takvim)
 hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("discord"))  -- Discord
 hl.bind(mainMod .. " + O", hl.dsp.exec_cmd("obsidian"))  -- Obsidian
 hl.bind(mainMod .. " + N", hl.dsp.window.move({ workspace = "special:minimized" }))  -- Pencereyi küçült (gizli alana at)

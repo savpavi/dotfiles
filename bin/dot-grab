@@ -103,7 +103,11 @@ cookie_args=()
 case "$host" in
     youtube.com|youtu.be|music.youtube.com|twitch.tv|*.twitch.tv|vimeo.com|dailymotion.com|tiktok.com|*.tiktok.com|kick.com|soundcloud.com|rumble.com|bilibili.com)
         tools=(yt) ;;
-    instagram.com|x.com|twitter.com|reddit.com|*.reddit.com|redd.it|imgur.com|pixiv.net|pinterest.*|*.tumblr.com|tumblr.com|deviantart.com|artstation.com|bsky.app|imgbox.com|flickr.com|catbox.moe)
+    # Reddit gallery-dl'nin anonim API isteklerini "blocked by network security" ile reddediyor (çerezle de);
+    # yt-dlp videoyu indiriyor. Önce yt-dlp, görsel/galeri gönderisinde gallery-dl. (13.11.2026)
+    reddit.com|*.reddit.com|redd.it|v.redd.it)
+        tools=(yt gallery) ;;
+    instagram.com|x.com|twitter.com|imgur.com|pixiv.net|pinterest.*|*.tumblr.com|tumblr.com|deviantart.com|artstation.com|bsky.app|imgbox.com|flickr.com|catbox.moe)
         tools=(gallery) ;;
     *)  tools=(yt gallery direct) ;;
 esac
