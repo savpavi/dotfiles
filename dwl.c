@@ -169,6 +169,7 @@ typedef struct {
 	unsigned int bw;
 	uint32_t tags;
 	int isfloating, isurgent, isfullscreen;
+	int ispanel; /* savpavi: see Rule.panel */
 
 	/* Animation */
 	struct wlr_box anim_from, anim_to, anim_cur;
@@ -276,6 +277,7 @@ typedef struct {
 	uint32_t tags;
 	int isfloating;
 	const char *mon; /* savpavi: output name (e.g. "DP-3"), NULL = wherever it opens */
+	int panel; /* savpavi: launcher panel: centred, follows its own size, keeps focus from the pointer */
 } Rule;
 
 typedef struct {
@@ -294,6 +296,7 @@ static int animation_tick(void *data);
 static void animation_apply(Client *c, struct wlr_box g);
 static void applybounds(Client *c, struct wlr_box *bbox);
 static void applyrules(Client *c);
+static void centerpanel(Client *c);
 static int cicontains(const char *hay, const char *needle);
 static void arrange(Monitor *m);
 static void arrangelayer(Monitor *m, struct wl_list *list,
@@ -683,11 +686,14 @@ applybounds(Client *c, struct wlr_box *bbox)
 int
 cicontains(const char *hay, const char *needle)
 {
-	/* savpavi: case-insensitive strstr; app ids differ in case between Wayland and X11 */
+	/* savpavi: case-insensitive strstr; app ids differ in case between Wayland and X11.
+	 * A leading '=' asks for the whole id: "=brave-origin" skips the "brave-origin-<site>-Default" web apps. */
 	size_t n = strlen(needle);
 
 	if (!hay)
 		return 0;
+	if (*needle == '=')
+		return !strcasecmp(hay, needle + 1);
 	for (; *hay; hay++)
 		if (!strncasecmp(hay, needle, n))
 			return 1;
@@ -710,6 +716,7 @@ applyrules(Client *c)
 		if ((!r->title || cicontains(title, r->title))
 				&& (!r->id || cicontains(appid, r->id))) {
 			c->isfloating = r->isfloating;
+			c->ispanel = r->panel;
 			newtags |= r->tags;
 			if (r->mon)
 				wl_list_for_each(m, &mons, link)
@@ -720,6 +727,16 @@ applyrules(Client *c)
 
 	c->isfloating |= client_is_float_type(c);
 	setmon(c, mon, newtags);
+}
+
+/* savpavi: put a panel client in the middle of its monitor, a third of the way down */
+void
+centerpanel(Client *c)
+{
+	if (!c->mon)
+		return;
+	c->geom.x = c->mon->w.x + (c->mon->w.width - c->geom.width) / 2;
+	c->geom.y = c->mon->w.y + MAX(0, (c->mon->w.height - c->geom.height) / 3);
 }
 
 void
@@ -1198,6 +1215,17 @@ commitnotify(struct wl_listener *listener, void *data)
 		return;
 	}
 
+	/* savpavi: a panel grows and shrinks with its results; follow its size and keep it centred */
+	if (c->ispanel && c->isfloating && !c->isfullscreen && client_surface(c)->mapped) {
+		struct wlr_box g;
+		client_get_geometry(c, &g);
+		if (g.width > 0 && g.height > 0 && (g.width + 2 * (int)c->bw != c->geom.width
+				|| g.height + 2 * (int)c->bw != c->geom.height)) {
+			c->geom.width = g.width + 2 * c->bw;
+			c->geom.height = g.height + 2 * c->bw;
+			centerpanel(c);
+		}
+	}
 	resize(c, c->geom, (c->isfloating && !c->isfullscreen));
 	/* Subsurfaces may have been added or resized */
 	if (client_surface(c)->mapped)
@@ -2405,6 +2433,10 @@ mapnotify(struct wl_listener *listener, void *data)
 		setmon(c, p->mon, p->tags);
 	} else {
 		applyrules(c);
+		if (c->ispanel && c->isfloating) {
+			centerpanel(c);
+			resize(c, c->geom, 0);
+		}
 	}
 	printstatus();
 
@@ -2702,7 +2734,11 @@ pointerfocus(Client *c, LayerSurface *l, struct wlr_surface *surface, double sx,
 	struct timespec now;
 
 	if (surface != seat->pointer_state.focused_surface && sloppyfocus && time) {
-		if (c && (!client_is_unmanaged(c) || client_wants_focus(c))) {
+		Client *f = focustop(selmon);
+		/* savpavi: a focused panel hides when it loses focus; the pointer must not take it away */
+		if (f && f->ispanel && f != c) {
+			;
+		} else if (c && (!client_is_unmanaged(c) || client_wants_focus(c))) {
 			focusclient(c, 0);
 		} else if (l && l->layer_surface->current.keyboard_interactive) {
 			focusclient(NULL, 0);
