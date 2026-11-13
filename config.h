@@ -156,6 +156,9 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 
+/* acik pencere varsa ona git, yoksa calistir: APP("app id parcasi", "komut") */
+#define APP(id, cmd) { .v = (const char*[]){ id, "/bin/sh", "-c", cmd, NULL } }
+
 /* commands */
 static const char *termcmd[] = { "alacritty", "--config-file", "/home/savpavi/.local/state/dwl-theme/alacritty.toml", NULL };
 static const char *menucmd[] = { "fuzzel", "--config=/home/savpavi/.local/state/dwl-theme/fuzzel.ini", NULL };
@@ -169,13 +172,13 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_e,           spawn,            SHCMD("dolphin") },
 	{ MODKEY,                    XKB_KEY_b,           spawn,            SHCMD("gtk-launch brave-origin") },
 	{ MODKEY,                    XKB_KEY_w,           spawn,            SHCMD("/home/savpavi/.local/bin/start-windows-looking-glass") },
-	{ MODKEY,                    XKB_KEY_s,           spawn,            SHCMD("spotify-launcher") },
-	{ MODKEY,                    XKB_KEY_t,           spawn,            SHCMD("Telegram") },
-	{ MODKEY,                    XKB_KEY_d,           spawn,            SHCMD("discord") },
-	{ MODKEY,                    XKB_KEY_z,           spawn,            SHCMD("zeditor") },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_z,           spawn,            SHCMD("zeditor") },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_c,           spawn,            SHCMD("claude-desktop") },
-	{ MODKEY,                    XKB_KEY_o,           spawn,            SHCMD("obsidian") },
+	{ MODKEY,                    XKB_KEY_s,           focusorspawn,     APP("spotify", "spotify-launcher") },
+	{ MODKEY,                    XKB_KEY_t,           focusorspawn,     APP("telegram", "Telegram") },
+	{ MODKEY,                    XKB_KEY_d,           focusorspawn,     APP("discord", "discord") },
+	{ MODKEY,                    XKB_KEY_z,           focusorspawn,     APP("dev.zed", "zeditor") },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_z,           focusorspawn,     APP("dev.zed", "zeditor") },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_c,           focusorspawn,     APP("claude", "claude-desktop") },
+	{ MODKEY,                    XKB_KEY_o,           focusorspawn,     APP("obsidian", "obsidian") },
 	{ 0,                         XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot region") },
 	{ WLR_MODIFIER_SHIFT,        XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot edit") },
 	{ MODKEY,                    XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot screen") },

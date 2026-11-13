@@ -59,7 +59,7 @@ def combo(mods, key):
 
 
 def describe(func, arg):
-    if func == "spawn":
+    if func in ("spawn", "focusorspawn"):
         for needle, text in SPAWN:
             if needle in arg:
                 return text

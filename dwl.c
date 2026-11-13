@@ -391,6 +391,7 @@ static void setpsel(struct wl_listener *listener, void *data);
 static void setsel(struct wl_listener *listener, void *data);
 static void setup(void);
 static void spawn(const Arg *arg);
+static void focusorspawn(const Arg *arg);
 static void startdrag(struct wl_listener *listener, void *data);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
@@ -3243,6 +3244,30 @@ setup(void)
 		fprintf(stderr, "failed to setup XWayland X server, continuing without it\n");
 	}
 #endif
+}
+
+void
+focusorspawn(const Arg *arg)
+{
+	/* savpavi: arg->v = { app id, argv... }. If a window of that app is open, go to it
+	 * (its monitor and tag) instead of starting it again; otherwise run argv. */
+	const char *const *v = arg->v;
+	Client *c;
+
+	wl_list_for_each(c, &clients, link) {
+		if (!c->mon || !cicontains(client_get_appid(c), v[0]))
+			continue;
+		selmon = c->mon;
+		if (!(c->tags & selmon->tagset[selmon->seltags])) {
+			selmon->seltags ^= 1;
+			selmon->tagset[selmon->seltags] = c->tags & TAGMASK;
+		}
+		focusclient(c, 1);
+		arrange(selmon);
+		printstatus();
+		return;
+	}
+	spawn(&(Arg){.v = v + 1});
 }
 
 void
