@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # dot-send — dosyaları KDE Connect ile telefona yollar; LocalSend diğer cihazlar için arka planda.
-# Bar düğmeleri: savpavi-shell ve dwl barı (dot-send status / send).
+# Bar düğmesi: bar/Tray.qml (dot-send status / send).
 # Gerekli: kdeconnect (telefon eşleşmiş olmalı), zenity, libnotify, LocalSend Flatpak. (12.10.2026)
 # Kullanım: dot-send [DOSYA...]   dosya yoksa seçici açılır
 #           dot-send status        bar için JSON durum

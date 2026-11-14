@@ -1,0 +1,37 @@
+#!/bin/sh
+# dwl oturum sarmalayıcısı: SDDM bunu çalıştırır (dwl.desktop), ortamı kurar, dwl'ye geçer.
+
+# Yalnız monitörlerin bağlı olduğu ekran kartını kullan (RX 9070 XT, PCI 03:00.0).
+# Aksi halde wlroots anakart üstü Radeon 610M'i de açıyor; istemciler yanlış karta
+# düşüp GPU hızlandırmayı kaybediyor (Claude Desktop "GPU process gone", hyprpolkitagent çöküşü).
+# cardN numarası açılışlar arasında değişebildiği için PCI yolundan çözülür;
+# by-path adı ':' içerdiğinden WLR_DRM_DEVICES'a doğrudan verilemez.
+gpu=$(readlink -f /dev/dri/by-path/pci-0000:03:00.0-card 2>/dev/null)
+[ -c "$gpu" ] && export WLR_DRM_DEVICES="$gpu"
+
+# SDDM oturumu ~/.local/bin'i PATH'e koymuyor; yt-dlp, gallery-dl ve dwl-* komutları orada.
+case ":$PATH:" in
+*":$HOME/.local/bin:"*) ;;
+*) export PATH="$PATH:$HOME/.local/bin" ;;  # sona: ~/.local/bin sistem komutlarını gölgelemesin (ör. obsidian CLI)
+esac
+
+# Deponun kökü: config.h'deki kısayollar ve autostart bunu kullanır.
+DWL_HOME=$(dirname "$(dirname "$(readlink -f "$0")")")
+export DWL_HOME
+export XDG_CURRENT_DESKTOP=dwl
+export XCURSOR_THEME="${XCURSOR_THEME:-Nordzy-cursors}"
+export XCURSOR_SIZE="${XCURSOR_SIZE:-24}"
+export QT_QPA_PLATFORM=wayland
+export QT_QPA_PLATFORMTHEME=qt6ct
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export TERMINAL=alacritty
+
+"$(dirname "$(readlink -f "$0")")/dwl-theme" init
+
+# exec değil: dwl kapanınca Qt/KDE/GTK renklerini önceki oturumun (Hyprland) haline geri koy.
+/usr/local/bin/dwl "$@"
+rc=$?
+"$(dirname "$(readlink -f "$0")")/dwl-theme" host-restore
+# dwl-autostart bunu systemd kullanıcı ortamına koymuştu; başka bir oturuma taşınmasın.
+systemctl --user unset-environment XDG_CURRENT_DESKTOP 2>/dev/null
+exit $rc

@@ -2,7 +2,8 @@
 live_config_reload = true
 working_directory = "None"
 
-# Colours come from savpavi-theme.toml, written by dot-shell-theme on every theme change
+# Colours: under dwl the terminal is started with dwl-theme's generated config, which imports this file and overrides the colours.
+# savpavi-theme.toml is a leftover of the removed Hyprland theme tool; it is kept so a plain `alacritty` still has colours
 # (alacritty reloads it live). Do not edit that file by hand.
 import = [
   "~/.config/alacritty/savpavi-theme.toml",

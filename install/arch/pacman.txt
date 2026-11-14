@@ -1,12 +1,12 @@
 # Official repo packages (core/extra/multilib). One per line or space separated; # starts a comment.
 # -- build / base
 base-devel git cmake ninja dkms linux-headers rust nodejs npm uv python-pip python-pipx python-gobject python-secretstorage python-pyqt6 shellcheck shfmt
-# -- Hyprland session + savpavi-shell
-hyprland hypridle hyprpicker hyprpolkitagent hyprland-guiutils uwsm quickshell sddm
-xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-user-dirs xdg-utils xorg-xwayland xwayland-satellite
-qt6-wayland qt5-wayland qt6ct qt5ct qt6-imageformats qt6-svg qt6-multimedia breeze breeze-icons papirus-icon-theme
+# -- dwl session + Quickshell bar (install/dwl.sh installs the same core set on its own)
+wlroots0.20 scenefx wayland-protocols quickshell sddm dunst wlopm polkit-kde-agent
+xdg-desktop-portal-wlr xdg-desktop-portal-gtk xdg-user-dirs xdg-utils xorg-xwayland xorg-xrandr
+qt6-wayland qt5-wayland qt6ct qt5ct qt6-imageformats qt6-svg qt6-multimedia qt6-shadertools breeze breeze-icons papirus-icon-theme
 cliphist wl-clipboard grim slurp satty wtype ydotool xdotool xclip brightnessctl pamixer playerctl
-cava matugen fuzzel zenity libnotify dex socat jq bc
+fuzzel zenity libnotify dex socat jq bc python-numpy python-pillow
 # -- audio / bluetooth / network
 pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber pavucontrol easyeffects
 bluez bluez-utils networkmanager nm-connection-editor network-manager-applet power-profiles-daemon firewalld openssh

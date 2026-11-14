@@ -39,8 +39,9 @@ static int log_level = WLR_ERROR;
 
 /* Autostart */
 static const char *const autostart[] = {
-	/* her sey bin/dwl-autostart icinde; orayi degistirmek yeniden derleme istemez */
-	"/home/savpavi/Projects/dwl/bin/dwl-autostart", NULL,
+	/* her sey bin/dwl-autostart icinde; orayi degistirmek yeniden derleme istemez.
+	 * DWL_HOME = deponun koku; bin/dwl-session verir (ikiliye depo yolu gomulmez). */
+	"/bin/sh", "-c", "exec \"$DWL_HOME/bin/dwl-autostart\"", NULL,
 	NULL /* terminate */
 };
 
@@ -193,17 +194,17 @@ static const Key keys[] = {
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_z,           focusorspawn,     APP("dev.zed", "zeditor") },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_c,           focusorspawn,     APP("claude", "claude-desktop") },
 	{ MODKEY,                    XKB_KEY_o,           focusorspawn,     APP("obsidian", "/usr/bin/obsidian") },
-	{ 0,                         XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot region") },
-	{ WLR_MODIFIER_SHIFT,        XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot edit") },
-	{ MODKEY,                    XKB_KEY_Print,       spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-shot screen") },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_d,           spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-grab") },
-	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_d,           spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-grab --clip") },
+	{ 0,                         XKB_KEY_Print,       spawn,            SHCMD("\"$DWL_HOME\"/bin/dwl-shot region") },
+	{ WLR_MODIFIER_SHIFT,        XKB_KEY_Print,       spawn,            SHCMD("\"$DWL_HOME\"/bin/dwl-shot edit") },
+	{ MODKEY,                    XKB_KEY_Print,       spawn,            SHCMD("\"$DWL_HOME\"/bin/dwl-shot screen") },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_d,           spawn,            SHCMD("\"$DWL_HOME\"/bin/dwl-grab") },
+	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_d,           spawn,            SHCMD("\"$DWL_HOME\"/bin/dwl-grab --clip") },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,       spawn,            SHCMD("WEBKIT_DISABLE_DMABUF_RENDERER=1 /home/savpavi/Applications/DigUp.AppImage --toggle") },
-	{ MODKEY,                    XKB_KEY_x,           spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-clip") },
-	{ MODKEY,                    XKB_KEY_k,           spawn,            SHCMD("/home/savpavi/Projects/dwl/bin/dwl-keys") },
-	{ MODKEY,                    XKB_KEY_l,           spawn,            SHCMD("quickshell ipc -p /home/savpavi/Projects/dwl/bar call lock lock") },
-	{ MODKEY,                    XKB_KEY_Escape,      spawn,            SHCMD("quickshell ipc -p /home/savpavi/Projects/dwl/bar call panel toggle power") },
-	{ MODKEY,                    XKB_KEY_n,           spawn,            SHCMD("quickshell ipc -p /home/savpavi/Projects/dwl/bar call panel toggle notif") },
+	{ MODKEY,                    XKB_KEY_x,           spawn,            SHCMD("\"$DWL_HOME\"/bin/dwl-clip") },
+	{ MODKEY,                    XKB_KEY_k,           spawn,            SHCMD("\"$DWL_HOME\"/bin/dwl-keys") },
+	{ MODKEY,                    XKB_KEY_l,           spawn,            SHCMD("quickshell ipc -p \"$DWL_HOME/bar\" call lock lock") },
+	{ MODKEY,                    XKB_KEY_Escape,      spawn,            SHCMD("quickshell ipc -p \"$DWL_HOME/bar\" call panel toggle power") },
+	{ MODKEY,                    XKB_KEY_n,           spawn,            SHCMD("quickshell ipc -p \"$DWL_HOME/bar\" call panel toggle notif") },
 
 	{ MODKEY,                    XKB_KEY_Right,       focusstack,       {.i = +1} },
 	{ MODKEY,                    XKB_KEY_Down,        focusstack,       {.i = +1} },
@@ -244,7 +245,7 @@ static const Key keys[] = {
 	TAGKEYS(                     XKB_KEY_7,           6),
 	TAGKEYS(                     XKB_KEY_8,           7),
 	TAGKEYS(                     XKB_KEY_9,           8),
-	{ MODKEY|WLR_MODIFIER_CTRL|WLR_MODIFIER_SHIFT, XKB_KEY_space, spawn, SHCMD("/home/savpavi/Projects/dwl/bin/dwl-theme pick") },
+	{ MODKEY|WLR_MODIFIER_CTRL|WLR_MODIFIER_SHIFT, XKB_KEY_space, spawn, SHCMD("\"$DWL_HOME\"/bin/dwl-theme pick") },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_q,           quit,             {0} },
 
 	/* Ctrl-Alt-Backspace and Ctrl-Alt-Fx used to be handled by X server */

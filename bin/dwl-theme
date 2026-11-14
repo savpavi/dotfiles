@@ -1,0 +1,1129 @@
+#!/usr/bin/env python3
+"""dwl-theme: dwl oturumu için tema seçici.
+
+  dwl-theme list          temaları listele (* = etkin)
+  dwl-theme current       etkin temanın kimliği
+  dwl-theme apply KIMLIK  temayı uygula
+  dwl-theme pick          fuzzel ile seç ve uygula
+  dwl-theme init          durum dosyaları yoksa etkin (ya da varsayılan) temayı yaz
+  dwl-theme check [KIMLIK...]  tema dosyalarını denetle (hepsi ya da verilenler); hata varsa çıkış 1.
+                          Hata: eksik/yanlış tipte anahtar, bozuk renk, bilinmeyen düzen.
+                          Uyarı (çıkışı etkilemez; --strict ile etkiler): tanınmayan anahtar,
+                          kurulu olmayan imleç/yazı tipi, indirilmemiş hareketli duvar, eksik statik duvar
+  dwl-theme wall show|next|off|on|toggle|restart   hareketli duvar kağıdı (waywallen)
+                          hareketli duvar kapalıyken statik duvar görünür (temada "wallpapers"
+                          ya da ~/.config/dwl-theme/walls.json: {"tema": ["yol", ...]}); "next" onları gezer
+  dwl-theme list --json   bar için tema listesi
+  dwl-theme host-restore  Qt/KDE/GTK renklerini dwl'den önceki haline döndür (dwl-session çağırır)
+
+Temalar themes/*.json içinde. Uygulanınca ~/.local/state/dwl-theme/ altına
+dwl.conf, theme.json, alacritty.toml, fuzzel.ini ve dunstrc üretilir; dwl ve bar bu
+dosyaları izler, yeniden başlatma gerekmez. Ayrıca Obsidian snippet'i
+(<kasa>/.obsidian/snippets/dwl-theme.css, DWL_THEME_OBSIDIAN) ve Vesktop/Vencord temasını
+(themes/savpavi.css, templates/vesktop.css şablonundan; host yedeğine girer), spicetify [dwl] renk şemasını
+(Spotify sonraki açılışta görür) ve Telegram temasını (~/.config/dwl-theme/telegram/, bir kez
+elle seçilir, sonra kendisi yenilenir) yazar.
+"""
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+THEMES = ROOT / "themes"
+STATE = Path(os.environ.get("XDG_STATE_HOME") or Path.home() / ".local/state") / "dwl-theme"
+DEFAULT = "murekkep"
+
+
+def themes():
+    out = {}
+    for f in sorted(THEMES.glob("*.json")):
+        out[f.stem] = json.loads(f.read_text())
+    return out
+
+
+def current():
+    try:
+        return (STATE / "current").read_text().strip()
+    except OSError:
+        return ""
+
+
+def write(name, text):
+    """Atomic replace, so watchers never see a half-written file."""
+    tmp = STATE / (name + ".tmp")
+    tmp.write_text(text)
+    tmp.replace(STATE / name)
+
+
+def hx(c):
+    return c.lstrip("#").lower()
+
+
+def render(tid, t):
+    wm, term, menu, note, bar = t["wm"], t["term"], t["menu"], t["notify"], t["bar"]
+
+    names = ("black", "red", "green", "yellow", "blue", "magenta", "cyan", "white")
+    pal = term["palette"]
+    alacritty = "\n".join([
+        f"# {t['name']} — dwl-theme tarafından üretildi, elle düzenleme",
+        "# Yazı tipi, tuşlar vb. kullanıcının kendi ayarından gelir; burada yalnız görünüm ezilir.",
+        "[general]",
+        'import = ["~/.config/alacritty/alacritty.toml"]',
+        "live_config_reload = true",
+        "",
+        "[window]",
+        f"opacity = {term.get('opacity', 1.0)}",
+        "blur = false",
+        "padding = { x = 10, y = 8 }",
+        "",
+        "[colors.primary]",
+        f'background = "{term["bg"]}"',
+        f'foreground = "{term["fg"]}"',
+        "",
+        "[colors.cursor]",
+        f'cursor = "{term["cursor"]}"',
+        f'text = "{term["cursorText"]}"',
+        "",
+        "[colors.selection]",
+        f'background = "{term["selBg"]}"',
+        f'text = "{term["selFg"]}"',
+        "",
+        "[colors.normal]",
+        *[f'{n} = "{pal[i]}"' for i, n in enumerate(names)],
+        "",
+        "[colors.bright]",
+        *[f'{n} = "{pal[i + 8]}"' for i, n in enumerate(names)],
+        "",
+    ])
+
+    fuzzel = f"""# {t['name']} — dwl-theme tarafından üretildi, elle düzenleme
+[main]
+font=JetBrainsMono Nerd Font:size=11
+lines=10
+width=44
+horizontal-pad=14
+vertical-pad=10
+inner-pad=8
+icons-enabled=no
+prompt="> "
+
+[colors]
+background={hx(menu['bg'])}ff
+text={hx(menu['text'])}ff
+prompt={hx(menu['match'])}ff
+input={hx(menu['text'])}ff
+match={hx(menu['match'])}ff
+selection={hx(menu['selBg'])}ff
+selection-text={hx(menu['selText'])}ff
+selection-match={hx(menu['selText'])}ff
+border={hx(menu['border'])}ff
+
+[border]
+width={menu['borderpx']}
+radius={menu['radius']}
+"""
+
+    # Bildirimler barın altına/yanına denk gelsin diye küçük bir pay bırakılır.
+    dunst = f"""# {t['name']} — dwl-theme tarafından üretildi, elle düzenleme
+[global]
+    font = JetBrainsMono Nerd Font 10
+    width = 360
+    offset = (12, 12)
+    origin = top-right
+    follow = mouse
+    frame_width = 2
+    frame_color = "{note['frame']}"
+    corner_radius = {note['radius']}
+    gap_size = 6
+    padding = 10
+    horizontal_padding = 12
+    icon_position = off
+    background = "{note['bg']}"
+    foreground = "{note['fg']}"
+    format = "<b>%s</b>\\n%b"
+
+[urgency_low]
+    foreground = "{note['low']}"
+
+[urgency_critical]
+    frame_color = "{note['critical']}"
+    timeout = 0
+"""
+
+    dwl = "".join(f"{k}={wm[k]}\n" for k in ("root", "border", "focus", "urgent", "borderpx", "gap", "anim") if k in wm)
+    # scenefx: köşe yarıçapı, gölge ve blur. Temada yoksa 0 yazılır ki önceki temadan kalmasın.
+    dwl += "".join(f"{k}={wm.get(k, 0)}\n" for k in ("radius", "shadow", "blur"))
+    dwl += f"cursor={t.get('cursor', DEFAULT_CURSOR)}\n"  # dwl imleç temasını canlı değiştirir
+
+    STATE.mkdir(parents=True, exist_ok=True)
+    write("alacritty.toml", alacritty)  # alacritty dosyayı izler, kendiliğinden yeniler
+    write("fuzzel.ini", fuzzel)
+    write("dunstrc", dunst)
+    write("theme.json", json.dumps(dict(t, id=tid), ensure_ascii=False, indent=2) + "\n")
+    write("current", tid + "\n")
+    # SDDM giriş ekranı da etkin temayı izlesin (sddm/install.sh kurduysa dosya bize ait).
+    sddm = Path("/usr/share/sddm/themes/dwl/theme.conf.user")
+    if os.access(sddm, os.W_OK) and not os.environ.get("DWL_NESTED"):  # deneme oturumu giriş ekranını değiştirmesin
+        sddm.write_text("[General]\n" + "".join(f"{k}={v}\n" for k, v in (
+            ("bg", wm["root"]), ("fg", menu["text"]), ("accent", menu["match"]),
+            ("border", menu["border"]), ("panel", menu["bg"]),
+            ("borderpx", menu["borderpx"]), ("radius", menu["radius"]))))
+
+    write("dwl.conf", dwl)  # en son: dwl bunu görünce yeniden yükler
+
+
+# --- Uygulama renkleri: Qt (qt6ct/qt5ct), KDE (kdeglobals) ve GTK ---
+# Bu dosyalar Hyprland oturumuyla ORTAK (savpavi-shell'in dot-shell-theme'i de aynı yerlere
+# yazar). O yüzden ilk yazmadan önce yedeklenir (host_save) ve dwl kapanınca geri konur
+# (host_restore; bin/dwl-session çağırır). Böylece Hyprland'e dönünce kendi renkleri durur.
+CFG = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
+DATA = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share")
+HOST = STATE / "host-backup"
+DEFAULT_CURSOR = "Nordzy-cursors"
+HOST_FILES = [
+    CFG / "qt6ct/colors/savpavi.conf", CFG / "qt5ct/colors/savpavi.conf", CFG / "kdeglobals",
+    CFG / "gtk-3.0/savpavi-colors.css", CFG / "gtk-4.0/savpavi-colors.css",
+    CFG / "gtk-3.0/settings.ini", CFG / "gtk-4.0/settings.ini",
+    DATA / "color-schemes/Savpavi.colors",
+]
+
+
+def gsetting(key, value=None):
+    cmd = ["gsettings", "get" if value is None else "set", "org.gnome.desktop.interface", key]
+    if value is not None:
+        cmd.append(value)
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=5).stdout.strip().strip("'")
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+
+def kde_notify():
+    quiet("dbus-send", "--type=signal", "/KGlobalSettings",
+          "org.kde.KGlobalSettings.notifyChange", "int32:0", "int32:0")
+
+
+def host_save():
+    """Ortak dosyaların dwl'den önceki halini bir kez saklar (yedek varsa dokunmaz)."""
+    import shutil
+    if (HOST / "manifest.json").exists():
+        return
+    HOST.mkdir(parents=True, exist_ok=True)
+    saved = {}
+    for i, f in enumerate(HOST_FILES):
+        if f.exists():
+            shutil.copy2(f, HOST / f"{i}.bak")
+            saved[str(f)] = f"{i}.bak"
+        else:
+            saved[str(f)] = None
+    (HOST / "manifest.json").write_text(json.dumps(
+        {"files": saved, "color-scheme": gsetting("color-scheme"),
+         "cursor-theme": gsetting("cursor-theme")}, indent=1))
+
+
+def host_keep(key):
+    """Yedek, bu ayar eklenmeden önce alındıysa ayarın ilk halini sonradan ekler."""
+    man = HOST / "manifest.json"
+    try:
+        m = json.loads(man.read_text())
+    except (OSError, ValueError):
+        return
+    if key not in m:
+        m[key] = gsetting(key)
+        man.write_text(json.dumps(m, indent=1))
+
+
+def host_keep_file(f):
+    """Yedek bu dosya listeye girmeden önce alındıysa dosyanın dwl öncesi halini ekler."""
+    import shutil
+    man = HOST / "manifest.json"
+    try:
+        m = json.loads(man.read_text())
+    except (OSError, ValueError):
+        host_save()
+        return
+    if str(f) in m["files"]:
+        return
+    bak = None
+    if f.exists():
+        bak = f"extra-{len(m['files'])}.bak"
+        shutil.copy2(f, HOST / bak)
+    m["files"][str(f)] = bak
+    man.write_text(json.dumps(m, indent=1))
+
+
+def host_restore():
+    """dwl'den önceki uygulama renklerini geri koyar ve yedeği siler."""
+    import shutil
+    man = HOST / "manifest.json"
+    if not man.exists():
+        return
+    m = json.loads(man.read_text())
+    for f, bak in m["files"].items():
+        if bak and (HOST / bak).exists():
+            shutil.copy2(HOST / bak, f)
+        elif bak is None:
+            Path(f).unlink(missing_ok=True)
+    if m.get("color-scheme"):
+        gsetting("color-scheme", m["color-scheme"])
+    if m.get("cursor-theme"):
+        gsetting("cursor-theme", m["cursor-theme"])
+    kde_notify()
+    shutil.rmtree(HOST, ignore_errors=True)
+
+
+def rgb(c):
+    c = c.lstrip("#")
+    return tuple(int(c[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def mix(a, b, t):
+    ra, rb = rgb(a), rgb(b)
+    return "#%02x%02x%02x" % tuple(round(x + (y - x) * t) for x, y in zip(ra, rb))
+
+
+def render_apps(t):
+    term, menu, bar = t["term"], t["menu"], t["bar"]
+    bg, view, fg = menu["bg"], term["bg"], menu["text"]
+    accent, on_accent = bar["accent"], bar["onAccent"]
+    pal = term["palette"]
+    dark = sum(rgb(bg)) < 3 * 128
+    faded = mix(fg, bg, 0.45)
+    raised = mix(bg, fg, 0.06)
+    alt = mix(view, fg, 0.04)
+
+    # QPalette sırası: WindowText Button Light Midlight Dark Mid Text BrightText ButtonText Base
+    # Window Shadow Highlight HighlightedText Link LinkVisited AlternateBase NoRole ToolTipBase
+    # ToolTipText PlaceholderText
+    def roles(text, hl, hl_text):
+        return ", ".join([text, raised, mix(bg, fg, 0.18), mix(bg, fg, 0.10), mix(bg, "#000000", 0.35),
+                          mix(bg, fg, 0.25), text, text, text, view, bg, "#000000", hl, hl_text,
+                          pal[4], pal[5], alt, bg, bg, text, faded])
+
+    def tri(c):
+        return ",".join(str(x) for x in rgb(c))
+
+    def group(name, back, back_alt, text, text_active=None):
+        return f"""[Colors:{name}]
+BackgroundAlternate={tri(back_alt)}
+BackgroundNormal={tri(back)}
+DecorationFocus={tri(accent)}
+DecorationHover={tri(accent)}
+ForegroundActive={tri(text_active or accent)}
+ForegroundInactive={tri(faded)}
+ForegroundLink={tri(pal[4])}
+ForegroundNegative={tri(pal[1])}
+ForegroundNeutral={tri(pal[3])}
+ForegroundNormal={tri(text)}
+ForegroundPositive={tri(pal[2])}
+ForegroundVisited={tri(pal[5])}
+"""
+
+    kde = "\n".join([
+        f"""[ColorEffects:Disabled]
+Color={tri(faded)}
+ColorAmount=0
+ColorEffect=0
+ContrastAmount=0.65
+ContrastEffect=1
+IntensityAmount=0.1
+IntensityEffect=2
+
+[ColorEffects:Inactive]
+ChangeSelectionColor=true
+Color={tri(mix(bg, fg, 0.4))}
+ColorAmount=0.025
+ColorEffect=2
+ContrastAmount=0.1
+ContrastEffect=2
+Enable=false
+IntensityAmount=0
+IntensityEffect=0
+""",
+        group("Button", raised, mix(raised, fg, 0.04), fg),
+        group("Complementary", raised, bg, fg),
+        group("Header", bg, bg, fg),
+        group("Header][Inactive", bg, bg, fg),
+        group("Selection", accent, mix(accent, bg, 0.4), on_accent, on_accent),
+        group("Tooltip", bg, bg, fg),
+        group("View", view, alt, fg),
+        group("Window", bg, bg, fg),
+        f"""[WM]
+activeBackground={tri(bg)}
+activeBlend={tri(fg)}
+activeForeground={tri(fg)}
+inactiveBackground={tri(bg)}
+inactiveBlend={tri(faded)}
+inactiveForeground={tri(faded)}
+"""])
+
+    qt = f"""[ColorScheme]
+active_colors={roles(fg, accent, on_accent)}
+disabled_colors={roles(faded, mix(accent, bg, 0.5), faded)}
+inactive_colors={roles(fg, accent, on_accent)}
+
+""" + kde
+
+    scheme = f"[General]\nColorScheme=Savpavi\nName=Savpavi\n\n" + kde
+
+    gtk = f"""/* {t['name']} — dwl-theme tarafından üretildi */
+@define-color destructive_bg_color {pal[1]};
+@define-color destructive_fg_color #ffffff;
+@define-color error_bg_color {pal[1]};
+@define-color error_fg_color #ffffff;
+@define-color accent_fg_color {on_accent};
+@define-color accent_bg_color {accent};
+@define-color accent_color {accent};
+@define-color window_bg_color {bg};
+@define-color window_fg_color {fg};
+@define-color view_bg_color {view};
+@define-color view_fg_color {fg};
+@define-color headerbar_bg_color {bg};
+@define-color headerbar_fg_color {fg};
+@define-color sidebar_bg_color {raised};
+@define-color sidebar_fg_color {fg};
+@define-color secondary_sidebar_bg_color {bg};
+@define-color secondary_sidebar_fg_color {fg};
+@define-color card_bg_color {raised};
+@define-color card_fg_color {fg};
+@define-color overview_bg_color {raised};
+@define-color overview_fg_color {fg};
+@define-color popover_bg_color {raised};
+@define-color popover_fg_color {fg};
+@define-color dialog_bg_color {bg};
+@define-color dialog_fg_color {fg};
+@define-color headerbar_backdrop_color @window_bg_color;
+@define-color sidebar_backdrop_color @sidebar_bg_color;
+@define-color theme_unfocused_fg_color @window_fg_color;
+@define-color theme_unfocused_text_color @view_fg_color;
+@define-color theme_unfocused_bg_color @window_bg_color;
+@define-color theme_unfocused_base_color @window_bg_color;
+@define-color theme_unfocused_selected_bg_color @accent_bg_color;
+@define-color theme_unfocused_selected_fg_color @accent_fg_color;
+"""
+
+    host_save()
+    for f, text in ((CFG / "qt6ct/colors/savpavi.conf", qt), (CFG / "qt5ct/colors/savpavi.conf", qt),
+                    (DATA / "color-schemes/Savpavi.colors", scheme),
+                    (CFG / "gtk-3.0/savpavi-colors.css", gtk), (CFG / "gtk-4.0/savpavi-colors.css", gtk)):
+        if f.parent.is_dir():
+            f.write_text(text)
+
+    # kdeglobals: yalnız renk gruplarını değiştir, gerisine dokunma
+    import configparser
+
+    def load(text=None, path=None):
+        c = configparser.RawConfigParser(delimiters=("=",), strict=False, interpolation=None)
+        c.optionxform = str
+        if text is not None:
+            c.read_string(text)
+        elif path.exists():
+            c.read(path, encoding="utf-8")
+        return c
+
+    target = CFG / "kdeglobals"
+    src, dst = load(text=kde), load(path=target)
+    for g in src.sections():
+        if dst.has_section(g):
+            dst.remove_section(g)
+        dst.add_section(g)
+        for k, v in src.items(g):
+            dst.set(g, k, v)
+    for sec in ("General", "UiSettings"):
+        if not dst.has_section(sec):
+            dst.add_section(sec)
+        dst.set(sec, "ColorScheme", "Savpavi")
+    dst.remove_option("General", "ColorSchemeHash")
+    with target.open("w", encoding="utf-8") as f:
+        dst.write(f, space_around_delimiters=False)
+
+    # GTK açık/koyu tercihi ve imleç (cursor-shape desteklemeyen GTK3/Xwayland uygulamaları için)
+    cur = t.get("cursor", DEFAULT_CURSOR)
+    for ini in (CFG / "gtk-3.0/settings.ini", CFG / "gtk-4.0/settings.ini"):
+        if ini.exists():
+            lines = [l for l in ini.read_text().splitlines()
+                     if not l.startswith(("gtk-application-prefer-dark-theme", "gtk-cursor-theme-name"))]
+            lines.append("gtk-application-prefer-dark-theme=" + ("true" if dark else "false"))
+            lines.append("gtk-cursor-theme-name=" + cur)
+            ini.write_text("\n".join(lines) + "\n")
+    gsetting("color-scheme", "prefer-dark" if dark else "prefer-light")
+    host_keep("cursor-theme")
+    gsetting("cursor-theme", cur)
+    os.environ["XCURSOR_THEME"] = cur
+    quiet("dbus-update-activation-environment", "--systemd", "XCURSOR_THEME")
+    # Açık Qt uygulamaları: qt6ct yalnız kendi ayar dosyasını izler; zaman damgasını
+    # güncellemek paleti yeniden okutur. KDE uygulamaları için ayrıca sinyal.
+    for conf in (CFG / "qt6ct/qt6ct.conf", CFG / "qt5ct/qt5ct.conf"):
+        if conf.exists():
+            os.utime(conf)
+    kde_notify()
+
+
+# --- Obsidian ve Discord: tema değişince CSS'i yeniden yaz; ikisi de dosyayı izleyip canlı yeniler ---
+OBSIDIAN_VAULTS = [Path(p).expanduser() for p in os.environ.get(
+    "DWL_THEME_OBSIDIAN", "~/Documents/Obsidian/Aktif Kasa").split(":") if p]
+# Discord CSS'i Vencord/Vesktop üzerinden alır. Hyprland'deki dot-shell-theme de aynı
+# savpavi.css'i yazar (aynı şablonla); dwl'nin yazdığı host yedeğine girer, dwl kapanınca geri gelir.
+DISCORD_THEME_FILES = [Path.home() / ".config" / d / "themes/savpavi.css" for d in ("vesktop", "Vencord")]
+DISCORD_TEMPLATE = ROOT / "templates/vesktop.css"   # DankMaterialShell matugen şablonu, MIT
+
+
+def app_palette(t):
+    term, bar, menu = t["term"], t["bar"], t["menu"]
+    bg, fg = term["bg"], term["fg"]
+    pal = term["palette"]
+    return dict(
+        bg=bg, bg2=menu["bg"], bg3=mix(menu["bg"], "#000000", 0.25), raised=mix(bg, fg, 0.06),
+        hover=mix(bg, fg, 0.10), border=mix(bg, fg, 0.18), fg=fg, muted=mix(fg, bg, 0.35),
+        faint=mix(fg, bg, 0.55), accent=bar["accent"], on_accent=bar["onAccent"],
+        accent2=mix(bar["accent"], fg, 0.25), urgent=bar["urgent"], sel=term["selBg"],
+        red=pal[1], green=pal[2], yellow=pal[3], blue=pal[4], magenta=pal[5], cyan=pal[6],
+        dark=sum(rgb(bg)) < 3 * 128)
+
+
+def render_obsidian(t, name):
+    c = app_palette(t)
+    body = f"""  --background-primary: {c['bg']}; --background-primary-alt: {c['raised']};
+  --background-secondary: {c['bg2']}; --background-secondary-alt: {c['bg3']};
+  --background-modifier-border: {c['border']}; --background-modifier-border-hover: {c['hover']};
+  --background-modifier-hover: {c['hover']}; --background-modifier-active-hover: {c['hover']};
+  --background-modifier-form-field: {c['raised']};
+  --titlebar-background: {c['bg3']}; --titlebar-background-focused: {c['bg3']};
+  --ribbon-background: {c['bg3']}; --tab-container-background: {c['bg2']};
+  --text-normal: {c['fg']}; --text-muted: {c['muted']}; --text-faint: {c['faint']};
+  --text-accent: {c['accent']}; --text-accent-hover: {c['accent2']}; --text-on-accent: {c['on_accent']};
+  --text-selection: {mix(c['sel'], c['bg'], 0.55)}; --text-highlight-bg: {mix(c['yellow'], c['bg'], 0.6)};
+  --interactive-accent: {c['accent']}; --interactive-accent-hover: {c['accent2']};
+  --interactive-normal: {c['raised']}; --interactive-hover: {c['hover']};
+  --color-accent: {c['accent']}; --color-accent-1: {c['accent2']}; --color-accent-2: {c['accent2']};
+  --link-color: {c['accent']}; --link-external-color: {c['cyan']}; --link-unresolved-color: {c['muted']};
+  --h1-color: {c['fg']}; --h2-color: {c['accent']}; --h3-color: {c['accent2']};
+  --h4-color: {c['muted']}; --h5-color: {c['muted']}; --h6-color: {c['faint']};
+  --tag-color: {c['accent']}; --tag-background: {mix(c['accent'], c['bg'], 0.85)};
+  --checkbox-color: {c['accent']}; --checkbox-marker-color: {c['on_accent']};
+  --blockquote-border-color: {c['accent']}; --hr-color: {c['border']};
+  --code-background: {c['raised']}; --code-normal: {c['fg']}; --code-comment: {c['faint']};
+  --code-keyword: {c['magenta']}; --code-string: {c['green']}; --code-function: {c['blue']};
+  --code-value: {c['yellow']}; --code-property: {c['cyan']}; --code-tag: {c['red']};
+  --code-operator: {c['muted']}; --code-punctuation: {c['muted']};
+  --color-red: {c['red']}; --color-green: {c['green']}; --color-yellow: {c['yellow']};
+  --color-blue: {c['blue']}; --color-purple: {c['magenta']}; --color-cyan: {c['cyan']};
+  --graph-node: {c['muted']}; --graph-node-focused: {c['accent']}; --graph-line: {c['border']};"""
+    css = (f"/* dwl-theme: {name}. Elle düzenleme; tema değişince yeniden yazılır. */\n"
+           f"body.theme-dark:not(.is-mobile), body.theme-light:not(.is-mobile) {{\n{body}\n}}\n")
+    for vault in OBSIDIAN_VAULTS:
+        d = vault / ".obsidian/snippets"
+        if not d.is_dir():
+            continue
+        f = d / "dwl-theme.css"
+        tmp = d / ".dwl-theme.css.tmp"
+        tmp.write_text(css)
+        tmp.replace(f)
+        # snippet'i bir kez etkinleştir (Obsidian açıkken de appearance.json değişikliğini okur)
+        ap = vault / ".obsidian/appearance.json"
+        try:
+            conf = json.loads(ap.read_text())
+            on = conf.setdefault("enabledCssSnippets", [])
+            if "dwl-theme" not in on:
+                on.append("dwl-theme")
+                ap.write_text(json.dumps(conf, indent=2) + "\n")
+        except (OSError, ValueError):
+            pass
+
+
+def material_roles(t):
+    """dwl paleti -> matugen/Material renk rolleri (DMS ve matugen-themes şablonları için)."""
+    c, pal = app_palette(t), t["term"]["palette"]
+    s, fg = c["bg"], c["fg"]
+    roles = {
+        "surface": s, "background": s, "on_surface": fg, "on_background": fg,
+        "surface_variant": c["raised"], "on_surface_variant": c["muted"],
+        "surface_container_lowest": c["bg3"], "surface_container_low": mix(s, fg, 0.03),
+        "surface_container": c["bg2"], "surface_container_high": mix(s, fg, 0.08),
+        "surface_container_highest": mix(s, fg, 0.12),
+        "outline": mix(c["muted"], s, 0.45), "outline_variant": c["border"],
+        "primary": c["accent"], "on_primary": c["on_accent"],
+        "primary_fixed_dim": mix(c["accent"], s, 0.2), "inverse_primary": mix(c["accent"], s, 0.35),
+        "secondary": pal[4], "on_secondary": s, "tertiary": pal[5], "on_tertiary": s,
+        "error": c["urgent"], "on_error": s,
+    }
+    for k in ("primary", "secondary", "tertiary", "error"):
+        roles[k + "_container"] = mix(roles[k], s, 0.6)
+        roles["on_" + k + "_container"] = fg
+    return roles
+
+
+def fill_template(text, roles, fallback):
+    import re
+
+    def sub(m):
+        h = roles.get(m.group(1), fallback).lstrip("#").lower()
+        f = m.group(2)
+        if f == "hex":
+            return "#" + h
+        if f == "hex_stripped":
+            return h
+        return str(int(h[{"red": 0, "green": 2, "blue": 4}[f]:][:2], 16))
+
+    return re.sub(r"\{\{\s*colors\.(\w+)\.\w+\.(hex_stripped|hex|red|green|blue)\s*\}\}", sub, text)
+
+
+def render_discord(t, name):
+    """templates/vesktop.css şablonunu (DMS/matugen) dwl paletiyle doldurur."""
+    if not DISCORD_TEMPLATE.exists():
+        return
+    css = fill_template(DISCORD_TEMPLATE.read_text(), material_roles(t), t["bar"]["accent"])
+    # Vesktop açılış ekranı (Vesktop açıkken kendi ayarını yazarsa sonraki değişimde yine düzelir)
+    vs = Path.home() / ".config/vesktop/settings.json"
+    try:
+        conf = json.loads(vs.read_text())
+        c = app_palette(t)
+        conf["splashBackground"] = "rgb({}, {}, {})".format(*rgb(c["bg"]))
+        conf["splashColor"] = "rgb({}, {}, {})".format(*rgb(c["fg"]))
+        conf["splashTheming"] = True
+        vs.write_text(json.dumps(conf, indent=4) + "\n")
+    except (OSError, ValueError):
+        pass
+    for f in DISCORD_THEME_FILES:
+        if f.parent.is_dir():
+            host_keep_file(f)
+            tmp = f.with_name("." + f.name + ".tmp")
+            tmp.write_text(css)
+            tmp.replace(f)
+
+
+# Telegram Desktop, seçili YEREL tema dosyası değişince kendisi yeniden yükler; dosya bir kez
+# Ayarlar > Sohbet ayarları > Dosyadan seç ile seçilir. Yol sabit kalmalı, yerinde yazılır.
+TELEGRAM_THEME = Path.home() / ".config/dwl-theme/telegram/dwl-theme.tdesktop-theme"
+TELEGRAM_TEMPLATE = ROOT / "templates/telegram.tdesktop-theme"   # matugen-themes, MIT
+
+
+def render_telegram(t, name):
+    import io
+    import zipfile
+    if not TELEGRAM_TEMPLATE.exists():
+        return
+    roles = material_roles(t)
+    palette = fill_template(TELEGRAM_TEMPLATE.read_text(), roles, t["bar"]["accent"])
+    # sohbet arka planı: tema zemininde düz renk
+    bg = io.BytesIO()
+    try:
+        from PIL import Image
+        Image.new("RGB", (64, 64), roles["background"]).save(bg, "JPEG", quality=95)
+    except ImportError:
+        bg = None
+    TELEGRAM_THEME.parent.mkdir(parents=True, exist_ok=True)
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("colors.tdesktop-theme", f"// dwl-theme: {name}\n" + palette)
+        if bg is not None:
+            z.writestr("background.jpg", bg.getvalue())
+    with open(TELEGRAM_THEME, "wb") as f:   # yerinde: izleyici aynı dosyada kalsın
+        f.write(buf.getvalue())
+
+
+SPICETIFY_THEMES = Path.home() / ".config/spicetify/Themes"
+
+
+def render_spotify(t, name):
+    """spicetify: etkin temanın color.ini'sine [dwl] şemasını yazar, xpui'yi yeniler.
+    Çalışan Spotify'ı yeniden başlatmaz (müzik kesilmesin); yeni renk sonraki açılışta görünür."""
+    import shutil
+    import re
+    sp = shutil.which("spicetify")
+    if not sp:
+        return
+    def get(key):  # tek anahtar sor: iki anahtar verilince spicetify ilkini ikinciye EŞİTLER
+        try:
+            return subprocess.run([sp, "config", key], capture_output=True, text=True,
+                                  timeout=10).stdout.strip()
+        except (OSError, subprocess.TimeoutExpired):
+            return ""
+    out = [get("current_theme"), get("color_scheme")]
+    if not out[0] or " " in out[0]:
+        return
+    ini = SPICETIFY_THEMES / out[0] / "color.ini"
+    if not ini.exists():
+        return
+    c = app_palette(t)
+    h = lambda x: x.lstrip("#").lower()
+    rows = {
+        "text": c["fg"], "subtext": c["muted"], "nav-active-text": c["on_accent"],
+        "main": c["bg"], "sidebar": c["bg2"], "player": c["bg3"], "card": c["raised"],
+        "shadow": "#000000", "main-secondary": c["bg3"], "button": c["accent"],
+        "button-secondary": c["accent2"], "button-active": c["accent2"], "button-disabled": c["border"],
+        "nav-active": c["accent"], "play-button": c["accent"], "tab-active": c["hover"],
+        "notification": c["raised"], "notification-error": c["urgent"],
+        "playback-bar": c["accent"], "misc": c["muted"],
+    }
+    block = f"[dwl]\n; dwl-theme: {name}\n" + "".join(f"{k:<19}= {h(v)}\n" for k, v in rows.items())
+    text = ini.read_text()
+    text = re.sub(r"(?ms)^\[dwl\]\n.*?(?=^\[|\Z)", "", text).rstrip() + "\n\n" + block
+    ini.write_text(text)
+    if len(out) < 2 or out[1] != "dwl":
+        quiet(sp, "config", "color_scheme", "dwl")
+    # refresh: arka planda, apply'ı bekletmesin
+    # yeniledikten sonra açık Spotify'a yeni stilleri yükle (debug portu yoksa sessizce atlar)
+    subprocess.Popen(["sh", "-c", f'"{sp}" refresh -n; "{Path(__file__).resolve()}" spotify-live'],
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+
+SPOTIFY_DEBUG_PORT = 9333   # ~/.config/spotify-launcher.conf extra_arguments ile açılır (yalnız 127.0.0.1)
+
+
+def cdp_eval(port, url_part, expr):
+    """Chrome DevTools Protocol: url'si url_part içeren sayfada JS çalıştırır (stdlib websocket)."""
+    import base64
+    import socket
+    import struct
+    import urllib.request
+    try:
+        pages = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{port}/json/list", timeout=2).read())
+    except (OSError, ValueError):
+        return False
+    ws = next((p.get("webSocketDebuggerUrl") for p in pages
+               if p.get("type") == "page" and url_part in p.get("url", "")), None)
+    if not ws:
+        return False
+    path = "/" + ws.split("/", 3)[3]
+    with socket.create_connection(("127.0.0.1", port), timeout=3) as s:
+        key = base64.b64encode(os.urandom(16)).decode()
+        s.sendall((f"GET {path} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nUpgrade: websocket\r\n"
+                   f"Connection: Upgrade\r\nSec-WebSocket-Key: {key}\r\nSec-WebSocket-Version: 13\r\n\r\n").encode())
+        if b" 101 " not in s.recv(4096).split(b"\r\n", 1)[0]:
+            return False
+        data = json.dumps({"id": 1, "method": "Runtime.evaluate", "params": {"expression": expr}}).encode()
+        mask = os.urandom(4)
+        n = len(data)
+        head = bytes([0x81]) + (bytes([0x80 | n]) if n < 126 else bytes([0x80 | 126]) + struct.pack(">H", n))
+        s.sendall(head + mask + bytes(b ^ mask[i % 4] for i, b in enumerate(data)))
+        buf = b""
+        try:
+            while b'"id":1' not in buf:
+                chunk = s.recv(65536)
+                if not chunk:
+                    break
+                buf += chunk
+        except OSError:
+            pass
+    i = buf.find(b"{")
+    try:
+        res = json.loads(buf[i:].decode(errors="replace")).get("result", {}).get("result", {})
+        return res.get("value", True)
+    except ValueError:
+        return True
+
+
+def spotify_live():
+    """Çalışan Spotify'da renk ve tema stillerini sayfayı yenilemeden yeniden yükler (müzik sürer)."""
+    js = ("document.querySelectorAll('link[rel=stylesheet]').forEach(l=>{"
+          "if(/colors\\.css|user\\.css/.test(l.href)){"
+          "const u=new URL(l.href);u.searchParams.set('dwl',Date.now());l.href=u.href}})")
+    return cdp_eval(SPOTIFY_DEBUG_PORT, "xpui", js)
+
+
+def quiet(*cmd):
+    try:
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+
+def apply(tid, live=True):
+    all_ = themes()
+    if tid not in all_:
+        sys.exit(f"dwl-theme: böyle bir tema yok: {tid} (var olanlar: {', '.join(all_)})")
+    render(tid, all_[tid])
+    # DWL_NESTED: deneme oturumu; gerçek oturumun dunst'ına, terminallerine, duvarına dokunma
+    if live and not os.environ.get("DWL_NESTED"):
+        # Yalnız bu temayla başlatılmış süreçlere dokun; başka oturumun
+        # terminallerini ve bildirim servisini rahat bırak.
+        if subprocess.run(["pgrep", "-f", "dunst -conf .*dwl-theme/dunstrc"],
+                          stdout=subprocess.DEVNULL).returncode == 0:
+            quiet("dunstctl", "reload", str(STATE / "dunstrc"))
+        render_apps(all_[tid])
+        name = all_[tid].get("name", tid)
+        for fn in (render_obsidian, render_discord, render_spotify, render_telegram):
+            try:
+                fn(all_[tid], name)
+            except OSError as e:
+                print(f"dwl-theme: {fn.__name__}: {e}", file=sys.stderr)
+        wall_async()
+
+
+# --- Hareketli duvar kağıdı: waywallen (Flatpak daemon) + waywallen-layer-shell ---
+# Temanın "live" listesi Wallpaper Engine Workshop kimlikleridir.
+WW_DB = Path.home() / ".var/app/org.waywallen.waywallen/data/waywallen/waywallen-v2.db"
+WW_SHELL = Path.home() / ".local/bin/waywallen-layer-shell"
+WW_SOCK = Path(os.environ.get("XDG_RUNTIME_DIR", "/run/user/%d" % os.getuid())) / "waywallen/display.sock"
+
+
+def ww(method, *args):
+    try:
+        r = subprocess.run(["gdbus", "call", "--session", "-d", "org.waywallen.waywallen.Daemon",
+                            "-o", "/org/waywallen/waywallen/Daemon",
+                            "-m", f"org.waywallen.waywallen.Daemon1.{method}", *args],
+                           capture_output=True, text=True, timeout=20)
+        return r.returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def ww_item(wid):
+    """Workshop kimliği -> waywallen katalog kimliği (indirilmemişse None)."""
+    import sqlite3
+    try:
+        db = sqlite3.connect(f"file:{WW_DB}?mode=ro", uri=True, timeout=5)
+        row = db.execute("SELECT id FROM item WHERE external_id = ? OR path LIKE ? ORDER BY id LIMIT 1",
+                         (str(wid), f"%/431960/{wid}/%")).fetchone()
+        db.close()
+        return row[0] if row else None
+    except sqlite3.Error:
+        return None
+
+
+def wall_state():
+    try:
+        return json.loads((STATE / "wall.json").read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def wall_running():
+    return subprocess.run(["pgrep", "-f", "^" + str(WW_SHELL) + "$"],
+                          stdout=subprocess.DEVNULL).returncode == 0
+
+
+def wall_stop():
+    quiet("pkill", "-f", "^" + str(WW_SHELL) + "$")
+    ww("Pause")
+
+
+def wall_show():
+    """Etkin temanın seçili hareketli duvarını gösterir; yoksa katmanı kapatır."""
+    import time
+    if os.environ.get("DWL_THEME_NO_WALL"):  # iç içe deneme oturumları gerçek duvara dokunmasın
+        return
+    st = wall_state()
+    tid = current()
+    ids = themes().get(tid, {}).get("live", [])
+    if st.get("off") or not ids or not WW_SHELL.exists():
+        wall_stop()
+        return
+    quiet("systemctl", "--user", "start", "waywallen.service")
+    start = st.get("index", {}).get(tid, 0)
+    item = None
+    for k in range(len(ids)):
+        item = ww_item(ids[(start + k) % len(ids)])
+        if item is not None:
+            break
+    if item is None:
+        wall_stop()
+        return
+    fresh = not wall_running()
+    if fresh:
+        for _ in range(50):
+            if WW_SOCK.exists():
+                break
+            time.sleep(0.2)
+        subprocess.Popen([str(WW_SHELL)], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, start_new_session=True)
+        # Katman yeni bağlanınca waywallen son duvarı geri çağırıp seçimi eziyor.
+        time.sleep(2.5)
+    ww("ApplyById", str(item))
+    ww("Resume")
+
+
+def wall_async():
+    """Tema değişimini bekletmemek için duvar işini arka plana atar."""
+    subprocess.Popen([sys.executable, __file__, "wall", "show"], stdin=subprocess.DEVNULL,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+
+WALLS = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "dwl-theme/walls.json"
+
+
+def static_walls(tid, theme):
+    """Temanın statik duvarları: temadaki "wallpapers", yoksa kişisel walls.json (repo dışı)."""
+    walls = theme.get("wallpapers")
+    if not walls:
+        try:
+            walls = json.loads(WALLS.read_text()).get(tid)
+        except (OSError, ValueError, AttributeError):
+            walls = None
+    return [str(Path(w).expanduser()) for w in walls or [] if Path(w).expanduser().is_file()]
+
+
+def wall(cmd):
+    st = wall_state()
+    tid = current()
+    theme = themes().get(tid, {})
+    n = len(theme.get("live", []))
+    statics = static_walls(tid, theme)
+    if cmd == "next" and statics and (st.get("off") or not n):
+        # hareketli duvar kapalıyken "sonraki" statik duvarları gezer
+        idx = st.setdefault("static", {})
+        idx[tid] = (idx.get(tid, 0) + 1) % len(statics)
+    elif cmd == "next" and n:
+        idx = st.setdefault("index", {})
+        idx[tid] = (idx.get(tid, 0) + 1) % n
+        st["off"] = False
+    elif cmd == "off":
+        st["off"] = True
+    elif cmd == "on":
+        st["off"] = False
+    elif cmd == "toggle":
+        st["off"] = not st.get("off", False)
+    elif cmd == "restart":
+        # Ekranlar kapanıp açılınca katman bazı ekranlarda geri gelmiyor; baştan başlat.
+        import time
+        quiet("pkill", "-f", "^" + str(WW_SHELL) + "$")
+        time.sleep(0.6)
+    elif cmd != "show":
+        sys.exit(__doc__)
+    # Bar bu yolu arka plana çizer; hareketli duvar açıkken boş kalır ki onu örtmesin.
+    live_on = bool(n) and not st.get("off") and WW_SHELL.exists()
+    st["image"] = "" if live_on or not statics else statics[st.get("static", {}).get(tid, 0) % len(statics)]
+    STATE.mkdir(parents=True, exist_ok=True)
+    write("wall.json", json.dumps(st) + "\n")
+    wall_show()
+
+
+# --- Denetim: dwl-theme check ---
+# Şema tek yerde: yeni bir anahtar eklenince buraya da yaz, yoksa "tanınmayan anahtar" uyarısı verir.
+# Değer tipleri: "color" = #RRGGBB, "color?" = renk ya da boş, int/float/bool/str, list.
+LAYOUTS = ("strip", "islands", "rail")
+SCHEMA_REQUIRED = {
+    "name": "str",
+    "wm": {"root": "color", "border": "color", "focus": "color", "urgent": "color",
+           "borderpx": "int", "gap": "int", "anim": "int"},
+    "bar": {"layout": "str", "size": "int", "font": "str", "fontPx": "int",
+            "bg": "color", "fg": "color", "faded": "color", "accent": "color", "onAccent": "color",
+            "urgent": "color", "title": "color", "line": "color?", "clockBg": "color", "clockFg": "color",
+            "clockFormat": "str", "zeroPad": "bool"},
+    "term": {"bg": "color", "fg": "color", "cursor": "color", "cursorText": "color",
+             "selBg": "color", "selFg": "color", "palette": "list"},
+    "menu": {"bg": "color", "text": "color", "match": "color", "selBg": "color", "selText": "color",
+             "border": "color", "borderpx": "int", "radius": "int"},
+    "notify": {"bg": "color", "fg": "color", "low": "color", "frame": "color", "critical": "color",
+               "radius": "int"},
+}
+# Yoksa kod varsayılanı kullanır (0, opak, DEFAULT_CURSOR, duvarsız).
+SCHEMA_OPTIONAL = {
+    "cursor": "str", "live": "list", "wallpapers": "list",
+    "wm": {"radius": "int", "shadow": "int", "blur": "int"},
+    "bar": {"margin": "int", "radius": "int"},
+    "term": {"opacity": "float"},
+}
+
+
+def is_color(v):
+    return (isinstance(v, str) and len(v) == 7 and v[0] == "#"
+            and all(c in "0123456789abcdefABCDEF" for c in v[1:]))
+
+
+def type_ok(v, kind):
+    if kind == "color":
+        return is_color(v)
+    if kind == "color?":
+        return v == "" or is_color(v)
+    if kind == "int":
+        return isinstance(v, int) and not isinstance(v, bool) and v >= 0
+    if kind == "float":
+        return isinstance(v, (int, float)) and not isinstance(v, bool)
+    if kind == "bool":
+        return isinstance(v, bool)
+    if kind == "str":
+        return isinstance(v, str) and v != ""
+    if kind == "list":
+        return isinstance(v, list)
+    return False
+
+
+def cursor_installed(name):
+    dirs = [DATA / "icons", Path.home() / ".icons", Path("/usr/share/icons"), Path("/usr/local/share/icons")]
+    return any((d / name / "cursors").is_dir() for d in dirs)
+
+
+def font_installed(name):
+    try:
+        r = subprocess.run(["fc-list", ":family=" + name, "family"], capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.TimeoutExpired):
+        return True  # fc-list yoksa bilemeyiz; uyarı üretme
+    return bool(r.stdout.strip())
+
+
+def check_theme(tid, t):
+    """(hatalar, uyarılar) döndürür. Hata = tema uygulanınca bozuk çıktı ya da çökme."""
+    err, warn = [], []
+    if not isinstance(t, dict):
+        return ["dosyanın kökü bir nesne değil"], []
+
+    def walk(schema, required):
+        for key, kind in schema.items():
+            if isinstance(kind, dict):
+                sect = t.get(key)
+                if not isinstance(sect, dict):
+                    if required:
+                        err.append(f"{key}: bölüm yok ya da nesne değil")
+                    continue
+                for k, kd in kind.items():
+                    if k not in sect:
+                        if required:
+                            err.append(f"{key}.{k}: eksik")
+                    elif not type_ok(sect[k], kd):
+                        err.append(f"{key}.{k}: {kd} bekleniyor, değer {sect[k]!r}")
+            elif key not in t:
+                if required:
+                    err.append(f"{key}: eksik")
+            elif not type_ok(t[key], kind):
+                err.append(f"{key}: {kind} bekleniyor, değer {t[key]!r}")
+
+    walk(SCHEMA_REQUIRED, True)
+    walk(SCHEMA_OPTIONAL, False)
+
+    # Tanınmayan anahtar çoğunlukla yazım hatasıdır (ör. "raduis"): kod onu sessizce yok sayar.
+    known_top = set(SCHEMA_REQUIRED) | set(SCHEMA_OPTIONAL)
+    for key, val in t.items():
+        if key not in known_top:
+            warn.append(f"{key}: tanınmayan anahtar")
+        elif isinstance(val, dict):
+            known = set(SCHEMA_REQUIRED.get(key, {})) | set(SCHEMA_OPTIONAL.get(key, {})
+                                                         if isinstance(SCHEMA_OPTIONAL.get(key), dict) else {})
+            for k in val:
+                if k not in known:
+                    warn.append(f"{key}.{k}: tanınmayan anahtar")
+
+    bar, term = t.get("bar"), t.get("term")
+    if isinstance(bar, dict) and isinstance(bar.get("layout"), str) and bar["layout"] not in LAYOUTS:
+        err.append(f"bar.layout: {bar['layout']!r} bilinmiyor (olanlar: {', '.join(LAYOUTS)})")
+    if isinstance(term, dict) and isinstance(term.get("palette"), list):
+        pal = term["palette"]
+        if len(pal) != 16:
+            err.append(f"term.palette: 16 renk olmalı, {len(pal)} var")
+        err.extend(f"term.palette[{i}]: renk değil: {c!r}" for i, c in enumerate(pal) if not is_color(c))
+    if isinstance(term, dict) and "opacity" in term and type_ok(term["opacity"], "float") \
+            and not 0 < term["opacity"] <= 1:
+        err.append(f"term.opacity: 0 ile 1 arasında olmalı, değer {term['opacity']!r}")
+
+    # Buradan sonrası makineye bağlı: yalnız uyarı.
+    cur = t.get("cursor")
+    if isinstance(cur, str) and cur and not cursor_installed(cur):
+        warn.append(f"cursor: {cur!r} kurulu değil (dwl varsayılan imlece düşer)")
+    if isinstance(bar, dict) and isinstance(bar.get("font"), str) and bar["font"] and not font_installed(bar["font"]):
+        warn.append(f"bar.font: {bar['font']!r} kurulu değil")
+
+    live = t.get("live")
+    if isinstance(live, list):
+        bad = [w for w in live if not (isinstance(w, str) and w.isdigit())]
+        err.extend(f"live: Workshop kimliği rakamlardan oluşan bir dize olmalı: {w!r}" for w in bad)
+        good = [w for w in live if w not in bad]
+        dup = sorted({w for w in good if good.count(w) > 1})
+        if dup:
+            warn.append(f"live: yinelenen kimlik: {', '.join(dup)}")
+        if good and WW_DB.exists():
+            gone = [w for w in dict.fromkeys(good) if ww_item(w) is None]
+            if gone:
+                warn.append(f"live: waywallen'de yok ({len(gone)}/{len(set(good))}): {', '.join(gone)}")
+
+    # Statik duvarlar: static_walls() eksik dosyayı sessizce atlar, burada adını söyle.
+    walls = t.get("wallpapers")
+    if not walls:
+        try:
+            walls = json.loads(WALLS.read_text()).get(tid)
+        except (OSError, ValueError, AttributeError):
+            walls = None
+    if isinstance(walls, list):
+        lost = [w for w in walls if not (isinstance(w, str) and Path(w).expanduser().is_file())]
+        if lost:
+            warn.append(f"statik duvar: {len(lost)} dosya yok: {', '.join(map(str, lost[:3]))}"
+                        + (" …" if len(lost) > 3 else ""))
+    if not walls and not live:
+        warn.append("duvar yok: ne hareketli (live) ne statik")
+    return err, warn
+
+
+def check(ids, strict=False):
+    files = {f.stem: f for f in sorted(THEMES.glob("*.json"))}
+    unknown = [i for i in ids if i not in files]
+    if unknown:
+        sys.exit(f"dwl-theme: böyle bir tema yok: {', '.join(unknown)} (var olanlar: {', '.join(files)})")
+    nerr = nwarn = 0
+    for tid in ids or files:
+        try:
+            t = json.loads(files[tid].read_text())
+        except (OSError, ValueError) as e:
+            err, warn = [f"okunamadı: {e}"], []
+        else:
+            err, warn = check_theme(tid, t)
+        nerr += len(err)
+        nwarn += len(warn)
+        print(f"{'HATA ' if err else 'uyarı' if warn else 'tamam'}  {tid}")
+        for m in err:
+            print(f"       hata:  {m}")
+        for m in warn:
+            print(f"       uyarı: {m}")
+    n = len(ids or files)
+    print(f"\n{n} tema, {nerr} hata, {nwarn} uyarı")
+    return 1 if nerr or (strict and nwarn) else 0
+
+
+def pick():
+    all_ = themes()
+    cur = current()
+    ids = list(all_)
+    lines = "\n".join(all_[i]["name"] + ("  (etkin)" if i == cur else "") for i in ids)
+    cfg = STATE / "fuzzel.ini"
+    cmd = ["fuzzel", "--dmenu", "--index", "--prompt", "tema > ", "--lines", str(len(ids))]
+    if cfg.exists():
+        cmd.append(f"--config={cfg}")
+    r = subprocess.run(cmd, input=lines, capture_output=True, text=True)
+    if r.returncode == 0 and r.stdout.strip().isdigit():
+        apply(ids[int(r.stdout.strip())])
+
+
+def main():
+    a = sys.argv[1:]
+    if a == ["list"]:
+        cur = current()
+        for i, t in themes().items():
+            print(("* " if i == cur else "  ") + f"{i:10} {t['name']}")
+    elif a == ["list", "--json"]:
+        cur = current()
+        st = wall_state()
+        print(json.dumps({
+            "current": cur,
+            "wallOff": bool(st.get("off")),
+            "themes": [{"id": i, "name": t["name"], "active": i == cur,
+                        "accent": t["bar"]["accent"], "bg": t["wm"]["root"],
+                        "walls": len(t.get("live", []))} for i, t in themes().items()],
+        }, ensure_ascii=False))
+    elif len(a) == 2 and a[0] == "wall":
+        wall(a[1])
+    elif a == ["host-save"]:
+        host_save()
+    elif a == ["host-restore"]:
+        host_restore()
+    elif a == ["spotify-live"]:
+        sys.exit(0 if spotify_live() else 1)
+    elif a == ["current"]:
+        print(current())
+    elif len(a) == 2 and a[0] == "apply":
+        apply(a[1])
+    elif a == ["pick"]:
+        pick()
+    elif a and a[0] == "check":
+        rest = [x for x in a[1:] if x != "--strict"]
+        sys.exit(check(rest, strict="--strict" in a[1:]))
+    elif a == ["init"]:
+        cur = current()
+        if not (STATE / "dwl.conf").exists() or cur not in themes():
+            apply(cur if cur in themes() else DEFAULT, live=False)
+    else:
+        sys.exit(__doc__)
+
+
+if __name__ == "__main__":
+    main()

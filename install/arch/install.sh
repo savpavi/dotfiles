@@ -7,7 +7,7 @@
 #   install.sh --dry-run ...   print what would run, change nothing
 #   install.sh --list          list stages
 #
-# Default stages: preflight pkgs aur flatpak link migrate shell services tools check
+# Default stages: preflight pkgs aur flatpak link migrate shell services tools dwl check
 # Opt-in stages:  disks (fstab entries for /srv), home (restore ~ from the Lexar backup)
 #
 # Not covered here: VFIO passthrough, Looking Glass, dsearch, Hopper, the Craft apps.
@@ -17,8 +17,8 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOT="$(cd "$HERE/../.." && pwd)"
 BACKUP="${BACKUP:-/srv/lexar/Fedora-to-arch-backup}"
 LOG="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles-install-$(date +%Y%m%d-%H%M%S).log"
-DEFAULT_STAGES=(preflight pkgs aur flatpak link migrate shell services tools check)
-ALL_STAGES=(preflight disks home pkgs aur flatpak link migrate shell services tools check)
+DEFAULT_STAGES=(preflight pkgs aur flatpak link migrate shell services tools dwl check)
+ALL_STAGES=(preflight disks home pkgs aur flatpak link migrate shell services tools dwl check)
 DRY=0
 FAILED=()
 
@@ -138,7 +138,7 @@ stage_link() {
   run mkdir -p "$sm"
   for u in "$DOT"/extras/dolphin/*.desktop; do run install -m755 "$u" "$sm/"; done
   run xdg-mime default org.kde.dolphin.desktop inode/directory
-  # Outside Plasma XDG_MENU_PREFIX is "hyprland-", for which no applications.menu exists, so KDE apps
+  # Under Hyprland XDG_MENU_PREFIX was "hyprland-", for which no applications.menu exists, so KDE apps
   # find no applications and Dolphin's "Open With" is empty. Point that name at Plasma's menu.
   if [[ -e /etc/xdg/menus/plasma-applications.menu && ! -e $HOME/.config/menus/hyprland-applications.menu ]]; then
     run mkdir -p "$HOME/.config/menus"
@@ -163,19 +163,6 @@ stage_migrate() {
     run mkdir -p "$(dirname "$dst")"
     run cp -a "$src" "$dst" && run touch "$dst.from-flatpak"
     echo "+ $dst"
-  done
-
-  # Launcher keybinds in the Hyprland config (this edits the repo file; commit it afterwards).
-  local hypr="$DOT/config/hypr/hyprland.lua" id bin
-  for pair in "com.spotify.Client|spotify-launcher" "org.telegram.desktop|Telegram" \
-              "com.discordapp.Discord|discord" "md.obsidian.Obsidian|obsidian"; do
-    id="${pair%%|*}"; bin="${pair##*|}"
-    grep -q "flatpak run $id" "$hypr" 2>/dev/null || continue
-    if have "$bin" || (( DRY )); then
-      run sed -i "s|flatpak run $id|$bin|" "$hypr"; echo "+ keybind: $id -> $bin"
-    else
-      warn "$bin not installed; keybind for $id left on the Flatpak"
-    fi
   done
 
   # Default-app entries that name a Flatpak desktop file with a different native id.
@@ -215,7 +202,7 @@ stage_services() {
     getent group "$g" >/dev/null && run sudo usermod -aG "$g" "$USER"
   done
   for u in pipewire.socket pipewire-pulse.socket wireplumber.service \
-           gnome-keyring-daemon.socket savpavi-shell.service savpavi-clipboard.service \
+           gnome-keyring-daemon.socket \
            syncthing.service espanso.service localsend.service ydotool.service \
            rclone-gdrive.service dot-drive-watch.service dot-drive-sync.timer; do
     if systemctl --user cat "$u" >/dev/null 2>&1; then
@@ -234,18 +221,23 @@ stage_tools() {
   run xdg-user-dirs-update
 }
 
+stage_dwl() {
+  # The desktop itself: build dwl and the bar's IPC client, install the session, SDDM theme, user links.
+  if (( DRY )); then run sh "$DOT/install/dwl.sh" --dry-run; else sh "$DOT/install/dwl.sh"; fi
+}
+
 stage_check() {
   say "summary"
   local missing=() p
   while read -r p; do pacman -Qq "$p" >/dev/null 2>&1 || missing+=("$p"); done \
     < <(list "$HERE/pacman.txt"; list "$HERE/aur.txt")
   (( ${#missing[@]} )) && warn "packages not installed: ${missing[*]}" || echo "all listed packages installed"
-  for p in qs hyprctl uwsm fuzzel cliphist matugen dot-shell dot-shell-theme; do
+  for p in dwl quickshell fuzzel dunst cliphist dwl-theme; do
     have "$p" || PATH="$DOT/bin:$PATH" have "$p" || warn "command missing: $p"
   done
   mountpoint -q /srv/lexar   || warn "/srv/lexar not mounted (disks stage)"
   mountpoint -q /srv/storage || warn "/srv/storage (mergerfs pool) not mounted"
-  echo "manual follow-ups: VFIO + Looking Glass, tailscale up, 1Password sign-in, DMS/dsearch, Hopper, Craft apps"
+  echo "manual follow-ups: VFIO + Looking Glass, tailscale up, 1Password sign-in, dsearch, Hopper, Craft apps"
   (( ${#missing[@]} == 0 ))
 }
 
@@ -269,7 +261,7 @@ main() {
     "stage_$s" || { FAILED+=("$s"); warn "stage $s reported problems"; [[ $s == preflight ]] && break; }
   done
   if (( ${#FAILED[@]} )); then warn "stages with problems: ${FAILED[*]} (re-run them after fixing)"; exit 1; fi
-  say "done. Log out and pick the Hyprland (uwsm) session in SDDM."
+  say "done. Log out and pick the dwl session in SDDM."
 }
 
 main "$@"

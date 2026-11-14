@@ -6,9 +6,6 @@
 # Kaldırılan dot-theme'in (Kas 2026) eski makinelerde bıraktığı üretilmiş dosyalar
 config/alacritty/active-theme.toml
 config/btop/themes/dot-theme.theme
-config/hypr/hypr-theme.conf
-config/hypr/hyprland-theme.lua
-config/hypr/hyprtoolkit.conf
 
 # Python test önbelleği
 __pycache__/
@@ -18,11 +15,11 @@ __pycache__/
 # Yerel yedekler
 *.bak-*
 
-# Hyprland config yedekleri
-config/hypr/hyprland.lua.backup*
-config/hypr/hyprland.lua.dmsbackup*
-
-# dot-shell-theme tarafından üretilen dosyalar (savpavi-shell)
-config/hypr/savpavi/
+# Tema araçlarının ürettiği dosyalar
 config/alacritty/savpavi-theme.toml
 config/btop/themes/savpavi.theme
+
+# Derleme çıktıları (dwl'ninkiler dwl/.gitignore'da)
+bar/ipc/dwl-bar-ipc
+bar/ipc/*-client.c
+bar/ipc/*-client.h

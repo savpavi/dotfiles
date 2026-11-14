@@ -1,93 +1,113 @@
 # dotfiles
 
-My Arch Linux Wayland desktop: Hyprland with my own Quickshell shell, **savpavi-shell** (bar, launcher, notifications, lock screen, OSD, settings), a theme switcher that recolours the shell and a dozen apps at once, and a set of small desktop tools.
+My Arch Linux desktop: a patched [dwl](https://codeberg.org/dwl/dwl) (dwm for Wayland) with a Quickshell bar I wrote for it, twelve themes that change the whole desktop while it runs, a lock screen, a login screen, and a set of small desktop tools.
 
 These are personal configs. Monitor names (`DP-1`, `DP-3`), paths and app choices fit my machine, so read before you copy.
 
-## Layout
+![Kor theme](docs/screenshots/kor-scenefx.png)
+
+More screenshots are in [`docs/screenshots/`](docs/screenshots).
+
+## What is in here
 
 | Path | What it holds |
 |---|---|
-| `config/` | App configs, symlinked into `~/.config/<name>` by `dot-link` (Hyprland, savpavi-shell, Alacritty, btop, fastfetch, Starship) |
-| `bin/` | `dot-*` helper scripts (add to `PATH`) |
-| `themes/` | Omarchy colour schemes and backgrounds, kept as a wallpaper source (the `dot-theme` switcher that used them was removed in November 2026) |
-| `templates/` | `templates/apps/`: app colour templates filled by `dot-shell-theme` |
-| `tests/` | Unit tests for the helper scripts |
-| `extras/` | Pieces installed by hand: Firefox Nord theme, `.desktop` launchers, MIME defaults, systemd user units, Dolphin service menus |
-| `shell/` | Bash snippets for `~/.bashrc.d/` |
-| `docs/` | Desktop tools, Hyprland cheatsheet (mostly in Turkish) |
+| `dwl/` | The compositor: dwl v0.9 as a git subtree, with the ipc, monitorconfig, autostart, animation and scenefx patches and my own additions. `config.h` holds the keys and window rules |
+| `bar/` | The Quickshell bar: three layouts (strip, islands, rail), tray, panels, notifications centre, lock screen, static wallpaper with a drawn-in transition (`WallFx.qml` + shader), and a small C client for dwl's IPC |
+| `themes/` | One JSON file per theme: window manager, bar, terminal, menu, notifications, cursor, wallpapers |
+| `bin/dwl-*` | Session wrapper, autostart, theme switcher, key sheet, screenshot, clipboard, download |
+| `bin/dot-*` | Tools that do not depend on the session (Drive, send to phone, downloads, file-manager actions, OCR…) |
+| `sddm/` | Login screen theme that follows the active theme |
+| `portal/` | xdg-desktop-portal settings for screen sharing |
+| `config/` | App configs symlinked into `~/.config` by `dot-link` (Alacritty, btop, fastfetch, Starship, environment.d) |
+| `templates/` | Colour templates for Vesktop and Telegram, filled by `dwl-theme` |
+| `wallpapers/omarchy/` | Backgrounds from Omarchy, used as static wallpapers |
+| `extras/` | Pieces installed by hand: Dolphin service menus, systemd user units, `.desktop` launchers, MIME defaults, Firefox Nord theme |
+| `install/` | `arch/install.sh` bootstraps a fresh Arch install; `dwl.sh` builds and installs the desktop |
+| `tests/` | Unit tests for the tools and a headless test that applies every theme |
+| `docs/dwl.md` | The details and the traps (in Turkish) |
+
+## How it fits together
+
+SDDM starts `bin/dwl-session`. It pins wlroots to the right GPU, sets the environment (including `DWL_HOME`, the root of this repo) and runs dwl. dwl starts `bin/dwl-autostart`, which launches the bar, the notification daemon, the polkit agent and the clipboard watcher. Nothing in the installed binary points at the repo: shortcuts and autostart go through `$DWL_HOME`.
+
+`dwl-theme apply <id>` renders one theme JSON into `~/.local/state/dwl-theme/`. dwl watches `dwl.conf` there (colours, border, gaps, animation, corner radius, shadow, blur, cursor) and the bar watches `theme.json`, so both change without a restart. The same command recolours Alacritty, fuzzel, dunst, Qt/KDE/GTK apps, Obsidian, Vesktop, Spotify (spicetify), Telegram and the login screen.
 
 ## Install
 
 ```bash
-git clone https://github.com/savpavi/dotfiles.git ~/dotfiles
-~/dotfiles/bin/dot-link --dry-run   # see what would change
-~/dotfiles/bin/dot-link             # back up existing configs, then symlink
-export PATH="$HOME/dotfiles/bin:$PATH"
+git clone https://github.com/savpavi/dotfiles ~/dotfiles
+~/dotfiles/install/dwl.sh --dry-run   # see what it would do
+~/dotfiles/install/dwl.sh             # packages, build, install, login screen, user links, checks
 ```
 
-On a fresh Arch install (after `archinstall`, as the normal user) `install/arch/install.sh` installs the packages in `install/arch/{pacman,aur,flatpak}.txt`, runs `dot-link` and enables the services. Stages are idempotent and can be named individually; `--dry-run` prints what would happen. The `disks` and `home` stages (fstab entries for my `/srv` disks, home restore from my backup) are opt-in and specific to my machine. VFIO and Looking Glass are not covered.
+On a fresh Arch install, `install/arch/install.sh` does the whole machine (packages, AUR, Flatpaks, config links, services) and runs `dwl.sh` as one of its stages.
 
-`dot-link` moves anything already in `~/.config` to `~/.local/share/dotfiles-backup/<date>/` before linking. `dot-link --unlink` removes the links and copies the repo content back.
+After changing `dwl/dwl.c` or `dwl/config.h`: `install/dwl.sh derle kur`, then log out and in. The bar, the themes and the scripts need no install; the bar reloads when a file is saved.
 
-## savpavi-shell
-
-`config/savpavi-shell/` is a [Quickshell](https://quickshell.org) shell run as the user unit `savpavi-shell.service` (`qs -p ~/dotfiles/config/savpavi-shell`):
-
-- floating bar: workspaces, focused window, media with a cava visualiser, weather (open-meteo), tray, CPU/RAM, Claude usage, Tailscale, phone send, notifications, quick settings, clock with calendar, power menu
-- launcher (Alt+Space): apps, `/` file names via `dsearch`, `dig ` file contents via DigUp, clipboard history via `cliphist` (Super+X)
-- notification daemon and centre, lock screen (PAM), volume OSD, session menu, wallpaper layer and picker, keybind sheet (Super+K)
-- settings window (Super+Alt+S): theme and wallpaper, window gaps/borders, bar widgets, notifications, displays (with a 15-second revert), sound, keyboard repeat and a key tester, default apps, shortcut editor, power and idle lock, system info
-
-Hyprland values the settings window changes live in `config/hypr/settings.json` → `settings.lua` and `user-binds.json` → `user-binds.lua`; each change is checked with `Hyprland --verify-config` and rolled back if it fails. Shell preferences are kept in `~/.config/savpavi-shell/settings.json`.
+## Themes
 
 ```bash
-dot-shell-theme pick        # choose one of the 15 themes (fuzzel)
-dot-shell-theme apply dwm-nord
-dot-shell-theme wall        # next wallpaper of the active theme
+dwl-theme list            # themes, active one marked
+dwl-theme apply kor       # apply one
+dwl-theme pick            # choose in fuzzel (Super+Ctrl+Shift+Space)
+dwl-theme wall next       # next wallpaper of the active theme
+dwl-theme check           # validate the theme files
 ```
 
-`dot-shell-theme` reads `config/savpavi-shell/themes/` (theme list + palettes) and writes the shell palette, Hyprland border colours and cursor, and app colours for GTK 3/4, Qt5/6ct, KDE, Alacritty, Vesktop/Vencord and btop from `templates/apps/`. For KDE apps such as Dolphin it also sets `[UiSettings] ColorScheme` in `~/.config/kdeglobals`: outside Plasma they only load a colour scheme that is selected by name and otherwise fall back to Breeze, ignoring the qt6ct palette. Running KDE apps pick up a theme change after a restart. With waywallen installed it also opens the theme's Wallpaper Engine wallpaper.
+Mürekkep, Kor, Fener, Evangelion, Bakır, Kar, Neon, Yosun, Nord, Catppuccin, Rosé Pine, Monokrom. A new theme is a copy of one JSON with other colours. `live` lists Wallpaper Engine Workshop ids played through waywallen; static wallpapers per theme live outside the repo in `~/.config/dwl-theme/walls.json`.
+
+## Tests
+
+```bash
+python3 -m unittest discover -s tests   # the dot-* tools
+tests/themes.sh                         # every theme in a headless dwl session
+```
+
+`tests/themes.sh` validates the theme files, starts dwl without a screen and with a temporary state directory, applies each theme, switches the wallpaper, and fails if dwl or the bar dies or the bar logs a QML error. It does not touch the running session and it does not look at pixels.
 
 ## Desktop tools
 
 | Command | Does |
 |---|---|
-| `dot-shell <action>` | Shared shortcut actions (launcher, clipboard, lock, bar, volume, settings, themes…) sent to savpavi-shell over Quickshell IPC |
-| `dot-shell-theme` | Themes for savpavi-shell and the apps (see above) |
-| `dot-grab` | Download the focused Brave Origin tab or the clipboard link: video sites via yt-dlp, galleries via gallery-dl, unknown sites try both, then fall back to the direct file links found on the page (videos and archives first, otherwise images; saved under a folder named after the page title). Uses the browser's cookies and reports through notifications (Super+Shift+D tab, Super+Ctrl+D clipboard) |
-| `dot-health` | *Legacy, Niri-only:* read-only desktop health report from the Niri setup (checks `niri validate`, Niri IPC); never restarts or repairs anything. Not updated for Hyprland |
-| `dot-record` | *Legacy, Niri-only:* screen recording via Niri IPC + wf-recorder; the same command starts and stops. Does not work under Hyprland |
-| `dot-resolve [FILE…]` | Prepare a video for DaVinci Resolve: copy the video stream, PCM audio, write `<name>_resolve.mov` |
-| `dot-quicklook FILE` | Quick Look-style preview through GNOME Sushi; available from the Dolphin service menu |
-| `dot-send [FILE…]` | Send files to the paired phone over KDE Connect (file picker without arguments); the bars have a button for it |
-| `dot-drive <action>` | Google Drive mounted at `~/GoogleDrive` with rclone: `status` (JSON for the bar's Drive widget), `link FILE…` copies the Drive link without changing sharing, `share FILE…` creates a public link after confirming, `sync [NAME]` two-way folder sync with rclone bisync, `open`, `web`, `restart` (Dolphin actions for link and share) |
-| `dot-fm <action> FILE…` | Helper behind the Dolphin service menus in `extras/dolphin/`: video (MP4, MP3, lossless audio, GIF, lossless trim), PDF (merge, split, compress), duplicate finder (report only), find/replace rename with preview, which mergerfs disk holds a file, copy path/name/`file://` URI, open a terminal or Neovim in Alacritty. Outputs go next to the original under a new name; nothing is overwritten |
-| `dot-ocr` | Select a region, OCR it with Tesseract, copy the text |
+| `dwl-grab` / `dot-grab` | Download the focused browser tab or the clipboard link: video sites via yt-dlp, galleries via gallery-dl, otherwise the direct file links on the page |
+| `dwl-shot region\|edit\|screen` | Screenshot with grim/slurp, optionally edited in satty |
+| `dwl-clip` | Clipboard history (cliphist) in fuzzel |
+| `dwl-keys` | Key sheet generated from `dwl/config.h` (Super+K) |
+| `dot-drive` | Google Drive through an rclone mount: status for the bar, share links, folder sync |
+| `dot-send [FILE…]` | Send files to the paired phone over KDE Connect; LocalSend for other devices |
+| `dot-wallfx <pick\|map\|warm\|install>` | Maps for the wallpaper transition: `sketch` draws the subject's outline with a pen and lets the rest bleed out, `spread` bleeds in from a few points. `install` sets up the cut-out (rembg in its own venv, about 900 MB) |
+| `dot-fm` | Actions behind the Dolphin service menus: video and PDF tools, copy path, rename, duplicates |
+| `dot-ocr` | Select a region, copy its text (tesseract) |
 | `dot-webapp Name https://url` | Create a Brave Origin web-app launcher (never overwrites) |
-| `dot-keys` | Keybind sheet of savpavi-shell, read from the Hyprland Lua config and its comments (Super+K); `--text` prints it |
-| `dot-spin [-s arch\|donut] [-t SEC] [--fetch]` | Spinning ASCII art: an extruded Arch logo in Arch blue (default) or a Nord-coloured donut; Ctrl+C or `q` quits. `--fetch` prints it next to fastfetch's info and keeps it spinning in the background at that screen spot; a zsh `preexec` hook stops it at the first command (also Ctrl+L, terminal resize, shell exit), since scrolling would move it. About 10% of one core while spinning |
-| `dot-wallfx <pick\|map\|warm\|install>` | Maps for savpavi-shell's wallpaper transition (`wallpaper/WallFx.qml` + `shaders/wallfx.frag`): `sketch` draws the subject's outline with a pen, hatches it in and lets the rest bleed outwards; `spread` (no subject found) bleeds in from a few points. `install` sets up the cut-out (rembg in its own venv, about 900 MB); without it every wallpaper gets `spread`. `warm` precomputes the theme wallpapers |
+| `dot-resolve [FILE…]` | Prepare a video for DaVinci Resolve |
+| `dot-quicklook FILE` | Quick Look-style preview through GNOME Sushi |
+| `dot-spin` | Spinning ASCII Arch logo next to fastfetch |
+| `dot-link` | Symlink `config/*` into `~/.config`, backing up what is there |
 | `dot-askpass` | Zenity askpass helper for `sudo -A` |
 
-`dot-send` needs `kdeconnect` and `zenity`. LocalSend runs hidden in the tray through `extras/systemd/localsend.service` (copy to `~/.config/systemd/user/`, then `systemctl --user enable --now localsend.service`).
+`dot-send` needs `kdeconnect` and `zenity`. `dot-drive` needs `rclone` with a remote named `gdrive:`; the units are in `extras/systemd/`. `dot-grab` needs `yt-dlp[default]` and `gallery-dl`, e.g. via `uv tool install`. `dot-wallfx` needs `python-numpy`, `python-pillow` and, for `install`, `uv`; rebuilding the shader needs `qsb` from `qt6-shadertools`.
 
-`dot-drive` needs `rclone` with a remote named `gdrive:` (your own OAuth client: Desktop app, consent screen External and in production, Drive API enabled). The mount runs from `extras/systemd/rclone-gdrive.service` (copy to `~/.config/systemd/user/`, then `systemctl --user enable --now rclone-gdrive.service`); it exposes rclone's remote control on a socket in `$XDG_RUNTIME_DIR`, which `dot-drive` reads, and notifies when the mount stops unexpectedly.
+## Updating dwl
 
-Folder sync (like "back up folders from my computer" in Drive for Windows) is configured in `~/.config/dot-drive/sync.conf`, one `NAME<TAB>LOCAL<TAB>REMOTE` line per pair with optional filters in `NAME.filter`. The first run and any filter change do a `--resync` automatically; conflicts keep the newer copy and rename the other `.conflictN`. `extras/systemd/dot-drive-sync.{service,timer}` runs it every 10 minutes and `dot-drive-watch.service` (needs `inotify-tools`) triggers it 45 s after local changes settle.
+The compositor source came in with its history through `git subtree`, so upstream changes merge into `dwl/`:
 
-`dot-fm` needs `ffmpeg`, `poppler`, `ghostscript`, `zenity`, `wl-clipboard`, `attr` and `alacritty`.
+```bash
+git subtree pull --prefix=dwl https://codeberg.org/dwl/dwl.git main
+```
 
-`dot-quicklook` needs the `sushi` package.
+`docs/dwl.md` lists which third-party patches and which of my own additions touch the C source, and where conflicts are likely.
 
-`dot-wallfx` needs `python-numpy`, `python-pillow` and, for `install`, `uv`; rebuilding the shader needs `qsb` from `qt6-shadertools`.
+## History
 
-`dot-grab` needs `yt-dlp[default]` (for YouTube's JS challenge) and `gallery-dl`, e.g. via `uv tool install`. Extra gallery-dl domains can be listed one per line in `~/.config/dot-grab/gallery-domains`, outside the repo.
+Until November 2026 this repo held a Hyprland setup with a larger Quickshell shell (savpavi-shell), and before that Niri, Noctalia and DankMaterialShell layers. They are gone from the tree but remain in the git history. dwl lived in a separate repo until it was merged here.
 
-Run the tests with `python3 -m unittest discover -s tests`.
+## Licences and credits
 
-## Credits
-
-- Colour schemes and backgrounds in `themes/`: [basecamp/omarchy](https://github.com/basecamp/omarchy), MIT © David Heinemeier Hansson (see `themes/UPSTREAM.md`).
-- App colour templates: [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell) matugen templates, MIT © Avenge Media LLC (see `templates/apps/LICENSE-dms`).
-- Claude usage script: claudeUsage DMS plugin, MIT © Bogdan Velicu (`config/savpavi-shell/scripts/claude-usage.sh`).
+- Everything outside `dwl/` that I wrote: MIT, see `LICENSE`.
+- `dwl/`: GPL-3.0, with parts under the dwm, sway and tinywl licences (`dwl/LICENSE*`). The patches come from [dwl-patches](https://codeberg.org/dwl/dwl-patches).
+- `templates/vesktop.css`: [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell) matugen template, MIT © Avenge Media LLC (`templates/LICENSE-dms`).
+- `templates/telegram.tdesktop-theme`: matugen-themes, MIT (`templates/LICENSE-matugen-themes`).
+- `bar/scripts/claude-usage.sh`: claudeUsage DMS plugin, MIT © Bogdan Velicu.
+- `wallpapers/omarchy/`: [basecamp/omarchy](https://github.com/basecamp/omarchy), MIT © David Heinemeier Hansson (`wallpapers/omarchy/UPSTREAM.md`).
+- The wallpaper transition was inspired by pocket-dots; no code was taken from it.

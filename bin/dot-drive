@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # dot-drive — rclone ile bağlanan Google Drive (~/GoogleDrive) için durum, link ve paylaşım.
 # Mount: extras/systemd/rclone-gdrive.service (kopya ~/.config/systemd/user), rc soketi $XDG_RUNTIME_DIR/rclone-gdrive.sock.
-# Bar: config/savpavi-shell/bar/DriveWidget.qml. Thunar: "Drive linkini kopyala" / "Drive'da herkese açık paylaş".
+# Bar: bar/Tray.qml + bar/Panel.qml. Dolphin: "Drive linkini kopyala" / "Drive'da herkese açık paylaş".
 # Klasör senkronu (Windows'taki "bilgisayarımdaki klasörler"): ~/.config/dot-drive/sync.conf satırları
 #   AD<TAB>YEREL_KLASÖR<TAB>REMOTE  (filtre: ~/.config/dot-drive/AD.filter), rclone bisync ile çift yönlü.
 #   Tetikleyiciler: extras/systemd/dot-drive-sync.{service,timer} (10 dk) + dot-drive-watch.service (inotify).

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=dwl
 Comment=dwm for Wayland
-Exec=/home/savpavi/Projects/dwl/bin/dwl-session
+Exec=/usr/local/bin/dwl-session
 Type=Application
 DesktopNames=dwl
