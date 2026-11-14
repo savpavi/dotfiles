@@ -14,7 +14,9 @@
 
 Temalar themes/*.json içinde. Uygulanınca ~/.local/state/dwl-theme/ altına
 dwl.conf, theme.json, alacritty.toml, ghostty, fuzzel.ini ve dunstrc üretilir; dwl ve bar bu
-dosyaları izler, yeniden başlatma gerekmez.
+dosyaları izler, yeniden başlatma gerekmez. Ayrıca Obsidian snippet'i
+(<kasa>/.obsidian/snippets/dwl-theme.css, DWL_THEME_OBSIDIAN) ve Vesktop/Vencord temasını
+(themes/savpavi.css, dotfiles şablonundan; host yedeğine girer) yazar.
 """
 import json
 import os
@@ -242,6 +244,25 @@ def host_keep(key):
         man.write_text(json.dumps(m, indent=1))
 
 
+def host_keep_file(f):
+    """Yedek bu dosya listeye girmeden önce alındıysa dosyanın dwl öncesi halini ekler."""
+    import shutil
+    man = HOST / "manifest.json"
+    try:
+        m = json.loads(man.read_text())
+    except (OSError, ValueError):
+        host_save()
+        return
+    if str(f) in m["files"]:
+        return
+    bak = None
+    if f.exists():
+        bak = f"extra-{len(m['files'])}.bak"
+        shutil.copy2(f, HOST / bak)
+    m["files"][str(f)] = bak
+    man.write_text(json.dumps(m, indent=1))
+
+
 def host_restore():
     """dwl'den önceki uygulama renklerini geri koyar ve yedeği siler."""
     import shutil
@@ -449,6 +470,119 @@ inactive_colors={roles(fg, accent, on_accent)}
     kde_notify()
 
 
+# --- Obsidian ve Discord: tema değişince CSS'i yeniden yaz; ikisi de dosyayı izleyip canlı yeniler ---
+OBSIDIAN_VAULTS = [Path(p).expanduser() for p in os.environ.get(
+    "DWL_THEME_OBSIDIAN", "~/Documents/Obsidian/Aktif Kasa").split(":") if p]
+# Discord CSS'i Vencord/Vesktop üzerinden alır. Hyprland'deki dot-shell-theme de aynı
+# savpavi.css'i yazar (aynı şablonla); dwl'nin yazdığı host yedeğine girer, dwl kapanınca geri gelir.
+DISCORD_THEME_FILES = [Path.home() / ".config" / d / "themes/savpavi.css" for d in ("vesktop", "Vencord")]
+DISCORD_TEMPLATE = Path.home() / "dotfiles/templates/apps/vesktop.css"
+
+
+def app_palette(t):
+    term, bar, menu = t["term"], t["bar"], t["menu"]
+    bg, fg = term["bg"], term["fg"]
+    pal = term["palette"]
+    return dict(
+        bg=bg, bg2=menu["bg"], bg3=mix(menu["bg"], "#000000", 0.25), raised=mix(bg, fg, 0.06),
+        hover=mix(bg, fg, 0.10), border=mix(bg, fg, 0.18), fg=fg, muted=mix(fg, bg, 0.35),
+        faint=mix(fg, bg, 0.55), accent=bar["accent"], on_accent=bar["onAccent"],
+        accent2=mix(bar["accent"], fg, 0.25), urgent=bar["urgent"], sel=term["selBg"],
+        red=pal[1], green=pal[2], yellow=pal[3], blue=pal[4], magenta=pal[5], cyan=pal[6],
+        dark=sum(rgb(bg)) < 3 * 128)
+
+
+def render_obsidian(t, name):
+    c = app_palette(t)
+    body = f"""  --background-primary: {c['bg']}; --background-primary-alt: {c['raised']};
+  --background-secondary: {c['bg2']}; --background-secondary-alt: {c['bg3']};
+  --background-modifier-border: {c['border']}; --background-modifier-border-hover: {c['hover']};
+  --background-modifier-hover: {c['hover']}; --background-modifier-active-hover: {c['hover']};
+  --background-modifier-form-field: {c['raised']};
+  --titlebar-background: {c['bg3']}; --titlebar-background-focused: {c['bg3']};
+  --ribbon-background: {c['bg3']}; --tab-container-background: {c['bg2']};
+  --text-normal: {c['fg']}; --text-muted: {c['muted']}; --text-faint: {c['faint']};
+  --text-accent: {c['accent']}; --text-accent-hover: {c['accent2']}; --text-on-accent: {c['on_accent']};
+  --text-selection: {mix(c['sel'], c['bg'], 0.55)}; --text-highlight-bg: {mix(c['yellow'], c['bg'], 0.6)};
+  --interactive-accent: {c['accent']}; --interactive-accent-hover: {c['accent2']};
+  --interactive-normal: {c['raised']}; --interactive-hover: {c['hover']};
+  --color-accent: {c['accent']}; --color-accent-1: {c['accent2']}; --color-accent-2: {c['accent2']};
+  --link-color: {c['accent']}; --link-external-color: {c['cyan']}; --link-unresolved-color: {c['muted']};
+  --h1-color: {c['fg']}; --h2-color: {c['accent']}; --h3-color: {c['accent2']};
+  --h4-color: {c['muted']}; --h5-color: {c['muted']}; --h6-color: {c['faint']};
+  --tag-color: {c['accent']}; --tag-background: {mix(c['accent'], c['bg'], 0.85)};
+  --checkbox-color: {c['accent']}; --checkbox-marker-color: {c['on_accent']};
+  --blockquote-border-color: {c['accent']}; --hr-color: {c['border']};
+  --code-background: {c['raised']}; --code-normal: {c['fg']}; --code-comment: {c['faint']};
+  --code-keyword: {c['magenta']}; --code-string: {c['green']}; --code-function: {c['blue']};
+  --code-value: {c['yellow']}; --code-property: {c['cyan']}; --code-tag: {c['red']};
+  --code-operator: {c['muted']}; --code-punctuation: {c['muted']};
+  --color-red: {c['red']}; --color-green: {c['green']}; --color-yellow: {c['yellow']};
+  --color-blue: {c['blue']}; --color-purple: {c['magenta']}; --color-cyan: {c['cyan']};
+  --graph-node: {c['muted']}; --graph-node-focused: {c['accent']}; --graph-line: {c['border']};"""
+    css = (f"/* dwl-theme: {name}. Elle düzenleme; tema değişince yeniden yazılır. */\n"
+           f"body.theme-dark:not(.is-mobile), body.theme-light:not(.is-mobile) {{\n{body}\n}}\n")
+    for vault in OBSIDIAN_VAULTS:
+        d = vault / ".obsidian/snippets"
+        if not d.is_dir():
+            continue
+        f = d / "dwl-theme.css"
+        tmp = d / ".dwl-theme.css.tmp"
+        tmp.write_text(css)
+        tmp.replace(f)
+        # snippet'i bir kez etkinleştir (Obsidian açıkken de appearance.json değişikliğini okur)
+        ap = vault / ".obsidian/appearance.json"
+        try:
+            conf = json.loads(ap.read_text())
+            on = conf.setdefault("enabledCssSnippets", [])
+            if "dwl-theme" not in on:
+                on.append("dwl-theme")
+                ap.write_text(json.dumps(conf, indent=2) + "\n")
+        except (OSError, ValueError):
+            pass
+
+
+def render_discord(t, name):
+    """dotfiles'taki DMS/matugen şablonunu dwl paletiyle doldurur."""
+    if not DISCORD_TEMPLATE.exists():
+        return
+    c, pal = app_palette(t), t["term"]["palette"]
+    s, fg = c["bg"], c["fg"]
+    roles = {
+        "surface": s, "background": s, "on_surface": fg, "on_background": fg,
+        "surface_variant": c["raised"], "on_surface_variant": c["muted"],
+        "surface_container_lowest": c["bg3"], "surface_container_low": mix(s, fg, 0.03),
+        "surface_container": c["bg2"], "surface_container_high": mix(s, fg, 0.08),
+        "surface_container_highest": mix(s, fg, 0.12),
+        "outline": mix(c["muted"], s, 0.45), "outline_variant": c["border"],
+        "primary": c["accent"], "on_primary": c["on_accent"],
+        "secondary": pal[4], "on_secondary": s, "tertiary": pal[5], "on_tertiary": s,
+        "error": c["urgent"], "on_error": s,
+    }
+    for k in ("primary", "secondary", "tertiary", "error"):
+        roles[k + "_container"] = mix(roles[k], s, 0.6)
+        roles["on_" + k + "_container"] = fg
+
+    def sub(m):
+        h = roles.get(m.group(1), c["accent"]).lstrip("#").lower()
+        f = m.group(2)
+        if f == "hex":
+            return "#" + h
+        if f == "hex_stripped":
+            return h
+        return str(int(h[{"red": 0, "green": 2, "blue": 4}[f]:][:2], 16))
+
+    import re
+    css = re.sub(r"\{\{\s*colors\.(\w+)\.\w+\.(hex_stripped|hex|red|green|blue)\s*\}\}", sub,
+                 DISCORD_TEMPLATE.read_text())
+    for f in DISCORD_THEME_FILES:
+        if f.parent.is_dir():
+            host_keep_file(f)
+            tmp = f.with_name("." + f.name + ".tmp")
+            tmp.write_text(css)
+            tmp.replace(f)
+
+
 def quiet(*cmd):
     try:
         subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
@@ -470,6 +604,12 @@ def apply(tid, live=True):
             quiet("dunstctl", "reload", str(STATE / "dunstrc"))
         quiet("pkill", "-USR2", "-f", "^ghostty .*dwl-theme/ghostty")
         render_apps(all_[tid])
+        name = all_[tid].get("name", tid)
+        for fn in (render_obsidian, render_discord):
+            try:
+                fn(all_[tid], name)
+            except OSError as e:
+                print(f"dwl-theme: {fn.__name__}: {e}", file=sys.stderr)
         wall_async()
 
 

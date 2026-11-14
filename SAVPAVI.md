@@ -35,7 +35,7 @@ kaydedilince kendini yeniden yükler.
 
 ## Temalar
 
-Sekiz tema var: Mürekkep, Kor, Fener, Evangelion, Bakır, Kar, Neon, Yosun.
+On iki tema var: Mürekkep, Kor, Fener, Evangelion, Bakır, Kar, Neon, Yosun, Nord, Catppuccin, Rosé Pine, Monokrom.
 
 - Seç: Super+Ctrl+Shift+Space, bardaki palet düğmesi ya da `dwl-theme apply KIMLIK`.
 - Tema değişince birlikte dönenler: pencere kenarlığı ve boşluğu, animasyon süresi, bar düzeni,
