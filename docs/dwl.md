@@ -151,9 +151,22 @@ Bu, upstream'deki yeni commit'leri `dwl/` altına birleştirir. Derledikten sonr
 
 Deneme (14 Kas 2026, geçici çalışma ağacında, sonra iptal edildi): komut çalışıyor, tabanı (v0.9) doğru
 buluyor. O gün upstream `main` v0.9'dan 75 commit ilerideydi (0.10-dev, yine wlroots 0.20) ve birleştirme
-16 çakışma bloğu verdi: `dwl.c` 13, `client.h` 2, `config.def.h` 1. Yani güncelleme mekanik olarak hazır,
-ama elle çözülecek gerçek bir iş. Geliştirme dalı yerine sürüm etiketini beklemek daha sakin bir yol:
-`main` yerine etiket adı verilir (ör. `v0.10`).
+16 çakışma bloğu verdi: `dwl.c` 13, `client.h` 2, `config.def.h` 1.
+
+Çakışmalar metin düzeyinde değil. Upstream, v0.9'dan sonra yeniden boyutlandırmayı baştan yazdı
+("transaction": `transactionschedule`, `transactioncommit`, `applygeom`, `snapshot`, `c->current`,
+`c->resize_serial`) ve `focusclient` imzasını değiştirdi. Yamalar bu duruma göre şöyle:
+
+| Yama | Güncel `main`e uyuyor mu (kuru deneme) |
+|---|---|
+| autostart | evet |
+| scenefx | zaten `main` için yazılmış (`applygeom`, `snapshot`, `c->current` kullanır; v0.9'a ben uyarlamıştım) |
+| ipc, monitorconfig | ikişer parça uymuyor, küçük uyarlama |
+| animation | HAYIR. Yamanın son sürümü `e203845` (29 Eyl 2026) içindir, transaction düzeninden önce; 6 parçası uymuyor |
+
+Yani `main`e geçmek, animasyon yamasını yeni düzene elle taşımak (ya da animasyondan vazgeçmek) demek.
+Karar (14 Kas 2026): BEKLE. v0.10 sürümü ve animasyon yamasının yeni sürümü çıkınca yeniden bakılır;
+o zaman `main` yerine etiket adı verilir (ör. `v0.10`). O güne kadar v0.9 tabanında kalınır.
 
 ## Denetim ve test
 
