@@ -1,4 +1,4 @@
-// Düz şerit: Mürekkep ve Birim 01. Blok tag'ler, başlık, sağda durum hücreleri.
+// Düz şerit: Mürekkep ve Evangelion. Blok tag'ler, başlık, sağda durum hücreleri.
 import QtQuick
 
 Item {
