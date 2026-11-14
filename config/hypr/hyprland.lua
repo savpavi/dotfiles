@@ -51,7 +51,7 @@ local menu        = "dot-shell launcher"
 -- Or execute your favorite apps at launch like this:
 --
 hl.on("hyprland.start", function ()
-  -- shell: savpavi-shell user servisi (graphical-session.target ile başlar, 13 Eki 2026); DMS yedek: SUPER+ALT+S / dot-shell switch
+  -- shell: savpavi-shell user servisi (graphical-session.target ile başlar, 13 Eki 2026)
   hl.exec_cmd("systemctl --user start hyprpolkitagent")  -- parola/yetki pencereleri
   hl.exec_cmd("hypridle")
   hl.exec_cmd("solaar --window=hide")  -- fare DPI/tekerlek ayarlari; Plasma'da xdg autostart yapiyor, Hyprland'da elle
@@ -408,7 +408,7 @@ hl.window_rule({
 hl.bind(mainMod .. " + CTRL + SHIFT + space", hl.dsp.exec_cmd("dot-shell themes"))  -- Tema seç
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("dot-shell wallpapers"))  -- Duvar kağıdı seç
 hl.bind(mainMod .. " + CTRL + SHIFT + T", hl.dsp.exec_cmd("dot-shell random"))  -- Rastgele tema
-hl.bind(mainMod .. " + ALT + S", hl.dsp.exec_cmd("dot-shell settings"))  -- Shell ayarları (DMS'e geçiş de burada)
+hl.bind(mainMod .. " + ALT + S", hl.dsp.exec_cmd("dot-shell settings"))  -- Shell ayarları
 
 -- Hide the XWayland screen-sharing helper (Hyprland wiki recommendation).
 hl.window_rule({

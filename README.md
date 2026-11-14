@@ -1,6 +1,6 @@
 # dotfiles
 
-My Fedora 44 Wayland desktop: Hyprland with my own Quickshell shell, **savpavi-shell** (bar, launcher, notifications, lock screen, OSD, settings), DankMaterialShell kept as a fallback, a theme switcher that recolours the shell and a dozen apps at once, and a set of small desktop tools.
+My Arch Linux Wayland desktop: Hyprland with my own Quickshell shell, **savpavi-shell** (bar, launcher, notifications, lock screen, OSD, settings), a theme switcher that recolours the shell and a dozen apps at once, and a set of small desktop tools.
 
 These are personal configs. Monitor names (`DP-1`, `DP-3`), paths and app choices fit my machine, so read before you copy.
 
@@ -8,10 +8,10 @@ These are personal configs. Monitor names (`DP-1`, `DP-3`), paths and app choice
 
 | Path | What it holds |
 |---|---|
-| `config/` | App configs, symlinked into `~/.config/<name>` by `dot-link` (Hyprland, savpavi-shell, DankMaterialShell, Alacritty, Waybar, Rofi, SwayNC, btop, fastfetch, Starship, …) |
+| `config/` | App configs, symlinked into `~/.config/<name>` by `dot-link` (Hyprland, savpavi-shell, Alacritty, btop, fastfetch, Starship) |
 | `bin/` | `dot-*` helper scripts (add to `PATH`) |
-| `themes/` | 22 colour themes adapted from Omarchy |
-| `templates/` | `*.tpl` files rendered by `dot-theme`; `templates/apps/` app colour templates filled by `dot-shell-theme` |
+| `themes/` | Omarchy colour schemes and backgrounds, kept as a wallpaper source (the `dot-theme` switcher that used them was removed in November 2026) |
+| `templates/` | `templates/apps/`: app colour templates filled by `dot-shell-theme` |
 | `tests/` | Unit tests for the helper scripts |
 | `extras/` | Pieces installed by hand: Firefox Nord theme, `.desktop` launchers, MIME defaults, systemd user units, Dolphin service menus |
 | `shell/` | Bash snippets for `~/.bashrc.d/` |
@@ -49,30 +49,18 @@ dot-shell-theme wall        # next wallpaper of the active theme
 
 `dot-shell-theme` reads `config/savpavi-shell/themes/` (theme list + palettes) and writes the shell palette, Hyprland border colours and cursor, and app colours for GTK 3/4, Qt5/6ct, KDE, Alacritty, Vesktop/Vencord and btop from `templates/apps/`. For KDE apps such as Dolphin it also sets `[UiSettings] ColorScheme` in `~/.config/kdeglobals`: outside Plasma they only load a colour scheme that is selected by name and otherwise fall back to Breeze, ignoring the qt6ct palette. Running KDE apps pick up a theme change after a restart. With waywallen installed it also opens the theme's Wallpaper Engine wallpaper.
 
-## Themes (dot-theme, older)
-
-```bash
-dot-theme list            # available themes, active one marked
-dot-theme set gruvbox     # apply a theme
-dot-theme next            # cycle
-dot-theme menu            # pick with rofi
-dot-theme reapply         # re-render the active theme
-```
-
-`dot-theme` renders `templates/` with the theme's `colors.toml` and writes the result for Kitty, Alacritty, btop, Rofi, SwayNC, wlogout, Hyprlock and Hyprland. It predates savpavi-shell, whose `dot-shell-theme` now drives the daily colours. Wallpapers are not stored here.
-
 ## Desktop tools
 
 | Command | Does |
 |---|---|
-| `dot-shell <action>` | Shared shortcut actions (launcher, clipboard, lock, bar, volume, settings, themes…) routed to savpavi-shell or the DMS fallback; `dot-shell switch` toggles between them |
+| `dot-shell <action>` | Shared shortcut actions (launcher, clipboard, lock, bar, volume, settings, themes…) sent to savpavi-shell over Quickshell IPC |
 | `dot-shell-theme` | Themes for savpavi-shell and the apps (see above) |
 | `dot-grab` | Download the focused Brave Origin tab or the clipboard link: video sites via yt-dlp, galleries via gallery-dl, unknown sites try both, then fall back to the direct file links found on the page (videos and archives first, otherwise images; saved under a folder named after the page title). Uses the browser's cookies and reports through notifications (Super+Shift+D tab, Super+Ctrl+D clipboard) |
 | `dot-health` | *Legacy, Niri-only:* read-only desktop health report from the Niri setup (checks `niri validate`, Niri IPC); never restarts or repairs anything. Not updated for Hyprland |
 | `dot-record` | *Legacy, Niri-only:* screen recording via Niri IPC + wf-recorder; the same command starts and stops. Does not work under Hyprland |
 | `dot-resolve [FILE…]` | Prepare a video for DaVinci Resolve: copy the video stream, PCM audio, write `<name>_resolve.mov` |
 | `dot-quicklook FILE` | Quick Look-style preview through GNOME Sushi; available from the Dolphin service menu |
-| `dot-send [FILE…]` | Send files to the paired phone over KDE Connect (file picker without arguments); bar widget `dotSend`: left click sends, right click opens LocalSend |
+| `dot-send [FILE…]` | Send files to the paired phone over KDE Connect (file picker without arguments); the bars have a button for it |
 | `dot-drive <action>` | Google Drive mounted at `~/GoogleDrive` with rclone: `status` (JSON for the bar's Drive widget), `link FILE…` copies the Drive link without changing sharing, `share FILE…` creates a public link after confirming, `sync [NAME]` two-way folder sync with rclone bisync, `open`, `web`, `restart` (Dolphin actions for link and share) |
 | `dot-fm <action> FILE…` | Helper behind the Dolphin service menus in `extras/dolphin/`: video (MP4, MP3, lossless audio, GIF, lossless trim), PDF (merge, split, compress), duplicate finder (report only), find/replace rename with preview, which mergerfs disk holds a file, copy path/name/`file://` URI, open a terminal or Neovim in Alacritty. Outputs go next to the original under a new name; nothing is overwritten |
 | `dot-ocr` | Select a region, OCR it with Tesseract, copy the text |
@@ -100,6 +88,6 @@ Run the tests with `python3 -m unittest discover -s tests`.
 
 ## Credits
 
-- Theme system and colour schemes: [basecamp/omarchy](https://github.com/basecamp/omarchy), MIT © David Heinemeier Hansson (see `themes/UPSTREAM.md`).
+- Colour schemes and backgrounds in `themes/`: [basecamp/omarchy](https://github.com/basecamp/omarchy), MIT © David Heinemeier Hansson (see `themes/UPSTREAM.md`).
 - App colour templates: [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell) matugen templates, MIT © Avenge Media LLC (see `templates/apps/LICENSE-dms`).
 - Claude usage script: claudeUsage DMS plugin, MIT © Bogdan Velicu (`config/savpavi-shell/scripts/claude-usage.sh`).

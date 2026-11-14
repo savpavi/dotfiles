@@ -3,20 +3,12 @@
 *.tmp
 .cache/
 
-# dot-theme tarafından üretilen dosyalar (tema değiştikçe yeniden yazılır)
+# Kaldırılan dot-theme'in (Kas 2026) eski makinelerde bıraktığı üretilmiş dosyalar
 config/alacritty/active-theme.toml
 config/btop/themes/dot-theme.theme
-config/waybar/colors.css
-config/rofi/colors.rasi
-config/swaync/colors.css
-config/wlogout/colors.css
 config/hypr/hypr-theme.conf
 config/hypr/hyprland-theme.lua
 config/hypr/hyprtoolkit.conf
-config/swayosd/style.css
-
-# Niri yerel yedekleri
-config/niri/*.bak*
 
 # Python test önbelleği
 __pycache__/
@@ -26,11 +18,9 @@ __pycache__/
 # Yerel yedekler
 *.bak-*
 
-# DankMaterialShell tarafından üretilen dosyalar ve yedekleri
-config/hypr/dms/colors.lua
+# Hyprland config yedekleri
 config/hypr/hyprland.lua.backup*
 config/hypr/hyprland.lua.dmsbackup*
-config/hypr/dms/cursor.lua
 
 # dot-shell-theme tarafından üretilen dosyalar (savpavi-shell)
 config/hypr/savpavi/

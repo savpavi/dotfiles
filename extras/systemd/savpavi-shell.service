@@ -1,0 +1,14 @@
+[Unit]
+Description=savpavi-shell (Quickshell desktop shell)
+PartOf=graphical-session.target
+After=graphical-session.target
+# dwl oturumunun kendi barı var; orada başlama (dwl-session XDG_CURRENT_DESKTOP=dwl verir).
+ConditionEnvironment=!XDG_CURRENT_DESKTOP=dwl
+
+[Service]
+ExecStart=/usr/bin/qs -p %h/dotfiles/config/savpavi-shell
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target

@@ -7,7 +7,7 @@ Kaynak: config/savpavi-shell/themes (themes.json + palettes/, Noctalia'dan taş�
   dot-shell-theme apply <id>   temayı uygula (palet + mod + duvar kağıdı + hareketli duvar)
   dot-shell-theme wall [N]     aktif temanın sıradaki (ya da N'inci) duvar kağıdı
   dot-shell-theme walls        aktif temanın duvar kağıtları (JSON, seçici için)
-  dot-shell-theme apps         aktif temanın renklerini uygulamalara yaz (DMS yokken apply bunu kendi yapar)
+  dot-shell-theme apps         aktif temanın renklerini uygulamalara yaz (apply bunu kendi yapar)
   dot-shell-theme lives [ara]  aktif temanın hareketli duvarları ya da kütüphanede arama (JSON)
   dot-shell-theme live <id|off>  hareketli duvarı Workshop id ile seç ya da kapat
   dot-shell-theme live-active  aktif temanın hareketli duvarı var mı (çıkış kodu)
@@ -51,7 +51,7 @@ def mix(a, b, t):
     return '#%02x%02x%02x' % tuple(c)
 
 def convert(p):
-    """Palet modu -> shell renk anahtarları (DMS custom theme biçimi; DMS yedeği de okur)."""
+    """Palet modu -> shell renk anahtarları (DMS custom theme biçimi, shell bunu okur)."""
     s, v, term = p['mSurface'], p['mSurfaceVariant'], p.get('terminal', {}).get('normal', {})
     return {
         'primary': p['mPrimary'], 'primaryText': p['mOnPrimary'],
@@ -72,7 +72,7 @@ def themes():
     return json.loads(THEMES.read_text())['themes']
 
 # Uygulama renkleri: templates/apps şablonları (DMS matugen şablonları, MIT)
-# temanın kendi paletiyle doldurulur. Yedek shell DMS çalışırken bu işi DMS yapar.
+# temanın kendi paletiyle doldurulur.
 APP_TEMPLATES = HOME/'dotfiles/templates/apps'
 CFG, DATA = HOME/'.config', HOME/'.local/share'
 APP_OUTPUTS = [
@@ -213,9 +213,6 @@ def render_apps(tid, mode):
     sp.run(['gsettings', 'set', 'org.gnome.desktop.interface', 'color-scheme',
             'prefer-light' if mode == 'light' else 'prefer-dark'], capture_output=True)
 
-def dms_running():
-    return sp.run(['pgrep', '-f', 'dms run'], capture_output=True).returncode == 0
-
 def build():
     OUT.mkdir(parents=True, exist_ok=True)
     for t in themes():
@@ -226,11 +223,6 @@ def build():
                 data[mode] = convert(pal[mode])
         (OUT/f"{t['id']}.json").write_text(json.dumps(data, indent=2, ensure_ascii=False))
     print(f"{len(themes())} tema -> {OUT}")
-
-def dms(*args):
-    # yalnız yedek shell DMS açıkken; değilse boşa çağrı yapma
-    if dms_running():
-        sp.run(['dms', 'ipc', 'call', *args], capture_output=True, text=True, timeout=10)
 
 def load_state():
     try:
@@ -247,11 +239,6 @@ def apply(tid, wall_index=None):
         build()
     walls = t.get('wallpapers') or []
     i = t.get('wallpaperIndex', 0) if wall_index is None else wall_index
-    dms('theme', t.get('mode', 'dark'))
-    dms('settings', 'set', 'customThemeFile', str(path))
-    dms('settings', 'set', 'currentThemeName', 'custom')
-    if walls:
-        dms('wallpaper', 'set', walls[i % len(walls)])
     item = live(tid, i)
     if wall_index is None and tid in CURSORS:
         set_cursor(CURSORS[tid])
@@ -261,7 +248,7 @@ def apply(tid, wall_index=None):
     if item is not None:
         # ExecCondition durum dosyasını okuyor; servis yazımdan sonra başlamalı
         show_live(item)
-    if wall_index is None and not dms_running():
+    if wall_index is None:
         render_apps(tid, t.get('mode', 'dark'))
 
 def set_cursor(name):
@@ -284,26 +271,6 @@ def set_cursor(name):
         f'hl.env("HYPRCURSOR_THEME", "{HYPRCURSORS.get(name, name)}")\n'
         f'hl.env("XCURSOR_THEME", "{name}")\n'
         f'hl.env("HYPRCURSOR_SIZE", "{CURSOR_SIZE}")\nhl.env("XCURSOR_SIZE", "{CURSOR_SIZE}")\n')
-    if not dms_running():
-        return
-    # Yedek shell DMS açıksa onun imleç ayarını da güncelle.
-    # DMS IPC nesne ayarı yazamıyor; dosyayı düzenle. Önceki IPC set'lerinin
-    # gecikmeli kaydı dosyayı ezebildiği için DMS değeri alana kadar tekrarla.
-    cfg = HOME/'.config/DankMaterialShell/settings.json'
-    for _ in range(8):
-        time.sleep(0.4)
-        r = sp.run(['dms', 'ipc', 'call', 'settings', 'get', 'cursorSettings'], capture_output=True, text=True, timeout=10)
-        try:
-            if json.loads(r.stdout).get('theme') == name:
-                return
-        except ValueError:
-            pass
-        try:
-            d = json.loads(cfg.read_text())
-            d.setdefault('cursorSettings', {})['theme'] = name
-            cfg.write_text(json.dumps(d, indent=2, ensure_ascii=False))
-        except (OSError, ValueError):
-            return
 
 # Hareketli duvar: waywallen (Flatpak) + waywallen-layer-shell user servisi.
 # Tema -> Wallpaper Engine Workshop id listesi kişisel; repoda değil.
@@ -345,7 +312,7 @@ def live_pick(tid, i):
     return None
 
 def live(tid, i):
-    """Hareketli duvarı uygular; yoksa waywallen'i gizleyip DMS duvarını bırakır."""
+    """Hareketli duvarı uygular; yoksa waywallen'i gizler (statik duvar görünür)."""
     if not live_ids(tid):
         item = None
     else:

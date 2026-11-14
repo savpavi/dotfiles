@@ -10,7 +10,7 @@
 # Default stages: preflight pkgs aur flatpak link migrate shell services tools check
 # Opt-in stages:  disks (fstab entries for /srv), home (restore ~ from the Lexar backup)
 #
-# Not covered here: VFIO passthrough, Looking Glass, DankMaterialShell + dsearch, Hopper, the Craft apps.
+# Not covered here: VFIO passthrough, Looking Glass, dsearch, Hopper, the Craft apps.
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

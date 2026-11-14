@@ -41,13 +41,4 @@ Column {
             onClicked: Quickshell.execDetached(["sh", "-c", "printf '{}' > \"$HOME/.local/state/savpavi-shell/launcher.json\""])
         }
     }
-    SettingRow {
-        title: "Yedek shell"
-        hint: "DankMaterialShell'e geçer; dönmek için onun ayarlarından ya da `dot-shell switch`"
-        BarButton {
-            Icon { name: "swap_horiz"; anchors.verticalCenter: parent.verticalCenter }
-            Label { text: "DMS'e geç"; anchors.verticalCenter: parent.verticalCenter }
-            onClicked: Quickshell.execDetached(["dot-shell", "switch"])
-        }
-    }
 }
