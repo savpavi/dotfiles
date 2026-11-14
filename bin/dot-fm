@@ -1,0 +1,272 @@
+#!/usr/bin/env bash
+# dot-fm — Dolphin sağ tık menülerinin (extras/dolphin/savpavi-*.desktop) ortak yardımcısı.
+# Hiçbir şey asıl dosyanın üstüne yazmaz: çıktılar yanına yeni adla çıkar, yeniden adlandırma
+# önizleme + onay ister, kopya bulucu yalnız rapor verir. (14.11.2026)
+# Gerekli: ffmpeg/ffprobe, poppler (pdfunite, pdfseparate), ghostscript, zenity, libnotify,
+#          wl-clipboard, attr (getfattr, mergerfs için), alacritty, nvim.
+#
+# Kullanım: dot-fm video mp4|mp3|audio|gif|trim DOSYA...
+#           dot-fm pdf merge|split|compress DOSYA...
+#           dot-fm dupes KLASÖR...        aynı içerikli dosyaları listele
+#           dot-fm rename DOSYA...        adlarda bul/değiştir
+#           dot-fm where DOSYA...         mergerfs havuzunda hangi diskte
+#           dot-fm copy path|uri|name DOSYA...
+#           dot-fm term DOSYA|KLASÖR      Alacritty'de o klasörde aç
+#           dot-fm nvim DOSYA...          Alacritty içinde nvim ile aç
+set -u -o pipefail
+
+APP="Dosya işlemleri"
+notify() { notify-send -a "$APP" -i system-file-manager "$@" 2>/dev/null || true; }
+die() { notify -u critical "$1"; echo "dot-fm: $1" >&2; exit 1; }
+need() { command -v "$1" >/dev/null 2>&1 || die "$1 kurulu değil"; }
+
+# "a.mp4" + "-kesit" + "mp4" -> "a-kesit.mp4"; varsa "a-kesit-2.mp4" ...
+outname() {
+  local src=$1 tag=$2 ext=$3 base out n=2 name
+  # Uzantıyı yalnız dosya adından kes ("./birlesik" ya da "a.b/c" gibi yollar bozulmasın)
+  name=${src##*/}
+  if [[ $name == ?*.* ]]; then base="${src%.*}"; else base=$src; fi
+  out="$base$tag.$ext"
+  while [[ -e $out ]]; do out="$base$tag-$n.$ext"; n=$((n + 1)); done
+  printf '%s' "$out"
+}
+
+# Toplu işlerde sonuç bildirimi
+report() {
+  local what=$1 ok=$2 fail=$3
+  if ((fail)); then notify -u critical "$what: $ok tamam, $fail başarısız"
+  else notify "$what: $ok dosya hazır"; fi
+}
+
+ff() { ffmpeg -hide_banner -loglevel error -nostdin "$@"; }
+
+video() {
+  local mode=$1; shift
+  need ffmpeg
+  local ok=0 fail=0 f out codec ext start end width fps
+  case $mode in
+    gif)
+      local form
+      form=$(zenity --forms --title="GIF yap" --text="Boş bırakılan alan varsayılanı kullanır" \
+        --add-entry="Başlangıç (sn ya da SS:DD:SS, varsayılan 0)" \
+        --add-entry="Süre (sn, varsayılan 5)" \
+        --add-entry="Genişlik (px, varsayılan 480)" \
+        --add-entry="FPS (varsayılan 12)" --separator='|') || exit 0
+      IFS='|' read -r start dur width fps <<<"$form"
+      start=${start:-0}; dur=${dur:-5}; width=${width:-480}; fps=${fps:-12}
+      ;;
+    trim)
+      local form
+      form=$(zenity --forms --title="Kırp" --text="Kayıpsız kesit (anahtar kareye yuvarlanır)" \
+        --add-entry="Başlangıç (SS:DD:SS ya da sn)" \
+        --add-entry="Bitiş (SS:DD:SS ya da sn, boş = sona kadar)" --separator='|') || exit 0
+      IFS='|' read -r start end <<<"$form"
+      [[ -n $start ]] || die "Başlangıç gerekli"
+      ;;
+  esac
+  for f in "$@"; do
+    [[ -f $f ]] || continue
+    case $mode in
+      mp4)
+        out=$(outname "$f" "-h264" mp4)
+        ff -i "$f" -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -c:a aac -b:a 192k \
+          -movflags +faststart "$out" ;;
+      mp3)
+        out=$(outname "$f" "" mp3)
+        ff -i "$f" -vn -c:a libmp3lame -q:a 2 "$out" ;;
+      audio)
+        # Sesi yeniden kodlamadan çıkar; kapsayıcı kodeğe göre seçilir.
+        codec=$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of csv=p=0 "$f")
+        case $codec in
+          aac) ext=m4a ;; mp3) ext=mp3 ;; opus) ext=opus ;; vorbis) ext=ogg ;; flac) ext=flac ;;
+          "") fail=$((fail + 1)); continue ;;
+          *) ext=mka ;;
+        esac
+        out=$(outname "$f" "" "$ext")
+        ff -i "$f" -vn -c:a copy "$out" ;;
+      gif)
+        out=$(outname "$f" "" gif)
+        ff -ss "$start" -t "$dur" -i "$f" \
+          -vf "fps=$fps,scale=$width:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4" \
+          -loop 0 "$out" ;;
+      trim)
+        out=$(outname "$f" "-kesit" "${f##*.}")
+        if [[ -n $end ]]; then ff -ss "$start" -to "$end" -i "$f" -c copy -map 0 "$out"
+        else ff -ss "$start" -i "$f" -c copy -map 0 "$out"; fi ;;
+      *) die "bilinmeyen video işlemi: $mode" ;;
+    esac
+    if [[ $? -eq 0 && -s $out ]]; then ok=$((ok + 1)); else fail=$((fail + 1)); rm -f "$out"; fi
+  done
+  report "Video ($mode)" "$ok" "$fail"
+}
+
+pdf() {
+  local mode=$1; shift
+  local ok=0 fail=0 f out
+  case $mode in
+    merge)
+      need pdfunite
+      (($# >= 2)) || die "Birleştirmek için en az iki PDF seç"
+      out=$(outname "$(dirname "$1")/birlesik" "" pdf)
+      # Dolphin seçim sırasını korumaz; ada göre sırala ki sonuç tahmin edilebilir olsun.
+      local sorted=()
+      mapfile -t sorted < <(printf '%s\n' "$@" | sort -V)
+      if pdfunite "${sorted[@]}" "$out"; then notify "Birleştirildi: $(basename "$out")"
+      else die "Birleştirme başarısız"; fi
+      return ;;
+    split)
+      need pdfseparate
+      for f in "$@"; do
+        local dir="${f%.*}-sayfalar"
+        mkdir -p "$dir" && pdfseparate "$f" "$dir/$(basename "${f%.*}")-%03d.pdf" \
+          && ok=$((ok + 1)) || fail=$((fail + 1))
+      done ;;
+    compress)
+      need gs
+      for f in "$@"; do
+        out=$(outname "$f" "-kucuk" pdf)
+        if gs -q -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite -dCompatibilityLevel=1.6 \
+             -dPDFSETTINGS=/ebook -sOutputFile="$out" "$f" && [[ -s $out ]]; then
+          # Küçülmediyse işe yaramaz kopyayı bırakma
+          if (($(stat -c %s "$out") >= $(stat -c %s "$f"))); then rm -f "$out"; notify "$(basename "$f") zaten küçük, dokunulmadı"
+          else ok=$((ok + 1)); fi
+        else fail=$((fail + 1)); rm -f "$out"; fi
+      done ;;
+    *) die "bilinmeyen pdf işlemi: $mode" ;;
+  esac
+  report "PDF ($mode)" "$ok" "$fail"
+}
+
+dupes() {
+  local tmp
+  tmp=$(mktemp --suffix=.txt)
+  notify "Kopyalar aranıyor…"
+  python3 - "$@" >"$tmp" <<'PY'
+import hashlib, os, sys
+from collections import defaultdict
+by_size = defaultdict(list)
+for root in sys.argv[1:]:
+    if os.path.isfile(root):
+        root = os.path.dirname(root)
+    for d, _, files in os.walk(root):
+        for n in files:
+            p = os.path.join(d, n)
+            try:
+                if os.path.islink(p): continue
+                s = os.path.getsize(p)
+            except OSError:
+                continue
+            if s: by_size[s].append(p)
+def digest(p, limit=None):
+    h = hashlib.blake2b(digest_size=16)
+    with open(p, "rb") as f:
+        if limit:
+            h.update(f.read(limit))
+        else:
+            for b in iter(lambda: f.read(1 << 20), b""): h.update(b)
+    return h.hexdigest()
+groups = []
+for size, paths in by_size.items():
+    if len(paths) < 2: continue
+    head = defaultdict(list)          # önce ilk 64 KB, sonra tam içerik
+    for p in paths:
+        try: head[digest(p, 65536)].append(p)
+        except OSError: pass
+    for cand in head.values():
+        if len(cand) < 2: continue
+        full = defaultdict(list)
+        for p in cand:
+            try: full[digest(p)].append(p)
+            except OSError: pass
+        groups += [(size, g) for g in full.values() if len(g) > 1]
+groups.sort(key=lambda g: g[0] * (len(g[1]) - 1), reverse=True)
+waste = sum(s * (len(g) - 1) for s, g in groups)
+def human(n):
+    for u in ("B", "KB", "MB", "GB", "TB"):
+        if n < 1024: return f"{n:.1f} {u}"
+        n /= 1024
+print(f"{len(groups)} kopya grubu, boşa giden alan: {human(waste)}\n(Hiçbir şey silinmedi.)\n")
+for s, g in groups:
+    print(f"── {human(s)} × {len(g)}")
+    for p in sorted(g): print("   " + p)
+    print()
+PY
+  zenity --text-info --title="Kopya dosyalar" --width=900 --height=600 --filename="$tmp" >/dev/null 2>&1
+  rm -f "$tmp"
+}
+
+rename_files() {
+  local form find repl f dir name new preview="" count=0
+  form=$(zenity --forms --title="Toplu yeniden adlandır" --text="Adlarda geçen metni değiştir (uzantı dahil)" \
+    --add-entry="Bul" --add-entry="Yerine (boş = sil)" --separator='|') || exit 0
+  IFS='|' read -r find repl <<<"$form"
+  [[ -n $find ]] || die "Bul alanı boş"
+  local -a from=() to=()
+  for f in "$@"; do
+    dir=$(dirname "$f"); name=$(basename "$f")
+    new=${name//"$find"/"$repl"}
+    [[ $new == "$name" || -z $new ]] && continue
+    from+=("$f"); to+=("$dir/$new")
+    preview+="$name  →  $new"$'\n'
+    count=$((count + 1))
+  done
+  ((count)) || { notify "Hiçbir adda \"$find\" yok"; exit 0; }
+  zenity --question --title="Onayla" --width=700 \
+    --text="$count dosya yeniden adlandırılacak (var olan dosyanın üstüne yazılmaz):\n\n$(printf '%s' "$preview" | head -n 30 | sed 's/&/\&amp;/g; s/</\&lt;/g')" || exit 0
+  local ok=0 fail=0 i
+  for i in "${!from[@]}"; do
+    if [[ -e ${to[$i]} ]]; then fail=$((fail + 1)); continue; fi
+    mv -n -- "${from[$i]}" "${to[$i]}" && ok=$((ok + 1)) || fail=$((fail + 1))
+  done
+  report "Yeniden adlandırma" "$ok" "$fail"
+}
+
+where() {
+  need getfattr
+  local f p out=""
+  for f in "$@"; do
+    p=$(getfattr -n user.mergerfs.allpaths --only-values -- "$f" 2>/dev/null | tr '\0' '\n')
+    out+="$(basename "$f"):"$'\n'"${p:-  (mergerfs havuzunda değil)}"$'\n\n'
+  done
+  zenity --info --title="Hangi diskte?" --width=600 --no-markup --text="$out" >/dev/null 2>&1
+}
+
+copy() {
+  local mode=$1; shift
+  need wl-copy
+  local f lines=()
+  for f in "$@"; do
+    case $mode in
+      path) lines+=("$f") ;;
+      name) lines+=("$(basename "$f")") ;;
+      uri) lines+=("$(python3 -c 'import pathlib,sys; print(pathlib.Path(sys.argv[1]).absolute().as_uri())' "$f")") ;;
+    esac
+  done
+  printf '%s\n' "${lines[@]}" | head -c -1 | wl-copy
+  notify "Panoya kopyalandı (${#lines[@]})"
+}
+
+term() {
+  local d=${1:-$PWD}
+  [[ -d $d ]] || d=$(dirname "$d")
+  setsid -f alacritty --working-directory "$d" >/dev/null 2>&1
+}
+
+nvim_open() {
+  local d
+  d=$(dirname "$1")
+  setsid -f alacritty --working-directory "$d" -e nvim -- "$@" >/dev/null 2>&1
+}
+
+cmd=${1:-}; shift || true
+case $cmd in
+  video) video "$@" ;;
+  pdf) pdf "$@" ;;
+  dupes) dupes "$@" ;;
+  rename) rename_files "$@" ;;
+  where) where "$@" ;;
+  copy) copy "$@" ;;
+  term) term "$@" ;;
+  nvim) nvim_open "$@" ;;
+  *) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+esac

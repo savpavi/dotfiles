@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Service
+MimeType=application/pdf;
+Actions=merge;split;compress
+X-KDE-Submenu=PDF
+Icon=application-pdf
+
+[Desktop Action merge]
+Name=Seçilenleri birleştir
+Icon=merge
+Exec=/home/savpavi/dotfiles/bin/dot-fm pdf merge %F
+
+[Desktop Action split]
+Name=Sayfalara böl
+Icon=split
+Exec=/home/savpavi/dotfiles/bin/dot-fm pdf split %F
+
+[Desktop Action compress]
+Name=Küçült
+Icon=archive-insert
+Exec=/home/savpavi/dotfiles/bin/dot-fm pdf compress %F

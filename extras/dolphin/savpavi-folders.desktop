@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Service
+MimeType=inode/directory;
+Actions=dupes
+Icon=folder
+
+[Desktop Action dupes]
+Name=Kopya dosyaları bul
+Icon=edit-find
+Exec=/home/savpavi/dotfiles/bin/dot-fm dupes %F

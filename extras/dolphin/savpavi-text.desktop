@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Service
+MimeType=text/*;application/x-shellscript;application/json;application/xml;application/toml;application/x-yaml;
+Actions=nvim
+Icon=nvim
+
+[Desktop Action nvim]
+Name=Neovim ile aç
+Icon=nvim
+Exec=/home/savpavi/dotfiles/bin/dot-fm nvim %F

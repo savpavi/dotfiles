@@ -1,0 +1,31 @@
+[Desktop Entry]
+Type=Service
+MimeType=video/*;
+Actions=mp4;mp3;audio;gif;trim
+X-KDE-Submenu=Video
+Icon=video-x-generic
+
+[Desktop Action mp4]
+Name=MP4'e dönüştür (H.264)
+Icon=document-export
+Exec=/home/savpavi/dotfiles/bin/dot-fm video mp4 %F
+
+[Desktop Action mp3]
+Name=MP3 olarak sesi çıkar
+Icon=audio-x-generic
+Exec=/home/savpavi/dotfiles/bin/dot-fm video mp3 %F
+
+[Desktop Action audio]
+Name=Sesi kayıpsız çıkar
+Icon=audio-x-generic
+Exec=/home/savpavi/dotfiles/bin/dot-fm video audio %F
+
+[Desktop Action gif]
+Name=GIF yap…
+Icon=image-gif
+Exec=/home/savpavi/dotfiles/bin/dot-fm video gif %F
+
+[Desktop Action trim]
+Name=Kırp (kayıpsız)…
+Icon=edit-cut
+Exec=/home/savpavi/dotfiles/bin/dot-fm video trim %F

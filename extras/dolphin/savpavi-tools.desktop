@@ -1,0 +1,41 @@
+[Desktop Entry]
+Type=Service
+MimeType=all/all;
+Actions=copypath;copyname;copyuri;rename;where;term;send
+X-KDE-Submenu=Araçlar
+Icon=applications-utilities
+
+[Desktop Action copypath]
+Name=Yolu kopyala
+Icon=edit-copy-path
+Exec=/home/savpavi/dotfiles/bin/dot-fm copy path %F
+
+[Desktop Action copyname]
+Name=Adı kopyala
+Icon=edit-copy
+Exec=/home/savpavi/dotfiles/bin/dot-fm copy name %F
+
+[Desktop Action copyuri]
+Name=file:// linkini kopyala
+Icon=edit-link
+Exec=/home/savpavi/dotfiles/bin/dot-fm copy uri %F
+
+[Desktop Action rename]
+Name=Adlarda bul/değiştir…
+Icon=edit-rename
+Exec=/home/savpavi/dotfiles/bin/dot-fm rename %F
+
+[Desktop Action where]
+Name=Hangi diskte? (mergerfs)
+Icon=drive-harddisk
+Exec=/home/savpavi/dotfiles/bin/dot-fm where %F
+
+[Desktop Action term]
+Name=Burada terminal aç
+Icon=utilities-terminal
+Exec=/home/savpavi/dotfiles/bin/dot-fm term %f
+
+[Desktop Action send]
+Name=Telefona gönder (KDE Connect)
+Icon=phone
+Exec=/home/savpavi/dotfiles/bin/dot-send %F
