@@ -1,0 +1,81 @@
+{
+  "name": "Mürekkep",
+  "wm": {
+    "root": "#ECE6D9",
+    "border": "#1B1A17",
+    "focus": "#D2452D",
+    "urgent": "#2B4C7E",
+    "borderpx": 2,
+    "gap": 0,
+    "anim": 260
+  },
+  "bar": {
+    "layout": "strip",
+    "size": 26,
+    "font": "JetBrainsMono Nerd Font",
+    "fontPx": 13,
+    "bg": "#1B1A17",
+    "fg": "#ECE6D9",
+    "faded": "#8A857A",
+    "accent": "#D2452D",
+    "onAccent": "#FFFFFF",
+    "urgent": "#2B4C7E",
+    "title": "#ECE6D9",
+    "line": "",
+    "clockBg": "#ECE6D9",
+    "clockFg": "#1B1A17",
+    "clockFormat": "ddd d MMM HH:mm",
+    "zeroPad": false
+  },
+  "term": {
+    "bg": "#F6F1E6",
+    "fg": "#1B1A17",
+    "cursor": "#D2452D",
+    "cursorText": "#F6F1E6",
+    "selBg": "#1B1A17",
+    "selFg": "#ECE6D9",
+    "palette": [
+      "#1B1A17",
+      "#B8341F",
+      "#4F6B3A",
+      "#9A6B12",
+      "#2B4C7E",
+      "#7A3E6B",
+      "#2F6F6A",
+      "#B9B2A2",
+      "#6E695F",
+      "#D2452D",
+      "#5F7F45",
+      "#B07D17",
+      "#3A62A0",
+      "#94507F",
+      "#3A8780",
+      "#ECE6D9"
+    ]
+  },
+  "menu": {
+    "bg": "#ECE6D9",
+    "text": "#1B1A17",
+    "match": "#D2452D",
+    "selBg": "#1B1A17",
+    "selText": "#ECE6D9",
+    "border": "#1B1A17",
+    "borderpx": 2,
+    "radius": 0
+  },
+  "notify": {
+    "bg": "#ECE6D9",
+    "fg": "#1B1A17",
+    "low": "#6E695F",
+    "frame": "#1B1A17",
+    "critical": "#D2452D",
+    "radius": 0
+  },
+  "cursor": "Bibata-Modern-Classic",
+  "live": [
+    "2421216522",
+    "3658901613",
+    "3332748776",
+    "2665285180"
+  ]
+}

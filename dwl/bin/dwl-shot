@@ -1,0 +1,25 @@
+#!/bin/sh
+# Ekran görüntüsü (grim + slurp). Her çekim panoya kopyalanır ve dosyaya yazılır.
+#   dwl-shot region   alan seç
+#   dwl-shot edit     alan seç, satty ile üstüne çiz/yaz
+#   dwl-shot screen   bir ekrana tıkla, tamamını al
+dir="${XDG_PICTURES_DIR:-$HOME/Pictures}/Screenshots"
+mkdir -p "$dir"
+file="$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
+
+case "${1:-region}" in
+region) geo=$(slurp) || exit 0 ;;
+edit)   geo=$(slurp) || exit 0 ;;
+screen) geo=$(slurp -o) || exit 0 ;;
+*) echo "kullanım: dwl-shot region|edit|screen" >&2; exit 2 ;;
+esac
+
+if [ "$1" = edit ]; then
+	grim -g "$geo" - | satty --filename - --output-filename "$file" \
+		--copy-command wl-copy --early-exit
+	exit
+fi
+
+grim -g "$geo" "$file" || exit 1
+wl-copy < "$file"
+notify-send -t 4000 "Ekran görüntüsü" "Panoya kopyalandı\n$file"

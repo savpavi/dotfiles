@@ -1,0 +1,90 @@
+{
+  "name": "Catppuccin",
+  "wm": {
+    "root": "#11111B",
+    "border": "#313244",
+    "focus": "#CBA6F7",
+    "urgent": "#F38BA8",
+    "borderpx": 2,
+    "gap": 10,
+    "anim": 260,
+    "radius": 12,
+    "shadow": 16,
+    "blur": 3
+  },
+  "bar": {
+    "layout": "islands",
+    "size": 30,
+    "margin": 8,
+    "radius": 15,
+    "font": "Inter",
+    "fontPx": 13,
+    "bg": "#1E1E2E",
+    "fg": "#CDD6F4",
+    "faded": "#6C7086",
+    "accent": "#CBA6F7",
+    "onAccent": "#11111B",
+    "urgent": "#F38BA8",
+    "title": "#A6ADC8",
+    "line": "",
+    "clockBg": "#1E1E2E",
+    "clockFg": "#F5C2E7",
+    "clockFormat": "HH:mm  ·  ddd d MMM",
+    "zeroPad": false
+  },
+  "term": {
+    "bg": "#1E1E2E",
+    "fg": "#CDD6F4",
+    "cursor": "#F5E0DC",
+    "cursorText": "#1E1E2E",
+    "selBg": "#45475A",
+    "selFg": "#CDD6F4",
+    "opacity": 0.92,
+    "palette": [
+      "#45475A",
+      "#F38BA8",
+      "#A6E3A1",
+      "#F9E2AF",
+      "#89B4FA",
+      "#F5C2E7",
+      "#94E2D5",
+      "#BAC2DE",
+      "#585B70",
+      "#F38BA8",
+      "#A6E3A1",
+      "#F9E2AF",
+      "#89B4FA",
+      "#F5C2E7",
+      "#94E2D5",
+      "#A6ADC8"
+    ]
+  },
+  "menu": {
+    "bg": "#1E1E2E",
+    "text": "#CDD6F4",
+    "match": "#F5C2E7",
+    "selBg": "#CBA6F7",
+    "selText": "#11111B",
+    "border": "#CBA6F7",
+    "borderpx": 2,
+    "radius": 12
+  },
+  "notify": {
+    "bg": "#1E1E2E",
+    "fg": "#CDD6F4",
+    "low": "#A6ADC8",
+    "frame": "#313244",
+    "critical": "#F38BA8",
+    "radius": 12
+  },
+  "cursor": "catppuccin-mocha-dark-cursors",
+  "live": [
+    "2898470080",
+    "2496606218",
+    "2923871504",
+    "2495509792",
+    "3196487547",
+    "862333935",
+    "3147691156"
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "name": "Fener",
+  "wm": {
+    "root": "#0B1220",
+    "border": "#1E2B40",
+    "focus": "#6FE3C1",
+    "urgent": "#F2B84B",
+    "borderpx": 1,
+    "gap": 6,
+    "anim": 260
+  },
+  "bar": {
+    "layout": "rail",
+    "size": 40,
+    "font": "JetBrainsMono Nerd Font",
+    "fontPx": 13,
+    "bg": "#0F1828",
+    "fg": "#D5DEEA",
+    "faded": "#44536B",
+    "accent": "#6FE3C1",
+    "onAccent": "#0B1220",
+    "urgent": "#F2B84B",
+    "title": "#7F8EA6",
+    "line": "#1E2B40",
+    "clockBg": "#0F1828",
+    "clockFg": "#6FE3C1",
+    "clockFormat": "HH\nmm",
+    "zeroPad": false
+  },
+  "term": {
+    "bg": "#0F1828",
+    "fg": "#D5DEEA",
+    "cursor": "#6FE3C1",
+    "cursorText": "#0B1220",
+    "selBg": "#1E2B40",
+    "selFg": "#D5DEEA",
+    "palette": [
+      "#0B1220",
+      "#F07178",
+      "#6FE3C1",
+      "#F2B84B",
+      "#6CA8F5",
+      "#B48EF0",
+      "#5CCFE6",
+      "#A9B6C9",
+      "#44536B",
+      "#FF8A90",
+      "#93F0D5",
+      "#FFD07A",
+      "#92C0FF",
+      "#CBB0FF",
+      "#86E1F2",
+      "#D5DEEA"
+    ]
+  },
+  "menu": {
+    "bg": "#0F1828",
+    "text": "#D5DEEA",
+    "match": "#6FE3C1",
+    "selBg": "#1E2B40",
+    "selText": "#6FE3C1",
+    "border": "#6FE3C1",
+    "borderpx": 1,
+    "radius": 3
+  },
+  "notify": {
+    "bg": "#0F1828",
+    "fg": "#D5DEEA",
+    "low": "#7F8EA6",
+    "frame": "#1E2B40",
+    "critical": "#F07178",
+    "radius": 3
+  },
+  "cursor": "Bibata-Modern-Ice",
+  "live": [
+    "1275921440",
+    "2315611947",
+    "1723129994",
+    "3498185307"
+  ]
+}

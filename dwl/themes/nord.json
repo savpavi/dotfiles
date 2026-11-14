@@ -1,0 +1,85 @@
+{
+  "name": "Nord",
+  "wm": {
+    "root": "#242933",
+    "border": "#3B4252",
+    "focus": "#88C0D0",
+    "urgent": "#BF616A",
+    "borderpx": 2,
+    "gap": 6,
+    "anim": 260
+  },
+  "bar": {
+    "layout": "strip",
+    "size": 26,
+    "font": "JetBrainsMono Nerd Font",
+    "fontPx": 13,
+    "bg": "#2E3440",
+    "fg": "#D8DEE9",
+    "faded": "#4C566A",
+    "accent": "#88C0D0",
+    "onAccent": "#2E3440",
+    "urgent": "#BF616A",
+    "title": "#E5E9F0",
+    "line": "",
+    "clockBg": "#5E81AC",
+    "clockFg": "#ECEFF4",
+    "clockFormat": "ddd d MMM HH:mm",
+    "zeroPad": false
+  },
+  "term": {
+    "bg": "#2E3440",
+    "fg": "#D8DEE9",
+    "cursor": "#88C0D0",
+    "cursorText": "#2E3440",
+    "selBg": "#434C5E",
+    "selFg": "#ECEFF4",
+    "palette": [
+      "#3B4252",
+      "#BF616A",
+      "#A3BE8C",
+      "#EBCB8B",
+      "#81A1C1",
+      "#B48EAD",
+      "#88C0D0",
+      "#E5E9F0",
+      "#4C566A",
+      "#BF616A",
+      "#A3BE8C",
+      "#EBCB8B",
+      "#81A1C1",
+      "#B48EAD",
+      "#8FBCBB",
+      "#ECEFF4"
+    ]
+  },
+  "menu": {
+    "bg": "#2E3440",
+    "text": "#D8DEE9",
+    "match": "#88C0D0",
+    "selBg": "#88C0D0",
+    "selText": "#2E3440",
+    "border": "#88C0D0",
+    "borderpx": 2,
+    "radius": 0
+  },
+  "notify": {
+    "bg": "#2E3440",
+    "fg": "#D8DEE9",
+    "low": "#7B88A1",
+    "frame": "#4C566A",
+    "critical": "#BF616A",
+    "radius": 0
+  },
+  "cursor": "Nordzy-cursors",
+  "live": [
+    "3651036123",
+    "2044507712",
+    "2332707189",
+    "2217950993",
+    "3030072253",
+    "793602574",
+    "1854057384",
+    "3142294208"
+  ]
+}

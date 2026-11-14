@@ -1,0 +1,91 @@
+{
+  "name": "Monokrom",
+  "wm": {
+    "root": "#000000",
+    "border": "#262626",
+    "focus": "#FFFFFF",
+    "urgent": "#BFBFBF",
+    "borderpx": 2,
+    "gap": 8,
+    "anim": 260
+  },
+  "bar": {
+    "layout": "strip",
+    "size": 28,
+    "font": "JetBrainsMono Nerd Font",
+    "fontPx": 13,
+    "bg": "#000000",
+    "fg": "#E6E6E6",
+    "faded": "#5C5C5C",
+    "accent": "#FFFFFF",
+    "onAccent": "#000000",
+    "urgent": "#BFBFBF",
+    "title": "#A6A6A6",
+    "line": "#262626",
+    "clockBg": "#FFFFFF",
+    "clockFg": "#000000",
+    "clockFormat": "HH:mm  ·  dd.MM",
+    "zeroPad": true
+  },
+  "term": {
+    "bg": "#000000",
+    "fg": "#E6E6E6",
+    "cursor": "#FFFFFF",
+    "cursorText": "#000000",
+    "selBg": "#FFFFFF",
+    "selFg": "#000000",
+    "palette": [
+      "#000000",
+      "#8C8C8C",
+      "#BFBFBF",
+      "#D9D9D9",
+      "#737373",
+      "#A6A6A6",
+      "#CCCCCC",
+      "#E6E6E6",
+      "#404040",
+      "#A6A6A6",
+      "#D9D9D9",
+      "#F2F2F2",
+      "#8C8C8C",
+      "#BFBFBF",
+      "#E6E6E6",
+      "#FFFFFF"
+    ]
+  },
+  "menu": {
+    "bg": "#000000",
+    "text": "#E6E6E6",
+    "match": "#FFFFFF",
+    "selBg": "#FFFFFF",
+    "selText": "#000000",
+    "border": "#FFFFFF",
+    "borderpx": 1,
+    "radius": 0
+  },
+  "notify": {
+    "bg": "#000000",
+    "fg": "#E6E6E6",
+    "low": "#737373",
+    "frame": "#404040",
+    "critical": "#FFFFFF",
+    "radius": 0
+  },
+  "cursor": "Bibata-Modern-Classic",
+  "live": [
+    "2791515879",
+    "3400562688",
+    "1416261096",
+    "2053577534",
+    "2973729383",
+    "2783891053",
+    "3651253942",
+    "3205683321",
+    "3174767586",
+    "1039919954",
+    "3477054040",
+    "3363875951",
+    "3303972628",
+    "2469483835"
+  ]
+}

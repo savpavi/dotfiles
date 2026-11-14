@@ -1,0 +1,1 @@
+../../../dotfiles/config/savpavi-shell/wallpaper/WallFx.qml

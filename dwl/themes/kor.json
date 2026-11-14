@@ -1,0 +1,87 @@
+{
+  "name": "Kor",
+  "wm": {
+    "root": "#141211",
+    "border": "#2C2825",
+    "focus": "#F2A541",
+    "urgent": "#E0533D",
+    "borderpx": 2,
+    "gap": 10,
+    "anim": 260,
+    "radius": 12,
+    "shadow": 18,
+    "blur": 3
+  },
+  "bar": {
+    "layout": "islands",
+    "size": 30,
+    "margin": 8,
+    "radius": 15,
+    "font": "Inter",
+    "fontPx": 13,
+    "bg": "#211E1C",
+    "fg": "#E9E2D8",
+    "faded": "#8B8178",
+    "accent": "#F2A541",
+    "onAccent": "#141211",
+    "urgent": "#E0533D",
+    "title": "#B9AFA4",
+    "line": "",
+    "clockBg": "#211E1C",
+    "clockFg": "#E9E2D8",
+    "clockFormat": "HH:mm  ·  ddd d MMM",
+    "zeroPad": false
+  },
+  "term": {
+    "bg": "#1C1917",
+    "fg": "#E9E2D8",
+    "cursor": "#F2A541",
+    "cursorText": "#1C1917",
+    "selBg": "#F2A541",
+    "selFg": "#141211",
+    "palette": [
+      "#1C1917",
+      "#E0533D",
+      "#9BB06A",
+      "#F2A541",
+      "#7FA3C7",
+      "#C58BB0",
+      "#7DB8A8",
+      "#B9AFA4",
+      "#5A524B",
+      "#F0705A",
+      "#B4C883",
+      "#F7BE6B",
+      "#9DBBD9",
+      "#D9A6C6",
+      "#9BCFC0",
+      "#E9E2D8"
+    ],
+    "opacity": 0.9
+  },
+  "menu": {
+    "bg": "#211E1C",
+    "text": "#E9E2D8",
+    "match": "#F2A541",
+    "selBg": "#F2A541",
+    "selText": "#141211",
+    "border": "#F2A541",
+    "borderpx": 2,
+    "radius": 12
+  },
+  "notify": {
+    "bg": "#211E1C",
+    "fg": "#E9E2D8",
+    "low": "#8B8178",
+    "frame": "#2C2825",
+    "critical": "#E0533D",
+    "radius": 12
+  },
+  "cursor": "Bibata-Modern-Amber",
+  "live": [
+    "1181580583",
+    "2964521946",
+    "1729563986",
+    "3553475169"
+  ]
+}
