@@ -54,6 +54,26 @@ Bilinen sınır: zaten açık Qt uygulamaları tema değişince yenilenmez, kapa
 Qt/KDE/GTK renk dosyaları Hyprland oturumuyla ortaktır. dwl ilk yazmadan önce yedekler, çıkışta
 geri koyar. Elle geri almak için: `dwl-theme host-restore`.
 
+### Uygulamalar
+
+Tema değişince bunlar da canlı döner (uygulamayı yeniden başlatmak gerekmez):
+
+- **Obsidian:** `<kasa>/.obsidian/snippets/dwl-theme.css` (yalnız masaüstü; kasa yolu
+  `DWL_THEME_OBSIDIAN`, varsayılan Aktif Kasa). Snippet kasanın `.stignore`'unda, telefona gitmez.
+- **Discord (Vesktop):** `~/.config/vesktop/themes/savpavi.css`, `~/dotfiles/templates/apps/vesktop.css`
+  şablonundan. Hyprland'deki dot-shell-theme aynı dosyayı yazar; dwl yedekler, çıkışta geri koyar.
+  Açılış ekranı rengi de `~/.config/vesktop/settings.json`'a yazılır.
+- **Spotify:** spicetify (Sleek) `color.ini` içine `[dwl]` şeması + `spicetify refresh -n`, ardından
+  `dwl-theme spotify-live` açık istemcide colors.css'i yeniden yükler (sayfa yenilenmez, müzik sürer).
+  Bunun için `~/.config/spotify-launcher.conf`: `extra_arguments = ["--remote-debugging-port=9333"]`
+  (yalnız 127.0.0.1). spotify-launcher Spotify'ı güncelleyince: `spicetify backup apply -n`.
+- **Telegram:** `~/.config/dwl-theme/telegram/dwl-theme.tdesktop-theme` (`templates/` altındaki
+  matugen-themes şablonu, MIT). Bir kez uygulanır: dosyayı Kayıtlı Mesajlar'a gönder, mesajdaki
+  dosyaya tıkla, Uygula. Telegram o yerel dosyayı izler. (Ayarlar'dan dosya seçme ya da pencereye
+  sürükleme 7.4.4'te çalışmıyor.)
+
+Hyprland'e dönünce Discord kendi rengine döner; Obsidian, Spotify ve Telegram son dwl renginde kalır.
+
 ## Tuşlar
 
 Tam liste Super+K ile açılır (`config.h`'den üretilir). En sık kullanılanlar:
@@ -99,3 +119,4 @@ git checkout ETIKET && sudo make install
   `~/dotfiles/config/savpavi-shell/scripts/claude-usage.sh` (bar ve indirme kısayolu çağırır)
 - waywallen (Flatpak) ve `~/.local/bin/waywallen-layer-shell` (hareketli duvar)
 - `brave-origin-bin` (AUR)
+- `vesktop-bin` (AUR), spicetify + `spotify-launcher`, `telegram-desktop` (uygulama renkleri)

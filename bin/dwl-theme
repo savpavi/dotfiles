@@ -586,6 +586,17 @@ def render_discord(t, name):
     if not DISCORD_TEMPLATE.exists():
         return
     css = fill_template(DISCORD_TEMPLATE.read_text(), material_roles(t), t["bar"]["accent"])
+    # Vesktop açılış ekranı (Vesktop açıkken kendi ayarını yazarsa sonraki değişimde yine düzelir)
+    vs = Path.home() / ".config/vesktop/settings.json"
+    try:
+        conf = json.loads(vs.read_text())
+        c = app_palette(t)
+        conf["splashBackground"] = "rgb({}, {}, {})".format(*rgb(c["bg"]))
+        conf["splashColor"] = "rgb({}, {}, {})".format(*rgb(c["fg"]))
+        conf["splashTheming"] = True
+        vs.write_text(json.dumps(conf, indent=4) + "\n")
+    except (OSError, ValueError):
+        pass
     for f in DISCORD_THEME_FILES:
         if f.parent.is_dir():
             host_keep_file(f)
