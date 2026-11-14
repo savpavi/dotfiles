@@ -16,7 +16,9 @@ Temalar themes/*.json içinde. Uygulanınca ~/.local/state/dwl-theme/ altına
 dwl.conf, theme.json, alacritty.toml, ghostty, fuzzel.ini ve dunstrc üretilir; dwl ve bar bu
 dosyaları izler, yeniden başlatma gerekmez. Ayrıca Obsidian snippet'i
 (<kasa>/.obsidian/snippets/dwl-theme.css, DWL_THEME_OBSIDIAN) ve Vesktop/Vencord temasını
-(themes/savpavi.css, dotfiles şablonundan; host yedeğine girer) yazar.
+(themes/savpavi.css, dotfiles şablonundan; host yedeğine girer), spicetify [dwl] renk şemasını
+(Spotify sonraki açılışta görür) ve Telegram temasını (~/.config/dwl-theme/telegram/, bir kez
+elle seçilir, sonra kendisi yenilenir) yazar.
 """
 import json
 import os
@@ -542,10 +544,8 @@ def render_obsidian(t, name):
             pass
 
 
-def render_discord(t, name):
-    """dotfiles'taki DMS/matugen şablonunu dwl paletiyle doldurur."""
-    if not DISCORD_TEMPLATE.exists():
-        return
+def material_roles(t):
+    """dwl paleti -> matugen/Material renk rolleri (DMS ve matugen-themes şablonları için)."""
     c, pal = app_palette(t), t["term"]["palette"]
     s, fg = c["bg"], c["fg"]
     roles = {
@@ -556,15 +556,21 @@ def render_discord(t, name):
         "surface_container_highest": mix(s, fg, 0.12),
         "outline": mix(c["muted"], s, 0.45), "outline_variant": c["border"],
         "primary": c["accent"], "on_primary": c["on_accent"],
+        "primary_fixed_dim": mix(c["accent"], s, 0.2), "inverse_primary": mix(c["accent"], s, 0.35),
         "secondary": pal[4], "on_secondary": s, "tertiary": pal[5], "on_tertiary": s,
         "error": c["urgent"], "on_error": s,
     }
     for k in ("primary", "secondary", "tertiary", "error"):
         roles[k + "_container"] = mix(roles[k], s, 0.6)
         roles["on_" + k + "_container"] = fg
+    return roles
+
+
+def fill_template(text, roles, fallback):
+    import re
 
     def sub(m):
-        h = roles.get(m.group(1), c["accent"]).lstrip("#").lower()
+        h = roles.get(m.group(1), fallback).lstrip("#").lower()
         f = m.group(2)
         if f == "hex":
             return "#" + h
@@ -572,15 +578,150 @@ def render_discord(t, name):
             return h
         return str(int(h[{"red": 0, "green": 2, "blue": 4}[f]:][:2], 16))
 
-    import re
-    css = re.sub(r"\{\{\s*colors\.(\w+)\.\w+\.(hex_stripped|hex|red|green|blue)\s*\}\}", sub,
-                 DISCORD_TEMPLATE.read_text())
+    return re.sub(r"\{\{\s*colors\.(\w+)\.\w+\.(hex_stripped|hex|red|green|blue)\s*\}\}", sub, text)
+
+
+def render_discord(t, name):
+    """dotfiles'taki DMS/matugen şablonunu dwl paletiyle doldurur."""
+    if not DISCORD_TEMPLATE.exists():
+        return
+    css = fill_template(DISCORD_TEMPLATE.read_text(), material_roles(t), t["bar"]["accent"])
     for f in DISCORD_THEME_FILES:
         if f.parent.is_dir():
             host_keep_file(f)
             tmp = f.with_name("." + f.name + ".tmp")
             tmp.write_text(css)
             tmp.replace(f)
+
+
+# Telegram Desktop, seçili YEREL tema dosyası değişince kendisi yeniden yükler; dosya bir kez
+# Ayarlar > Sohbet ayarları > Dosyadan seç ile seçilir. Yol sabit kalmalı, yerinde yazılır.
+TELEGRAM_THEME = Path.home() / ".config/dwl-theme/telegram/dwl-theme.tdesktop-theme"
+TELEGRAM_TEMPLATE = ROOT / "templates/telegram.tdesktop-theme"   # matugen-themes, MIT
+
+
+def render_telegram(t, name):
+    import io
+    import zipfile
+    if not TELEGRAM_TEMPLATE.exists():
+        return
+    roles = material_roles(t)
+    palette = fill_template(TELEGRAM_TEMPLATE.read_text(), roles, t["bar"]["accent"])
+    # sohbet arka planı: tema zemininde düz renk
+    bg = io.BytesIO()
+    try:
+        from PIL import Image
+        Image.new("RGB", (64, 64), roles["background"]).save(bg, "JPEG", quality=95)
+    except ImportError:
+        bg = None
+    TELEGRAM_THEME.parent.mkdir(parents=True, exist_ok=True)
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("colors.tdesktop-theme", f"// dwl-theme: {name}\n" + palette)
+        if bg is not None:
+            z.writestr("background.jpg", bg.getvalue())
+    with open(TELEGRAM_THEME, "wb") as f:   # yerinde: izleyici aynı dosyada kalsın
+        f.write(buf.getvalue())
+
+
+SPICETIFY_THEMES = Path.home() / ".config/spicetify/Themes"
+
+
+def render_spotify(t, name):
+    """spicetify: etkin temanın color.ini'sine [dwl] şemasını yazar, xpui'yi yeniler.
+    Çalışan Spotify'ı yeniden başlatmaz (müzik kesilmesin); yeni renk sonraki açılışta görünür."""
+    import shutil
+    import re
+    sp = shutil.which("spicetify")
+    if not sp:
+        return
+    def get(key):  # tek anahtar sor: iki anahtar verilince spicetify ilkini ikinciye EŞİTLER
+        try:
+            return subprocess.run([sp, "config", key], capture_output=True, text=True,
+                                  timeout=10).stdout.strip()
+        except (OSError, subprocess.TimeoutExpired):
+            return ""
+    out = [get("current_theme"), get("color_scheme")]
+    if not out[0] or " " in out[0]:
+        return
+    ini = SPICETIFY_THEMES / out[0] / "color.ini"
+    if not ini.exists():
+        return
+    c = app_palette(t)
+    h = lambda x: x.lstrip("#").lower()
+    rows = {
+        "text": c["fg"], "subtext": c["muted"], "nav-active-text": c["on_accent"],
+        "main": c["bg"], "sidebar": c["bg2"], "player": c["bg3"], "card": c["raised"],
+        "shadow": "#000000", "main-secondary": c["bg3"], "button": c["accent"],
+        "button-secondary": c["accent2"], "button-active": c["accent2"], "button-disabled": c["border"],
+        "nav-active": c["accent"], "play-button": c["accent"], "tab-active": c["hover"],
+        "notification": c["raised"], "notification-error": c["urgent"],
+        "playback-bar": c["accent"], "misc": c["muted"],
+    }
+    block = f"[dwl]\n; dwl-theme: {name}\n" + "".join(f"{k:<19}= {h(v)}\n" for k, v in rows.items())
+    text = ini.read_text()
+    text = re.sub(r"(?ms)^\[dwl\]\n.*?(?=^\[|\Z)", "", text).rstrip() + "\n\n" + block
+    ini.write_text(text)
+    if len(out) < 2 or out[1] != "dwl":
+        quiet(sp, "config", "color_scheme", "dwl")
+    # refresh: arka planda, apply'ı bekletmesin
+    # yeniledikten sonra açık Spotify'a yeni stilleri yükle (debug portu yoksa sessizce atlar)
+    subprocess.Popen(["sh", "-c", f'"{sp}" refresh -n; "{Path(__file__).resolve()}" spotify-live'],
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+
+SPOTIFY_DEBUG_PORT = 9333   # ~/.config/spotify-launcher.conf extra_arguments ile açılır (yalnız 127.0.0.1)
+
+
+def cdp_eval(port, url_part, expr):
+    """Chrome DevTools Protocol: url'si url_part içeren sayfada JS çalıştırır (stdlib websocket)."""
+    import base64
+    import socket
+    import struct
+    import urllib.request
+    try:
+        pages = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{port}/json/list", timeout=2).read())
+    except (OSError, ValueError):
+        return False
+    ws = next((p.get("webSocketDebuggerUrl") for p in pages
+               if p.get("type") == "page" and url_part in p.get("url", "")), None)
+    if not ws:
+        return False
+    path = "/" + ws.split("/", 3)[3]
+    with socket.create_connection(("127.0.0.1", port), timeout=3) as s:
+        key = base64.b64encode(os.urandom(16)).decode()
+        s.sendall((f"GET {path} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nUpgrade: websocket\r\n"
+                   f"Connection: Upgrade\r\nSec-WebSocket-Key: {key}\r\nSec-WebSocket-Version: 13\r\n\r\n").encode())
+        if b" 101 " not in s.recv(4096).split(b"\r\n", 1)[0]:
+            return False
+        data = json.dumps({"id": 1, "method": "Runtime.evaluate", "params": {"expression": expr}}).encode()
+        mask = os.urandom(4)
+        n = len(data)
+        head = bytes([0x81]) + (bytes([0x80 | n]) if n < 126 else bytes([0x80 | 126]) + struct.pack(">H", n))
+        s.sendall(head + mask + bytes(b ^ mask[i % 4] for i, b in enumerate(data)))
+        buf = b""
+        try:
+            while b'"id":1' not in buf:
+                chunk = s.recv(65536)
+                if not chunk:
+                    break
+                buf += chunk
+        except OSError:
+            pass
+    i = buf.find(b"{")
+    try:
+        res = json.loads(buf[i:].decode(errors="replace")).get("result", {}).get("result", {})
+        return res.get("value", True)
+    except ValueError:
+        return True
+
+
+def spotify_live():
+    """Çalışan Spotify'da renk ve tema stillerini sayfayı yenilemeden yeniden yükler (müzik sürer)."""
+    js = ("document.querySelectorAll('link[rel=stylesheet]').forEach(l=>{"
+          "if(/colors\\.css|user\\.css/.test(l.href)){"
+          "const u=new URL(l.href);u.searchParams.set('dwl',Date.now());l.href=u.href}})")
+    return cdp_eval(SPOTIFY_DEBUG_PORT, "xpui", js)
 
 
 def quiet(*cmd):
@@ -605,7 +746,7 @@ def apply(tid, live=True):
         quiet("pkill", "-USR2", "-f", "^ghostty .*dwl-theme/ghostty")
         render_apps(all_[tid])
         name = all_[tid].get("name", tid)
-        for fn in (render_obsidian, render_discord):
+        for fn in (render_obsidian, render_discord, render_spotify, render_telegram):
             try:
                 fn(all_[tid], name)
             except OSError as e:
@@ -787,6 +928,8 @@ def main():
         host_save()
     elif a == ["host-restore"]:
         host_restore()
+    elif a == ["spotify-live"]:
+        sys.exit(0 if spotify_live() else 1)
     elif a == ["current"]:
         print(current())
     elif len(a) == 2 and a[0] == "apply":
