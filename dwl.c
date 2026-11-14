@@ -170,6 +170,7 @@ typedef struct {
 	uint32_t tags;
 	int isfloating, isurgent, isfullscreen;
 	int ispanel; /* savpavi: see Rule.panel */
+	char origmon[32]; /* savpavi: output this client was evacuated from, see restoremons() */
 
 	/* Animation */
 	struct wlr_box anim_from, anim_to, anim_cur;
@@ -397,6 +398,7 @@ static void setfullscreen(Client *c, int fullscreen);
 static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setmon(Client *c, Monitor *m, uint32_t newtags);
+static void restoremons(void);
 static void setpsel(struct wl_listener *listener, void *data);
 static void setsel(struct wl_listener *listener, void *data);
 static void setup(void);
@@ -946,6 +948,7 @@ buttonpress(struct wl_listener *listener, void *data)
 			/* Drop the window off on its new monitor */
 			selmon = xytomon(cursor->x, cursor->y);
 			setmon(grabc, selmon, 0);
+			grabc->origmon[0] = '\0'; /* savpavi: user chose this output */
 			grabc = NULL;
 			return;
 		}
@@ -1135,8 +1138,14 @@ closemon(Monitor *m)
 		if (c->isfloating && c->geom.x > m->m.width)
 			resize(c, (struct wlr_box){.x = c->geom.x - m->w.width, .y = c->geom.y,
 					.width = c->geom.width, .height = c->geom.height}, 0);
-		if (c->mon == m)
+		if (c->mon == m) {
+			/* savpavi: remember the first output it lived on, so it can go
+			 * back when that output returns (e.g. a DP monitor waking up) */
+			char name[sizeof(c->origmon)];
+			snprintf(name, sizeof(name), "%s", c->origmon[0] ? c->origmon : m->wlr_output->name);
 			setmon(c, selmon, c->tags);
+			snprintf(c->origmon, sizeof(c->origmon), "%s", name);
+		}
 	}
 	focusclient(focustop(selmon), 1);
 	printstatus();
@@ -3064,6 +3073,33 @@ setmfact(const Arg *arg)
 	arrange(selmon);
 }
 
+/* savpavi: when an output comes back (a DP monitor that dropped off the bus
+ * while asleep), send the clients that were evacuated from it back home,
+ * keeping their tags. A client the user moved meanwhile has origmon cleared. */
+void
+restoremons(void)
+{
+	Client *c;
+	Monitor *m;
+
+	wl_list_for_each(m, &mons, link) {
+		if (!m->wlr_output->enabled)
+			continue;
+		wl_list_for_each(c, &clients, link) {
+			if (!c->origmon[0] || strcmp(c->origmon, m->wlr_output->name))
+				continue;
+			c->origmon[0] = '\0';
+			if (c->mon == m)
+				continue;
+			if (c->isfloating && c->mon) {
+				c->geom.x += m->m.x - c->mon->m.x;
+				c->geom.y += m->m.y - c->mon->m.y;
+			}
+			setmon(c, m, c->tags);
+		}
+	}
+}
+
 void
 setmon(Client *c, Monitor *m, uint32_t newtags)
 {
@@ -3418,8 +3454,10 @@ void
 tagmon(const Arg *arg)
 {
 	Client *sel = focustop(selmon);
-	if (sel)
+	if (sel) {
 		setmon(sel, dirtomon(arg->i), 0);
+		sel->origmon[0] = '\0'; /* savpavi: user chose this output */
+	}
 }
 
 void
@@ -3841,6 +3879,8 @@ updatemons(struct wl_listener *listener, void *data)
 			selmon = m;
 		}
 	}
+
+	restoremons();
 
 	if (selmon && selmon->wlr_output->enabled) {
 		wl_list_for_each(c, &clients, link) {
