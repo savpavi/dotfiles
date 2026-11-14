@@ -33,7 +33,7 @@
       "type": "command",
       "key": "│ 󰃭  Kurulum   │ ",
       "keyColor": "yellow",
-      "text": "b=$(stat -c %W /); d=$(( ($(date +%s) - b) / 86400 )); printf '%s (%d gün önce)' \"$(LC_TIME=tr_TR.UTF-8 date -d @$b '+%-d %B %Y')\" $d"
+      "text": "l=$(date -d 2026-07-19 +%s); a=$(stat -c %W /); n=$(date +%s); ay(){ echo Ocak Şubat Mart Nisan Mayıs Haziran Temmuz Ağustos Eylül Ekim Kasım Aralık | cut -d' ' -f$(date -d @$1 +%-m); }; printf 'İlk Linux %s %s %s (%d gün) · Arch %s %s (%d gün)' $(date -d @$l +%-d) $(ay $l) $(date -d @$l +%Y) $(((n-l)/86400)) $(date -d @$a +%-d) $(ay $a) $(((n-a)/86400))"
     },
     {
       "type": "command",
