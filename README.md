@@ -79,6 +79,7 @@ dot-theme reapply         # re-render the active theme
 | `dot-webapp Name https://url` | Create a Brave Origin web-app launcher (never overwrites) |
 | `dot-keys` | Keybind sheet of savpavi-shell, read from the Hyprland Lua config and its comments (Super+K); `--text` prints it |
 | `dot-spin [-s arch\|donut] [-t SEC] [--fetch]` | Spinning ASCII art: an extruded Arch logo in Arch blue (default) or a Nord-coloured donut; Ctrl+C or `q` quits. `--fetch` prints it next to fastfetch's info and keeps it spinning in the background at that screen spot; a zsh `preexec` hook stops it at the first command (also Ctrl+L, terminal resize, shell exit), since scrolling would move it. About 10% of one core while spinning |
+| `dot-wallfx <pick\|map\|warm\|install>` | Maps for savpavi-shell's wallpaper transition (`wallpaper/WallFx.qml` + `shaders/wallfx.frag`): `sketch` draws the subject's outline with a pen, hatches it in and lets the rest bleed outwards; `spread` (no subject found) bleeds in from a few points. `install` sets up the cut-out (rembg in its own venv, about 900 MB); without it every wallpaper gets `spread`. `warm` precomputes the theme wallpapers |
 | `dot-askpass` | Zenity askpass helper for `sudo -A` |
 
 `dot-send` needs `kdeconnect` and `zenity`. LocalSend runs hidden in the tray through `extras/systemd/localsend.service` (copy to `~/.config/systemd/user/`, then `systemctl --user enable --now localsend.service`).
@@ -90,6 +91,8 @@ Folder sync (like "back up folders from my computer" in Drive for Windows) is co
 `dot-fm` needs `ffmpeg`, `poppler`, `ghostscript`, `zenity`, `wl-clipboard`, `attr` and `alacritty`.
 
 `dot-quicklook` needs the `sushi` package.
+
+`dot-wallfx` needs `python-numpy`, `python-pillow` and, for `install`, `uv`; rebuilding the shader needs `qsb` from `qt6-shadertools`.
 
 `dot-grab` needs `yt-dlp[default]` (for YouTube's JS challenge) and `gallery-dl`, e.g. via `uv tool install`. Extra gallery-dl domains can be listed one per line in `~/.config/dot-grab/gallery-domains`, outside the repo.
 

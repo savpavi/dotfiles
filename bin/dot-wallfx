@@ -1,0 +1,337 @@
+#!/usr/bin/env python3
+"""dot-wallfx: maps for the wallpaper transition of savpavi-shell.
+
+The shader (config/savpavi-shell/wallpaper/shaders/wallfx.frag) decides per
+pixel when the new wallpaper arrives; this script makes the map it reads.
+
+  spread  works for any wallpaper: ink bleeds in from a few random points.
+          Made with numpy alone, from a small pool in the cache.
+  sketch  for wallpapers with a clear subject: the subject is cut out
+          (rembg), and the map holds its outline, the order a pen would
+          trace it, and the order the rest follows. Cached per image.
+
+  dot-wallfx pick IMG     what to play for IMG: "sketch<TAB>map", "spread<TAB>map"
+                          or "fade". Never waits: a missing sketch map is made
+                          in the background and used from the next time on.
+  dot-wallfx map IMG      make IMG's sketch map now (-f to redo); exit 1 if
+                          IMG has no clear subject
+  dot-wallfx warm [DIR]   make the sketch maps of every theme wallpaper, or of DIR
+  dot-wallfx install      set up the cut-out: a venv with rembg, onnxruntime and
+                          opencv plus the model (downloads several hundred MB)
+
+Without `install` every wallpaper gets `spread`.
+"""
+import fcntl
+import hashlib
+import json
+import os
+import random
+import subprocess
+import sys
+from pathlib import Path
+
+HOME = Path.home()
+CACHE = Path(os.environ.get("XDG_CACHE_HOME", HOME / ".cache")) / "dot-wallfx"
+DATA = Path(os.environ.get("XDG_DATA_HOME", HOME / ".local/share")) / "dot-wallfx"
+VENV_PY = DATA / "venv/bin/python"
+THEMES = Path(__file__).resolve().parent.parent / "config/savpavi-shell/themes/themes.json"
+MODEL = "birefnet-general-lite"
+
+MAP_MAX = 960        # long side of a sketch map; the shader interpolates
+SD_RANGE = 16.0      # signed distance kept within +-16 map px (wallfx.frag: SD_RANGE)
+POOL = 8             # spread maps kept; one is picked at random
+SPREAD_W, SPREAD_H = 320, 180
+IMAGES = {".jpg", ".jpeg", ".png", ".webp", ".avif"}
+
+
+def key(img):
+    st = os.stat(img)
+    raw = f"{os.path.realpath(img)}|{st.st_size}|{int(st.st_mtime)}|{MAP_MAX}"
+    return hashlib.sha1(raw.encode()).hexdigest()[:20]
+
+
+def ranked(v, where=None):
+    """Values -> 0..1 by rank, so the covered area grows at an even pace."""
+    import numpy as np
+    out = np.zeros(v.shape, np.float32)
+    sel = np.ones(v.shape, bool) if where is None else where
+    n = int(sel.sum())
+    if n:
+        order = np.argsort(v[sel], kind="stable")
+        r = np.empty(n, np.float32)
+        r[order] = np.linspace(0.0, 1.0, n, dtype=np.float32)
+        out[sel] = r
+    return out
+
+
+def noise(rng, w, h, cell):
+    """Smooth value noise in 0..1."""
+    import numpy as np
+    from PIL import Image
+    small = rng.random((max(2, h // cell + 2), max(2, w // cell + 2))).astype(np.float32)
+    im = Image.fromarray(small, mode="F").resize((w, h), Image.BICUBIC)
+    a = np.asarray(im)
+    return (a - a.min()) / max(float(a.max() - a.min()), 1e-6)
+
+
+def save_map(path, r, g, b):
+    import numpy as np
+    from PIL import Image
+    rgb = np.stack([np.clip(c * 255.0 + 0.5, 0, 255).astype(np.uint8) for c in (r, g, b)], axis=-1)
+    tmp = path.with_suffix(".tmp.png")
+    Image.fromarray(rgb, "RGB").save(tmp, optimize=False)
+    os.replace(tmp, path)
+
+
+# --- spread ---------------------------------------------------------------
+
+def make_spread(path, seed):
+    import numpy as np
+    rng = np.random.default_rng(seed)
+    w, h = SPREAD_W, SPREAD_H
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    arrival = np.full((h, w), np.inf, np.float32)
+    diag = float(np.hypot(w, h))
+    for _ in range(int(rng.integers(3, 6))):
+        cx, cy = rng.uniform(0.08, 0.92) * w, rng.uniform(0.08, 0.92) * h
+        delay = rng.uniform(0.0, 0.25) * diag      # later drops start smaller
+        arrival = np.minimum(arrival, np.hypot(xx - cx, yy - cy) + delay)
+    # wobble the fronts so the blots are not circles
+    arrival += (noise(rng, w, h, 24) - 0.5) * 0.22 * diag
+    arrival += (noise(rng, w, h, 7) - 0.5) * 0.05 * diag
+    zero = np.zeros((h, w), np.float32)
+    save_map(path, zero, zero, ranked(arrival))
+
+
+def spread_map():
+    CACHE.mkdir(parents=True, exist_ok=True)
+    i = random.randrange(POOL)
+    path = CACHE / f"spread-{i}.png"
+    if not path.exists():
+        make_spread(path, random.randrange(1 << 30))
+    return path
+
+
+# --- sketch ---------------------------------------------------------------
+
+def reexec_in_venv():
+    if VENV_PY.exists() and sys.prefix != str(DATA / "venv"):
+        os.execv(VENV_PY, [str(VENV_PY), os.path.abspath(__file__), *sys.argv[1:]])
+
+
+_session = None
+
+
+def cutout(im):
+    """Subject mask of a PIL image, 0..1 float array of the same size."""
+    import numpy as np
+    global _session
+    os.environ.setdefault("U2NET_HOME", str(DATA / "models"))
+    from rembg import new_session, remove
+    if _session is None:
+        _session = new_session(MODEL)
+    mask = remove(im, session=_session, only_mask=True)
+    return np.asarray(mask.convert("L"), np.float32) / 255.0
+
+
+def sketch_paths(img):
+    k = key(img)
+    return CACHE / f"{k}.sketch.png", CACHE / f"{k}.none"
+
+
+def make_sketch(img, force=False):
+    """Returns the map path, or None when the image has no clear subject."""
+    out, none = sketch_paths(img)
+    if not force:
+        if out.exists():
+            return out
+        if none.exists():
+            return None
+    import cv2
+    import numpy as np
+    from PIL import Image
+
+    CACHE.mkdir(parents=True, exist_ok=True)
+    im = Image.open(img).convert("RGB")
+    s = MAP_MAX / max(im.size)
+    w, h = max(2, round(im.width * s)), max(2, round(im.height * s))
+    im = im.resize((w, h), Image.LANCZOS)
+    soft = cutout(im)
+    b = (soft > 0.5).astype(np.uint8)
+
+    # drop specks, close pinholes: a pen does not draw dust
+    b = cv2.morphologyEx(b, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(b, connectivity=8)
+    keep = np.zeros(n, bool)
+    keep[1:] = stats[1:, cv2.CC_STAT_AREA] >= 0.004 * w * h
+    b = keep[lab].astype(np.uint8)
+    holes = 1 - b
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(holes, connectivity=4)
+    small = np.zeros(n, bool)
+    small[1:] = stats[1:, cv2.CC_STAT_AREA] < 0.0015 * w * h
+    b[small[lab]] = 1
+
+    area = float(b.mean())
+    # sure of itself where it says "subject", and neither a speck nor the whole picture
+    sure = float(soft[b == 1].mean()) if area else 0.0
+    touches = np.concatenate([b[0], b[-1], b[:, 0], b[:, -1]]).mean()
+    if not (0.03 <= area <= 0.6) or sure < 0.8 or touches > 0.55:
+        none.touch()
+        out.unlink(missing_ok=True)
+        return None
+
+    din = cv2.distanceTransform(b, cv2.DIST_L2, 5)
+    dout = cv2.distanceTransform(1 - b, cv2.DIST_L2, 5)
+    # the outline sits between the pixels: half a pixel from both sides
+    sd = np.where(b == 1, din - 0.5, -(dout - 0.5))
+    r = np.clip(128.0 / 255.0 + sd / SD_RANGE * (127.0 / 255.0), 0.0, 1.0)
+
+    # stroke order: the longest outline first, each one traced end to end
+    contours, _ = cv2.findContours(b, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+    contours = [c[:, 0, :] for c in contours if len(c) >= 30]
+    # a tangle (branches, foliage) is all outline and no shape: a circle scores
+    # 3.5 here, a figure with limbs around 10
+    tangle = sum(len(c) for c in contours) / float(np.sqrt(b.sum()))
+    if os.environ.get("WALLFX_DEBUG"):
+        print(f"area {area:.3f} sure {sure:.2f} touches {touches:.2f} tangle {tangle:.1f}", file=sys.stderr)
+    if not contours or tangle > 18.0:
+        none.touch()
+        out.unlink(missing_ok=True)
+        return None
+    contours.sort(key=len, reverse=True)
+    total = float(sum(len(c) for c in contours))
+    edge = np.ones((h, w), np.uint8)
+    param = np.zeros((h, w), np.float32)
+    done = 0.0
+    for c in contours:
+        # start each stroke at its top-most point, like a hand would
+        c = np.roll(c, -int(np.argmin(c[:, 1])), axis=0)
+        t = (done + np.arange(len(c), dtype=np.float32)) / total
+        param[c[:, 1], c[:, 0]] = t
+        edge[c[:, 1], c[:, 0]] = 0
+        done += len(c)
+    _, labels = cv2.distanceTransformWithLabels(edge, cv2.DIST_L2, 5, labelType=cv2.DIST_LABEL_PIXEL)
+    lut = np.zeros(int(labels.max()) + 1, np.float32)
+    lut[labels[edge == 0]] = param[edge == 0]
+    g = lut[labels]
+
+    # inside: the hatching sweeps diagonally across the subject's bounding box
+    ys, xs = np.nonzero(b)
+    x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    sweep = ((xx - x0) / max(x1 - x0, 1) + (yy - y0) / max(y1 - y0, 1)) * 0.5
+    # outside: outwards from the subject, with a wobble
+    rng = np.random.default_rng(int(key(img)[:8], 16))
+    far = dout + (noise(rng, w, h, 40) - 0.5) * 0.18 * float(dout.max())
+    inside = b == 1
+    bch = np.where(inside, np.clip(sweep, 0, 1), ranked(far, ~inside))
+
+    save_map(out, r, g, bch)
+    none.unlink(missing_ok=True)
+    return out
+
+
+def themed_wallpapers():
+    try:
+        d = json.loads(THEMES.read_text())
+    except (OSError, ValueError):
+        return []
+    themes = d if isinstance(d, list) else d.get("themes", d)
+    themes = themes if isinstance(themes, list) else list(themes.values())
+    seen, out = set(), []
+    for t in themes:
+        for p in (t.get("wallpapers") or []) if isinstance(t, dict) else []:
+            if p not in seen and os.path.isfile(p):
+                seen.add(p)
+                out.append(p)
+    return out
+
+
+def locked():
+    """One cut-out at a time: it takes every core for a few seconds."""
+    CACHE.mkdir(parents=True, exist_ok=True)
+    f = open(CACHE / "lock", "w")
+    fcntl.flock(f, fcntl.LOCK_EX)
+    return f
+
+
+# --- commands -------------------------------------------------------------
+
+def cmd_pick(img):
+    try:
+        out, none = sketch_paths(img)
+        if out.exists():
+            return print(f"sketch\t{out}")
+        if VENV_PY.exists() and not none.exists():
+            subprocess.Popen(["nice", "-n", "15", os.path.abspath(__file__), "map", img],
+                             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                             stderr=subprocess.DEVNULL, start_new_session=True)
+        print(f"spread\t{spread_map()}")
+    except Exception:
+        print("fade")
+
+
+def cmd_map(img, force):
+    reexec_in_venv()
+    if sys.prefix != str(DATA / "venv"):
+        sys.exit("dot-wallfx: cut-out is not installed, run `dot-wallfx install`")
+    with locked():
+        path = make_sketch(img, force)
+    if path is None:
+        print("no clear subject", file=sys.stderr)
+        sys.exit(1)
+    print(path)
+
+
+def cmd_warm(folder):
+    reexec_in_venv()
+    if sys.prefix != str(DATA / "venv"):
+        sys.exit("dot-wallfx: cut-out is not installed, run `dot-wallfx install`")
+    if folder:
+        imgs = sorted(str(p) for p in Path(folder).rglob("*") if p.suffix.lower() in IMAGES)
+    else:
+        imgs = themed_wallpapers()
+    made = 0
+    for i, img in enumerate(imgs, 1):
+        try:
+            with locked():
+                path = make_sketch(img)
+        except Exception as e:
+            print(f"[{i}/{len(imgs)}] failed  {img}: {e}", file=sys.stderr)
+            continue
+        made += path is not None
+        print(f"[{i}/{len(imgs)}] {'sketch' if path else 'spread'}  {img}", flush=True)
+    print(f"{made} of {len(imgs)} wallpapers have a subject to sketch")
+
+
+def cmd_install():
+    uv = subprocess.run(["sh", "-c", "command -v uv"], capture_output=True, text=True).stdout.strip()
+    if not uv:
+        sys.exit("dot-wallfx: uv is needed (https://docs.astral.sh/uv/)")
+    DATA.mkdir(parents=True, exist_ok=True)
+    subprocess.run([uv, "venv", "-q", "--python", "3.12", "--allow-existing", str(DATA / "venv")], check=True)
+    subprocess.run([uv, "pip", "install", "-q", "--python", str(VENV_PY),
+                    "rembg", "onnxruntime", "opencv-python-headless", "pillow", "numpy"], check=True)
+    env = dict(os.environ, U2NET_HOME=str(DATA / "models"))
+    subprocess.run([str(VENV_PY), "-c",
+                    f"from rembg import new_session; new_session('{MODEL}')"], check=True, env=env)
+    print(f"installed in {DATA}")
+
+
+def main(argv):
+    if len(argv) >= 2 and argv[0] == "pick":
+        cmd_pick(argv[1])
+    elif len(argv) >= 2 and argv[0] == "map":
+        args = [a for a in argv[1:] if a != "-f"]
+        cmd_map(args[0], "-f" in argv)
+    elif argv and argv[0] == "warm":
+        cmd_warm(argv[1] if len(argv) > 1 else None)
+    elif argv and argv[0] == "install":
+        cmd_install()
+    else:
+        print(__doc__.strip())
+        sys.exit(0 if argv and argv[0] in ("-h", "--help", "help") else 2)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

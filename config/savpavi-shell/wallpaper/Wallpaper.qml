@@ -1,11 +1,14 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import qs.common
 
 // Static wallpaper on the background layer, one per screen. The path comes from
-// dot-shell-theme's state file (Theme.wallpaper); changes crossfade. Hidden while a
-// live wallpaper (waywallen) is active, so it never covers it.
+// dot-shell-theme's state file (Theme.wallpaper). A change is drawn by WallFx:
+// bin/dot-wallfx says which transition the new wallpaper gets and hands over
+// its map. Hidden while a live wallpaper (waywallen) is active, so it never
+// covers it.
 PanelWindow {
     id: root
 
@@ -19,40 +22,60 @@ PanelWindow {
     color: Theme.bg
     visible: !Theme.live
 
-    // Two images: the new one loads underneath, then fades in over the old one.
-    property bool frontIsA: true
-    readonly property string target: Theme.wallpaper ? "file://" + Theme.wallpaper : ""
+    readonly property string tool: Quickshell.env("HOME") + "/dotfiles/bin/dot-wallfx"
+    readonly property string target: Theme.wallpaper
 
-    onTargetChanged: {
-        const back = frontIsA ? b : a;
-        // the back image may already hold this file (switching back): just bring it forward
-        if (back.source.toString() === target && back.status === Image.Ready) frontIsA = !frontIsA;
-        else back.source = target;
+    onTargetChanged: retarget()
+    function retarget() {
+        // nothing to change from, or nobody watching: no transition
+        if (!fx.hasImage || !visible || !target) fx.set(target);
+        else pick();
+    }
+    Component.onCompleted: fx.set(target)
+
+    function pick() {
+        if (picker.running) return;      // onExited picks again if the target moved on
+        picker.path = target;
+        picker.answered = false;
+        picker.command = [tool, "pick", target];
+        picker.running = true;
+        fallback.restart();
     }
 
-    Image {
-        id: a
+    function answer(path, kind, map) {
+        if (picker.answered) return;
+        picker.answered = true;
+        fallback.stop();
+        if (path === target) fx.show(path, kind, map);
+    }
+
+    Process {
+        id: picker
+        property string path
+        property bool answered: true
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const p = text.trim().split("\t");
+                root.answer(picker.path, p[0], p[1] || "");
+            }
+        }
+        onExited: Qt.callLater(() => {
+            root.answer(picker.path, "fade", "");
+            if (picker.path !== root.target) root.retarget();
+        })
+    }
+
+    // The wallpaper has to change even if the script is missing or stuck.
+    Timer {
+        id: fallback
+        interval: 1500
+        onTriggered: root.answer(picker.path, "fade", "")
+    }
+
+    WallFx {
+        id: fx
         anchors.fill: parent
-        fillMode: Image.PreserveAspectCrop
-        asynchronous: true
-        sourceSize: Qt.size(root.width, root.height)
-        opacity: root.frontIsA ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 450; easing.type: Easing.InOutQuad } }
-        onStatusChanged: if (status === Image.Ready && source.toString() === root.target && !root.frontIsA) root.frontIsA = true
-    }
-
-    Image {
-        id: b
-        anchors.fill: parent
-        fillMode: Image.PreserveAspectCrop
-        asynchronous: true
-        sourceSize: Qt.size(root.width, root.height)
-        opacity: root.frontIsA ? 0 : 1
-        Behavior on opacity { NumberAnimation { duration: 450; easing.type: Easing.InOutQuad } }
-        onStatusChanged: if (status === Image.Ready && source.toString() === root.target && root.frontIsA) root.frontIsA = false
-    }
-
-    Component.onCompleted: {
-        a.source = target;
+        ink: Theme.fg
+        edge: Theme.primary
     }
 }
