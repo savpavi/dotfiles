@@ -113,6 +113,24 @@ Her çalışan aşama etiketli (`git tag`). Bir etikete dönmek:
 git checkout ETIKET && sudo make install
 ```
 
+## Denetim ve test
+
+```sh
+dwl-theme check            # tema dosyaları: eksik/yanlış tipte anahtar, bozuk renk (hata),
+                           # yazım hatası, kurulu olmayan imleç, eksik duvar (uyarı)
+tests/themes.sh            # her temayı başsız bir dwl oturumunda uygular
+tests/themes.sh kor nord   # yalnız verilenler
+```
+
+`tests/themes.sh` önce `check` çalıştırır, sonra ekransız bir dwl açıp temaları sırayla uygular
+ve her birinde statik duvarı değiştirir. dwl ya da bar çökerse, durum dosyaları yazılmazsa ya da
+bar günlüğünde QML hatası çıkarsa başarısız olur. Gerçek oturuma dokunmaz (geçici durum dizini,
+`DWL_NESTED=1`); 12 tema yaklaşık yarım dakika sürer. Görüntüyü denetlemez: "çökmedi" der,
+"doğru göründü" demez. Yeni tema ekledikten ya da `bar/` ve `dwl-theme`'i değiştirdikten sonra çalıştır.
+
+Temaya yeni bir anahtar eklenirse `bin/dwl-theme` içindeki `SCHEMA_REQUIRED` / `SCHEMA_OPTIONAL`
+tablosuna da yazılmalı, yoksa `check` onu "tanınmayan anahtar" diye uyarır.
+
 ## Bağımlı olduğu, bu depoda olmayan şeyler
 
 - `~/dotfiles/bin/dot-drive`, `dot-send`, `dot-grab` ve

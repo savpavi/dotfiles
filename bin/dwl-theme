@@ -6,6 +6,10 @@
   dwl-theme apply KIMLIK  temayı uygula
   dwl-theme pick          fuzzel ile seç ve uygula
   dwl-theme init          durum dosyaları yoksa etkin (ya da varsayılan) temayı yaz
+  dwl-theme check [KIMLIK...]  tema dosyalarını denetle (hepsi ya da verilenler); hata varsa çıkış 1.
+                          Hata: eksik/yanlış tipte anahtar, bozuk renk, bilinmeyen düzen.
+                          Uyarı (çıkışı etkilemez; --strict ile etkiler): tanınmayan anahtar,
+                          kurulu olmayan imleç/yazı tipi, indirilmemiş hareketli duvar, eksik statik duvar
   dwl-theme wall show|next|off|on|toggle|restart   hareketli duvar kağıdı (waywallen)
                           hareketli duvar kapalıyken statik duvar görünür (temada "wallpapers"
                           ya da ~/.config/dwl-theme/walls.json: {"tema": ["yol", ...]}); "next" onları gezer
@@ -176,7 +180,7 @@ radius={menu['radius']}
     write("current", tid + "\n")
     # SDDM giriş ekranı da etkin temayı izlesin (sddm/install.sh kurduysa dosya bize ait).
     sddm = Path("/usr/share/sddm/themes/dwl/theme.conf.user")
-    if os.access(sddm, os.W_OK):
+    if os.access(sddm, os.W_OK) and not os.environ.get("DWL_NESTED"):  # deneme oturumu giriş ekranını değiştirmesin
         sddm.write_text("[General]\n" + "".join(f"{k}={v}\n" for k, v in (
             ("bg", wm["root"]), ("fg", menu["text"]), ("accent", menu["match"]),
             ("border", menu["border"]), ("panel", menu["bg"]),
@@ -903,6 +907,185 @@ def wall(cmd):
     wall_show()
 
 
+# --- Denetim: dwl-theme check ---
+# Şema tek yerde: yeni bir anahtar eklenince buraya da yaz, yoksa "tanınmayan anahtar" uyarısı verir.
+# Değer tipleri: "color" = #RRGGBB, "color?" = renk ya da boş, int/float/bool/str, list.
+LAYOUTS = ("strip", "islands", "rail")
+SCHEMA_REQUIRED = {
+    "name": "str",
+    "wm": {"root": "color", "border": "color", "focus": "color", "urgent": "color",
+           "borderpx": "int", "gap": "int", "anim": "int"},
+    "bar": {"layout": "str", "size": "int", "font": "str", "fontPx": "int",
+            "bg": "color", "fg": "color", "faded": "color", "accent": "color", "onAccent": "color",
+            "urgent": "color", "title": "color", "line": "color?", "clockBg": "color", "clockFg": "color",
+            "clockFormat": "str", "zeroPad": "bool"},
+    "term": {"bg": "color", "fg": "color", "cursor": "color", "cursorText": "color",
+             "selBg": "color", "selFg": "color", "palette": "list"},
+    "menu": {"bg": "color", "text": "color", "match": "color", "selBg": "color", "selText": "color",
+             "border": "color", "borderpx": "int", "radius": "int"},
+    "notify": {"bg": "color", "fg": "color", "low": "color", "frame": "color", "critical": "color",
+               "radius": "int"},
+}
+# Yoksa kod varsayılanı kullanır (0, opak, DEFAULT_CURSOR, duvarsız).
+SCHEMA_OPTIONAL = {
+    "cursor": "str", "live": "list", "wallpapers": "list",
+    "wm": {"radius": "int", "shadow": "int", "blur": "int"},
+    "bar": {"margin": "int", "radius": "int"},
+    "term": {"opacity": "float"},
+}
+
+
+def is_color(v):
+    return (isinstance(v, str) and len(v) == 7 and v[0] == "#"
+            and all(c in "0123456789abcdefABCDEF" for c in v[1:]))
+
+
+def type_ok(v, kind):
+    if kind == "color":
+        return is_color(v)
+    if kind == "color?":
+        return v == "" or is_color(v)
+    if kind == "int":
+        return isinstance(v, int) and not isinstance(v, bool) and v >= 0
+    if kind == "float":
+        return isinstance(v, (int, float)) and not isinstance(v, bool)
+    if kind == "bool":
+        return isinstance(v, bool)
+    if kind == "str":
+        return isinstance(v, str) and v != ""
+    if kind == "list":
+        return isinstance(v, list)
+    return False
+
+
+def cursor_installed(name):
+    dirs = [DATA / "icons", Path.home() / ".icons", Path("/usr/share/icons"), Path("/usr/local/share/icons")]
+    return any((d / name / "cursors").is_dir() for d in dirs)
+
+
+def font_installed(name):
+    try:
+        r = subprocess.run(["fc-list", ":family=" + name, "family"], capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.TimeoutExpired):
+        return True  # fc-list yoksa bilemeyiz; uyarı üretme
+    return bool(r.stdout.strip())
+
+
+def check_theme(tid, t):
+    """(hatalar, uyarılar) döndürür. Hata = tema uygulanınca bozuk çıktı ya da çökme."""
+    err, warn = [], []
+    if not isinstance(t, dict):
+        return ["dosyanın kökü bir nesne değil"], []
+
+    def walk(schema, required):
+        for key, kind in schema.items():
+            if isinstance(kind, dict):
+                sect = t.get(key)
+                if not isinstance(sect, dict):
+                    if required:
+                        err.append(f"{key}: bölüm yok ya da nesne değil")
+                    continue
+                for k, kd in kind.items():
+                    if k not in sect:
+                        if required:
+                            err.append(f"{key}.{k}: eksik")
+                    elif not type_ok(sect[k], kd):
+                        err.append(f"{key}.{k}: {kd} bekleniyor, değer {sect[k]!r}")
+            elif key not in t:
+                if required:
+                    err.append(f"{key}: eksik")
+            elif not type_ok(t[key], kind):
+                err.append(f"{key}: {kind} bekleniyor, değer {t[key]!r}")
+
+    walk(SCHEMA_REQUIRED, True)
+    walk(SCHEMA_OPTIONAL, False)
+
+    # Tanınmayan anahtar çoğunlukla yazım hatasıdır (ör. "raduis"): kod onu sessizce yok sayar.
+    known_top = set(SCHEMA_REQUIRED) | set(SCHEMA_OPTIONAL)
+    for key, val in t.items():
+        if key not in known_top:
+            warn.append(f"{key}: tanınmayan anahtar")
+        elif isinstance(val, dict):
+            known = set(SCHEMA_REQUIRED.get(key, {})) | set(SCHEMA_OPTIONAL.get(key, {})
+                                                         if isinstance(SCHEMA_OPTIONAL.get(key), dict) else {})
+            for k in val:
+                if k not in known:
+                    warn.append(f"{key}.{k}: tanınmayan anahtar")
+
+    bar, term = t.get("bar"), t.get("term")
+    if isinstance(bar, dict) and isinstance(bar.get("layout"), str) and bar["layout"] not in LAYOUTS:
+        err.append(f"bar.layout: {bar['layout']!r} bilinmiyor (olanlar: {', '.join(LAYOUTS)})")
+    if isinstance(term, dict) and isinstance(term.get("palette"), list):
+        pal = term["palette"]
+        if len(pal) != 16:
+            err.append(f"term.palette: 16 renk olmalı, {len(pal)} var")
+        err.extend(f"term.palette[{i}]: renk değil: {c!r}" for i, c in enumerate(pal) if not is_color(c))
+    if isinstance(term, dict) and "opacity" in term and type_ok(term["opacity"], "float") \
+            and not 0 < term["opacity"] <= 1:
+        err.append(f"term.opacity: 0 ile 1 arasında olmalı, değer {term['opacity']!r}")
+
+    # Buradan sonrası makineye bağlı: yalnız uyarı.
+    cur = t.get("cursor")
+    if isinstance(cur, str) and cur and not cursor_installed(cur):
+        warn.append(f"cursor: {cur!r} kurulu değil (dwl varsayılan imlece düşer)")
+    if isinstance(bar, dict) and isinstance(bar.get("font"), str) and bar["font"] and not font_installed(bar["font"]):
+        warn.append(f"bar.font: {bar['font']!r} kurulu değil")
+
+    live = t.get("live")
+    if isinstance(live, list):
+        bad = [w for w in live if not (isinstance(w, str) and w.isdigit())]
+        err.extend(f"live: Workshop kimliği rakamlardan oluşan bir dize olmalı: {w!r}" for w in bad)
+        good = [w for w in live if w not in bad]
+        dup = sorted({w for w in good if good.count(w) > 1})
+        if dup:
+            warn.append(f"live: yinelenen kimlik: {', '.join(dup)}")
+        if good and WW_DB.exists():
+            gone = [w for w in dict.fromkeys(good) if ww_item(w) is None]
+            if gone:
+                warn.append(f"live: waywallen'de yok ({len(gone)}/{len(set(good))}): {', '.join(gone)}")
+
+    # Statik duvarlar: static_walls() eksik dosyayı sessizce atlar, burada adını söyle.
+    walls = t.get("wallpapers")
+    if not walls:
+        try:
+            walls = json.loads(WALLS.read_text()).get(tid)
+        except (OSError, ValueError, AttributeError):
+            walls = None
+    if isinstance(walls, list):
+        lost = [w for w in walls if not (isinstance(w, str) and Path(w).expanduser().is_file())]
+        if lost:
+            warn.append(f"statik duvar: {len(lost)} dosya yok: {', '.join(map(str, lost[:3]))}"
+                        + (" …" if len(lost) > 3 else ""))
+    if not walls and not live:
+        warn.append("duvar yok: ne hareketli (live) ne statik")
+    return err, warn
+
+
+def check(ids, strict=False):
+    files = {f.stem: f for f in sorted(THEMES.glob("*.json"))}
+    unknown = [i for i in ids if i not in files]
+    if unknown:
+        sys.exit(f"dwl-theme: böyle bir tema yok: {', '.join(unknown)} (var olanlar: {', '.join(files)})")
+    nerr = nwarn = 0
+    for tid in ids or files:
+        try:
+            t = json.loads(files[tid].read_text())
+        except (OSError, ValueError) as e:
+            err, warn = [f"okunamadı: {e}"], []
+        else:
+            err, warn = check_theme(tid, t)
+        nerr += len(err)
+        nwarn += len(warn)
+        print(f"{'HATA ' if err else 'uyarı' if warn else 'tamam'}  {tid}")
+        for m in err:
+            print(f"       hata:  {m}")
+        for m in warn:
+            print(f"       uyarı: {m}")
+    n = len(ids or files)
+    print(f"\n{n} tema, {nerr} hata, {nwarn} uyarı")
+    return 1 if nerr or (strict and nwarn) else 0
+
+
 def pick():
     all_ = themes()
     cur = current()
@@ -947,6 +1130,9 @@ def main():
         apply(a[1])
     elif a == ["pick"]:
         pick()
+    elif a and a[0] == "check":
+        rest = [x for x in a[1:] if x != "--strict"]
+        sys.exit(check(rest, strict="--strict" in a[1:]))
     elif a == ["init"]:
         cur = current()
         if not (STATE / "dwl.conf").exists() or cur not in themes():
