@@ -411,6 +411,7 @@ static void tile(Monitor *m);
 static void kblayoutwrite(uint32_t idx);
 static void themeread(void);
 static void themeapply(void);
+static void cursorreload(void);
 static int themeevent(int fd, uint32_t mask, void *data);
 static void themewatch(void);
 static void togglebar(const Arg *arg);
@@ -473,6 +474,7 @@ static struct wlr_pointer_constraint_v1 *active_constraint;
 
 static struct wlr_cursor *cursor;
 static struct wlr_xcursor_manager *cursor_mgr;
+static char cursortheme[64], cursorloaded[64]; /* dwl.conf "cursor=", tema başına imleç */
 
 static struct wlr_scene_rect *root_bg;
 static struct wlr_session_lock_manager_v1 *session_lock_mgr;
@@ -3313,8 +3315,11 @@ setup(void)
 	 * Xcursor themes to source cursor images from and makes sure that cursor
 	 * images are available at all scale factors on the screen (necessary for
 	 * HiDPI support). Scaled cursors will be loaded with each output. */
-	cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
+	cursor_mgr = wlr_xcursor_manager_create(cursortheme[0] ? cursortheme : NULL, 24);
+	snprintf(cursorloaded, sizeof(cursorloaded), "%s", cursortheme);
 	setenv("XCURSOR_SIZE", "24", 1);
+	if (cursortheme[0])
+		setenv("XCURSOR_THEME", cursortheme, 1);
 
 	/*
 	 * wlr_cursor *only* displays an image on screen. It does not move around
@@ -3603,6 +3608,8 @@ themeread(void)
 			animation_duration = MIN((unsigned int)strtoul(v, NULL, 10), 2000);
 		else if (!strcmp(line, "gap"))
 			gappx = MIN((unsigned int)strtoul(v, NULL, 10), 128);
+		else if (!strcmp(line, "cursor"))
+			snprintf(cursortheme, sizeof(cursortheme), "%s", v);
 	}
 	fclose(f);
 }
@@ -3628,6 +3635,33 @@ themeapply(void)
 	}
 	wl_list_for_each(m, &mons, link)
 		arrange(m);
+	cursorreload();
+}
+
+void
+cursorreload(void)
+{
+	struct wlr_xcursor_manager *old = cursor_mgr, *mgr;
+#ifdef XWAYLAND
+	struct wlr_xcursor *xcursor;
+#endif
+
+	if (!strcmp(cursortheme, cursorloaded))
+		return;
+	if (!(mgr = wlr_xcursor_manager_create(cursortheme[0] ? cursortheme : NULL, 24)))
+		return;
+	/* imleç eski yöneticiye işaret ediyor; önce yenisine geçir, sonra eskisini kapat */
+	cursor_mgr = mgr;
+	wlr_cursor_set_xcursor(cursor, cursor_mgr, "default");
+	wlr_xcursor_manager_destroy(old);
+	snprintf(cursorloaded, sizeof(cursorloaded), "%s", cursortheme);
+	if (cursortheme[0])
+		setenv("XCURSOR_THEME", cursortheme, 1);
+#ifdef XWAYLAND
+	if (xwayland && (xcursor = wlr_xcursor_manager_get_xcursor(cursor_mgr, "default", 1)))
+		wlr_xwayland_set_cursor(xwayland, wlr_xcursor_image_get_buffer(xcursor->images[0]),
+				xcursor->images[0]->hotspot_x, xcursor->images[0]->hotspot_y);
+#endif
 }
 
 int

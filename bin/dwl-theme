@@ -161,6 +161,7 @@ radius={menu['radius']}
     dwl = "".join(f"{k}={wm[k]}\n" for k in ("root", "border", "focus", "urgent", "borderpx", "gap", "anim") if k in wm)
     # scenefx: köşe yarıçapı, gölge ve blur. Temada yoksa 0 yazılır ki önceki temadan kalmasın.
     dwl += "".join(f"{k}={wm.get(k, 0)}\n" for k in ("radius", "shadow", "blur"))
+    dwl += f"cursor={t.get('cursor', DEFAULT_CURSOR)}\n"  # dwl imleç temasını canlı değiştirir
 
     STATE.mkdir(parents=True, exist_ok=True)
     write("ghostty", "\n".join(ghostty) + "\n")
@@ -187,6 +188,7 @@ radius={menu['radius']}
 CFG = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
 DATA = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share")
 HOST = STATE / "host-backup"
+DEFAULT_CURSOR = "Nordzy-cursors"
 HOST_FILES = [
     CFG / "qt6ct/colors/savpavi.conf", CFG / "qt5ct/colors/savpavi.conf", CFG / "kdeglobals",
     CFG / "gtk-3.0/savpavi-colors.css", CFG / "gtk-4.0/savpavi-colors.css",
@@ -224,7 +226,20 @@ def host_save():
         else:
             saved[str(f)] = None
     (HOST / "manifest.json").write_text(json.dumps(
-        {"files": saved, "color-scheme": gsetting("color-scheme")}, indent=1))
+        {"files": saved, "color-scheme": gsetting("color-scheme"),
+         "cursor-theme": gsetting("cursor-theme")}, indent=1))
+
+
+def host_keep(key):
+    """Yedek, bu ayar eklenmeden önce alındıysa ayarın ilk halini sonradan ekler."""
+    man = HOST / "manifest.json"
+    try:
+        m = json.loads(man.read_text())
+    except (OSError, ValueError):
+        return
+    if key not in m:
+        m[key] = gsetting(key)
+        man.write_text(json.dumps(m, indent=1))
 
 
 def host_restore():
@@ -241,6 +256,8 @@ def host_restore():
             Path(f).unlink(missing_ok=True)
     if m.get("color-scheme"):
         gsetting("color-scheme", m["color-scheme"])
+    if m.get("cursor-theme"):
+        gsetting("cursor-theme", m["cursor-theme"])
     kde_notify()
     shutil.rmtree(HOST, ignore_errors=True)
 
@@ -410,14 +427,20 @@ inactive_colors={roles(fg, accent, on_accent)}
     with target.open("w", encoding="utf-8") as f:
         dst.write(f, space_around_delimiters=False)
 
-    # GTK açık/koyu tercihi
+    # GTK açık/koyu tercihi ve imleç (cursor-shape desteklemeyen GTK3/Xwayland uygulamaları için)
+    cur = t.get("cursor", DEFAULT_CURSOR)
     for ini in (CFG / "gtk-3.0/settings.ini", CFG / "gtk-4.0/settings.ini"):
         if ini.exists():
             lines = [l for l in ini.read_text().splitlines()
-                     if not l.startswith("gtk-application-prefer-dark-theme")]
+                     if not l.startswith(("gtk-application-prefer-dark-theme", "gtk-cursor-theme-name"))]
             lines.append("gtk-application-prefer-dark-theme=" + ("true" if dark else "false"))
+            lines.append("gtk-cursor-theme-name=" + cur)
             ini.write_text("\n".join(lines) + "\n")
     gsetting("color-scheme", "prefer-dark" if dark else "prefer-light")
+    host_keep("cursor-theme")
+    gsetting("cursor-theme", cur)
+    os.environ["XCURSOR_THEME"] = cur
+    quiet("dbus-update-activation-environment", "--systemd", "XCURSOR_THEME")
     # Açık Qt uygulamaları: qt6ct yalnız kendi ayar dosyasını izler; zaman damgasını
     # güncellemek paleti yeniden okutur. KDE uygulamaları için ayrıca sinyal.
     for conf in (CFG / "qt6ct/qt6ct.conf", CFG / "qt5ct/qt5ct.conf"):
