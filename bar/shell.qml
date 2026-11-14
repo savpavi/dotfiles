@@ -355,6 +355,22 @@ ShellRoot {
     SystemClock { id: clock; precision: SystemClock.Minutes }
     PwObjectTracker { objects: [Pipewire.defaultAudioSink] }
 
+    // Statik duvar kağıdı: dwl-theme wall.json'a "image" yazar (hareketli duvar
+    // açıkken boş). Değişim Wallpaper.qml'de çizim/yayılma geçişiyle oynar.
+    property string wallImage: ""
+    FileView {
+        path: root.stateDir + "/wall.json"
+        watchChanges: true
+        onFileChanged: reload()
+        onLoaded: {
+            try { root.wallImage = JSON.parse(text()).image || ""; } catch (e) { root.wallImage = ""; }
+        }
+    }
+    Variants {
+        model: Quickshell.screens
+        Wallpaper { sh: root }
+    }
+
     // Üstte duran düzenler: strip (düz şerit) ve islands (yüzen adacıklar)
     Variants {
         model: Quickshell.screens

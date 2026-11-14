@@ -7,6 +7,8 @@
   dwl-theme pick          fuzzel ile seç ve uygula
   dwl-theme init          durum dosyaları yoksa etkin (ya da varsayılan) temayı yaz
   dwl-theme wall show|next|off|on|toggle|restart   hareketli duvar kağıdı (waywallen)
+                          hareketli duvar kapalıyken statik duvar görünür (temada "wallpapers"
+                          ya da ~/.config/dwl-theme/walls.json: {"tema": ["yol", ...]}); "next" onları gezer
   dwl-theme list --json   bar için tema listesi
   dwl-theme host-restore  Qt/KDE/GTK renklerini dwl'den önceki haline döndür (dwl-session çağırır)
 
@@ -537,11 +539,31 @@ def wall_async():
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
 
 
+WALLS = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "dwl-theme/walls.json"
+
+
+def static_walls(tid, theme):
+    """Temanın statik duvarları: temadaki "wallpapers", yoksa kişisel walls.json (repo dışı)."""
+    walls = theme.get("wallpapers")
+    if not walls:
+        try:
+            walls = json.loads(WALLS.read_text()).get(tid)
+        except (OSError, ValueError, AttributeError):
+            walls = None
+    return [str(Path(w).expanduser()) for w in walls or [] if Path(w).expanduser().is_file()]
+
+
 def wall(cmd):
     st = wall_state()
     tid = current()
-    n = len(themes().get(tid, {}).get("live", []))
-    if cmd == "next" and n:
+    theme = themes().get(tid, {})
+    n = len(theme.get("live", []))
+    statics = static_walls(tid, theme)
+    if cmd == "next" and statics and (st.get("off") or not n):
+        # hareketli duvar kapalıyken "sonraki" statik duvarları gezer
+        idx = st.setdefault("static", {})
+        idx[tid] = (idx.get(tid, 0) + 1) % len(statics)
+    elif cmd == "next" and n:
         idx = st.setdefault("index", {})
         idx[tid] = (idx.get(tid, 0) + 1) % n
         st["off"] = False
@@ -558,6 +580,9 @@ def wall(cmd):
         time.sleep(0.6)
     elif cmd != "show":
         sys.exit(__doc__)
+    # Bar bu yolu arka plana çizer; hareketli duvar açıkken boş kalır ki onu örtmesin.
+    live_on = bool(n) and not st.get("off") and WW_SHELL.exists()
+    st["image"] = "" if live_on or not statics else statics[st.get("static", {}).get(tid, 0) % len(statics)]
     STATE.mkdir(parents=True, exist_ok=True)
     write("wall.json", json.dumps(st) + "\n")
     wall_show()
