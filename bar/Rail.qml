@@ -117,6 +117,26 @@ Item {
         spacing: 10
 
         Label {
+            visible: rail.sh.claude5h >= 0
+            text: "cl\n" + rail.sh.claude5h + (rail.sh.claude7d >= 0 ? "\n" + rail.sh.claude7d : "")
+            lineHeight: 0.95
+            font.pixelSize: rail.b.fontPx - 2
+            color: rail.sh.claudeMax >= 80 ? rail.b.urgent : rail.b.title
+            MouseArea {
+                anchors.fill: parent
+                onClicked: rail.sh.togglePanel("claude", rail.output)
+            }
+        }
+        Media {
+            sh: rail.sh; glyphOnly: true
+            width: rail.width; height: rail.cell
+            fg: rail.b.accent; dim: rail.b.title
+        }
+        SysTray {
+            win: rail.win; vertical: true; cell: rail.cell
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+        Label {
             visible: rail.sh.hasSink
             text: rail.sh.muted ? "ses\n--" : "ses\n" + rail.sh.volume
             lineHeight: 0.95
@@ -135,17 +155,6 @@ Item {
             color: rail.sh.cpu >= 85 ? rail.b.urgent : rail.b.title
         }
         Label {
-            visible: rail.sh.claude5h >= 0
-            text: "cl\n" + rail.sh.claude5h + (rail.sh.claude7d >= 0 ? "\n" + rail.sh.claude7d : "")
-            lineHeight: 0.95
-            font.pixelSize: rail.b.fontPx - 2
-            color: rail.sh.claudeMax >= 80 ? rail.b.urgent : rail.b.title
-            MouseArea {
-                anchors.fill: parent
-                onClicked: rail.sh.togglePanel("claude", rail.output)
-            }
-        }
-        Label {
             text: "ram\n" + rail.sh.ram
             lineHeight: 0.95
             font.pixelSize: rail.b.fontPx - 2
@@ -156,15 +165,6 @@ Item {
             text: rail.sh.kb
             font.pixelSize: rail.b.fontPx - 2
             color: rail.sh.kb === "tr" ? rail.b.title : rail.b.accent
-        }
-        Media {
-            sh: rail.sh; glyphOnly: true
-            width: rail.width; height: rail.cell
-            fg: rail.b.accent; dim: rail.b.title
-        }
-        SysTray {
-            win: rail.win; vertical: true; cell: rail.cell
-            anchors.horizontalCenter: parent.horizontalCenter
         }
         Tray {
             sh: rail.sh; output: rail.output; vertical: true

@@ -103,6 +103,16 @@ Item {
 
         Media { sh: strip.sh; height: strip.cellH; fg: strip.b.fg; dim: strip.b.faded }
         Cell {
+            visible: strip.sh.claude5h >= 0
+            text: "claude " + strip.sh.claudeText(" · ")
+            color: strip.sh.claudeMax >= 80 ? strip.b.accent : strip.b.fg
+            MouseArea {
+                anchors.fill: parent
+                onClicked: strip.sh.togglePanel("claude", strip.output)
+            }
+        }
+        SysTray { win: strip.win; cell: strip.cellH }
+        Cell {
             visible: strip.sh.hasSink
             text: strip.sh.muted ? "ses --" : "ses " + strip.sh.volume
             color: strip.sh.muted ? strip.b.faded : strip.b.fg
@@ -117,15 +127,6 @@ Item {
             color: strip.sh.cpu >= 85 ? strip.b.accent : strip.b.fg
         }
         Cell {
-            visible: strip.sh.claude5h >= 0
-            text: "claude " + strip.sh.claudeText(" · ")
-            color: strip.sh.claudeMax >= 80 ? strip.b.accent : strip.b.fg
-            MouseArea {
-                anchors.fill: parent
-                onClicked: strip.sh.togglePanel("claude", strip.output)
-            }
-        }
-        Cell {
             text: "ram " + strip.sh.ram + "%"
             color: strip.sh.ram >= 90 ? strip.b.accent : strip.b.fg
         }
@@ -134,7 +135,6 @@ Item {
             text: strip.sh.kb
             color: strip.sh.kb === "tr" ? strip.b.fg : strip.b.accent
         }
-        SysTray { win: strip.win; cell: strip.cellH }
         Tray { sh: strip.sh; output: strip.output; cell: strip.cellH }
         Rectangle {
             height: strip.cellH

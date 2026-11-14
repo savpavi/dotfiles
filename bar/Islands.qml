@@ -116,6 +116,16 @@ Item {
             }
             Media { sh: isl.sh; height: isl.h; fg: isl.b.fg; dim: isl.b.faded; maxWidth: 260 }
             Label {
+                visible: isl.sh.claude5h >= 0
+                text: "claude  " + isl.sh.claudeText(" · ")
+                color: isl.sh.claudeMax >= 80 ? isl.b.urgent : isl.b.fg
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: isl.sh.togglePanel("claude", isl.output)
+                }
+            }
+            SysTray { win: isl.win; cell: isl.h }
+            Label {
                 visible: isl.sh.hasSink
                 text: isl.sh.muted ? "ses  –" : "ses  " + isl.sh.volume
                 color: isl.sh.muted ? isl.b.faded : isl.b.fg
@@ -130,15 +140,6 @@ Item {
                 color: isl.sh.cpu >= 85 ? isl.b.urgent : isl.b.accent
             }
             Label {
-                visible: isl.sh.claude5h >= 0
-                text: "claude  " + isl.sh.claudeText(" · ")
-                color: isl.sh.claudeMax >= 80 ? isl.b.urgent : isl.b.fg
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: isl.sh.togglePanel("claude", isl.output)
-                }
-            }
-            Label {
                 text: "ram  " + isl.sh.ram + "%"
                 color: isl.sh.ram >= 90 ? isl.b.urgent : isl.b.accent
             }
@@ -147,7 +148,6 @@ Item {
                 text: isl.sh.kb
                 color: isl.sh.kb === "tr" ? isl.b.faded : isl.b.accent
             }
-            SysTray { win: isl.win; cell: isl.h }
             Tray { sh: isl.sh; output: isl.output; cell: isl.h }
         }
     }
