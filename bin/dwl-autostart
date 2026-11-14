@@ -17,6 +17,14 @@ run() {
 # dwl kapanırken bu betiğe TERM yollar; çocukları da kapat.
 trap 'kill $pids 2>/dev/null; exit 0' TERM INT
 
+if [ -z "$DWL_NESTED" ]; then
+	# waywallen daemon'u oturumlar arasında yaşıyor ve açıldığı oturumun Wayland soketini
+	# tutuyor; yeni girişte web duvarları (CEF) eski sokete bağlanamayıp donuyordu.
+	# Bar "wall show" demeden önce yeni ortamla yeniden başlat (çalışmıyorsa dokunmaz).
+	dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+	systemctl --user try-restart waywallen.service 2>/dev/null
+fi
+
 run quickshell -p "$here/../bar"
 
 if [ -z "$DWL_NESTED" ]; then
