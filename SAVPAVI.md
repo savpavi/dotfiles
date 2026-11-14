@@ -113,6 +113,37 @@ Her çalışan aşama etiketli (`git tag`). Bir etikete dönmek:
 git checkout ETIKET && sudo make install
 ```
 
+## Upstream'i güncelleme
+
+`savpavi` dalı `main`in (codeberg, v0.9-75) üstünde duruyor; `dwl.c` yaklaşık 1100 satır ekleme taşıyor.
+C kaynağına dokunan değişiklikler iki türlü ve aynı commit'lerde karışık: ayrı ayrı yama dosyası olarak
+DIŞA AKTARILMADI. Yeni bir dwl sürümüne geçerken neyin nereden geldiğini bu tablo söyler.
+
+**Üçüncü taraf yamalar** (`~/Projects/dwl-patches/patches/<ad>`; yeni sürümde önce bunların güncel hâli aranır):
+
+| Yama | Girdiği commit | Elle uyarlanan |
+|---|---|---|
+| ipc, monitorconfig, autostart | `27541db` | yok |
+| animation | `32f51b2` | `tile()` parçası elle; XWayland dalına `return 0`; tick 16→6 ms |
+| scenefx | `e69b652` | `applygeom` parçası `animation_apply` içine; `snapshot` parçaları atıldı; `roundbuffer` `c->geom` kullanır |
+
+**Kendi eklemelerim** (upstream'de karşılığı yok; her sürümde elle taşınır):
+
+| Ne | İşlev / yer | Girdiği commit |
+|---|---|---|
+| Tema dosyasını canlı izleme (renk, kenarlık, gap, anim, radius, shadow, blur) | `themeread`, `themeapply`, `themewatch` | `27541db` |
+| Monitör kuralında en yakın mod (`mode -2`), adaptive sync yalnız 1 ise | `monrule` çevresi | `27541db` |
+| tile/monocle için gap, gap=0'da tek çizgi kenarlık | `tile`, `monocle` | `27541db`, `bf914c7` |
+| Klavye düzenini dosyaya yazma | `kblayoutwrite` | `8fcef1d` |
+| Kurallar: çıkış adıyla monitör, harf duyarsız eşleşme, `=` tam eşleşme, `panel` | `applyrules`, `Rule` | `436216e`, `a0c3106` |
+| Aç ya da git | `focusorspawn`, `APP()` | `a9cd591` |
+| Kopan ekranın pencerelerini geri götürme | `restoremons`, `Client.origmon` | `85ace62` |
+| İmleç temasını canlı değiştirme | `cursorreload` | `27af7a6` |
+
+Yol: `git fetch origin && git rebase origin/main` (önce etiketle: geri dönüş noktası). Çakışma en çok
+`tile`, `applyrules`, `rendermon`/`animation_apply` ve `closemon`'da çıkar. Derledikten sonra
+`tests/themes.sh` çalıştır; kurulu ikiliyi değil yeni derlenen `./dwl`'yi dener.
+
 ## Denetim ve test
 
 ```sh

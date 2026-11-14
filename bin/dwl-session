@@ -29,4 +29,7 @@ export TERMINAL=alacritty
 /usr/local/bin/dwl "$@"
 rc=$?
 "$(dirname "$(readlink -f "$0")")/dwl-theme" host-restore
+# dwl-autostart bunu systemd kullanıcı ortamına koymuştu; kalırsa sonraki oturumda
+# (Hyprland) savpavi-shell.service kendini dwl'de sanıp başlamaz.
+systemctl --user unset-environment XDG_CURRENT_DESKTOP 2>/dev/null
 exit $rc

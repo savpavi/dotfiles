@@ -17,7 +17,7 @@
   dwl-theme host-restore  Qt/KDE/GTK renklerini dwl'den önceki haline döndür (dwl-session çağırır)
 
 Temalar themes/*.json içinde. Uygulanınca ~/.local/state/dwl-theme/ altına
-dwl.conf, theme.json, alacritty.toml, ghostty, fuzzel.ini ve dunstrc üretilir; dwl ve bar bu
+dwl.conf, theme.json, alacritty.toml, fuzzel.ini ve dunstrc üretilir; dwl ve bar bu
 dosyaları izler, yeniden başlatma gerekmez. Ayrıca Obsidian snippet'i
 (<kasa>/.obsidian/snippets/dwl-theme.css, DWL_THEME_OBSIDIAN) ve Vesktop/Vencord temasını
 (themes/savpavi.css, dotfiles şablonundan; host yedeğine girer), spicetify [dwl] renk şemasını
@@ -63,20 +63,6 @@ def hx(c):
 
 def render(tid, t):
     wm, term, menu, note, bar = t["wm"], t["term"], t["menu"], t["notify"], t["bar"]
-
-    ghostty = [
-        f"# {t['name']} — dwl-theme tarafından üretildi, elle düzenleme",
-        f"background = {term['bg']}",
-        f"foreground = {term['fg']}",
-        f"cursor-color = {term['cursor']}",
-        f"cursor-text = {term['cursorText']}",
-        f"selection-background = {term['selBg']}",
-        f"selection-foreground = {term['selFg']}",
-        "background-opacity = 1",
-        "window-padding-x = 10",
-        "window-padding-y = 8",
-        "app-notifications = no-clipboard-copy,no-config-reload",
-    ] + [f"palette = {i}={c}" for i, c in enumerate(term["palette"])]
 
     names = ("black", "red", "green", "yellow", "blue", "magenta", "cyan", "white")
     pal = term["palette"]
@@ -172,7 +158,6 @@ radius={menu['radius']}
     dwl += f"cursor={t.get('cursor', DEFAULT_CURSOR)}\n"  # dwl imleç temasını canlı değiştirir
 
     STATE.mkdir(parents=True, exist_ok=True)
-    write("ghostty", "\n".join(ghostty) + "\n")
     write("alacritty.toml", alacritty)  # alacritty dosyayı izler, kendiliğinden yeniler
     write("fuzzel.ini", fuzzel)
     write("dunstrc", dunst)
@@ -758,7 +743,6 @@ def apply(tid, live=True):
         if subprocess.run(["pgrep", "-f", "dunst -conf .*dwl-theme/dunstrc"],
                           stdout=subprocess.DEVNULL).returncode == 0:
             quiet("dunstctl", "reload", str(STATE / "dunstrc"))
-        quiet("pkill", "-USR2", "-f", "^ghostty .*dwl-theme/ghostty")
         render_apps(all_[tid])
         name = all_[tid].get("name", tid)
         for fn in (render_obsidian, render_discord, render_spotify, render_telegram):
