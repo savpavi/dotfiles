@@ -96,7 +96,7 @@ The compositor source came in with its history through `git subtree`, so upstrea
 git subtree pull --prefix=dwl https://codeberg.org/dwl/dwl.git main
 ```
 
-`docs/dwl.md` lists which third-party patches and which of my own additions touch the C source, and where conflicts are likely.
+The tree is based on the v0.9 release, not on upstream `main`; pass a release tag instead of `main` to stay on releases. `docs/dwl.md` lists which third-party patches and which of my own additions touch the C source, and what a trial merge against `main` looked like.
 
 ## History
 

@@ -14,13 +14,12 @@
                           hareketli duvar kapalıyken statik duvar görünür (temada "wallpapers"
                           ya da ~/.config/dwl-theme/walls.json: {"tema": ["yol", ...]}); "next" onları gezer
   dwl-theme list --json   bar için tema listesi
-  dwl-theme host-restore  Qt/KDE/GTK renklerini dwl'den önceki haline döndür (dwl-session çağırır)
 
 Temalar themes/*.json içinde. Uygulanınca ~/.local/state/dwl-theme/ altına
 dwl.conf, theme.json, alacritty.toml, fuzzel.ini ve dunstrc üretilir; dwl ve bar bu
 dosyaları izler, yeniden başlatma gerekmez. Ayrıca Obsidian snippet'i
 (<kasa>/.obsidian/snippets/dwl-theme.css, DWL_THEME_OBSIDIAN) ve Vesktop/Vencord temasını
-(themes/savpavi.css, templates/vesktop.css şablonundan; host yedeğine girer), spicetify [dwl] renk şemasını
+(themes/savpavi.css, templates/vesktop.css şablonundan), spicetify [dwl] renk şemasını
 (Spotify sonraki açılışta görür) ve Telegram temasını (~/.config/dwl-theme/telegram/, bir kez
 elle seçilir, sonra kendisi yenilenir) yazar.
 """
@@ -175,20 +174,11 @@ radius={menu['radius']}
 
 
 # --- Uygulama renkleri: Qt (qt6ct/qt5ct), KDE (kdeglobals) ve GTK ---
-# Bu dosyalar Hyprland oturumuyla ORTAK (savpavi-shell'in dot-shell-theme'i de aynı yerlere
-# yazar). O yüzden ilk yazmadan önce yedeklenir (host_save) ve dwl kapanınca geri konur
-# (host_restore; bin/dwl-session çağırır). Böylece Hyprland'e dönünce kendi renkleri durur.
+# Bu dosyaların tek yazarı dwl-theme; renkler oturumlar arasında kalır (çıkışta geri alınmaz).
+# kdeglobals'ta yalnız renk grupları ve [UiSettings] ColorScheme değişir, diğer anahtarlara dokunulmaz.
 CFG = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
 DATA = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share")
-HOST = STATE / "host-backup"
 DEFAULT_CURSOR = "Nordzy-cursors"
-HOST_FILES = [
-    CFG / "qt6ct/colors/savpavi.conf", CFG / "qt5ct/colors/savpavi.conf", CFG / "kdeglobals",
-    CFG / "gtk-3.0/savpavi-colors.css", CFG / "gtk-4.0/savpavi-colors.css",
-    CFG / "gtk-3.0/settings.ini", CFG / "gtk-4.0/settings.ini",
-    DATA / "color-schemes/Savpavi.colors",
-]
-
 
 def gsetting(key, value=None):
     cmd = ["gsettings", "get" if value is None else "set", "org.gnome.desktop.interface", key]
@@ -203,75 +193,6 @@ def gsetting(key, value=None):
 def kde_notify():
     quiet("dbus-send", "--type=signal", "/KGlobalSettings",
           "org.kde.KGlobalSettings.notifyChange", "int32:0", "int32:0")
-
-
-def host_save():
-    """Ortak dosyaların dwl'den önceki halini bir kez saklar (yedek varsa dokunmaz)."""
-    import shutil
-    if (HOST / "manifest.json").exists():
-        return
-    HOST.mkdir(parents=True, exist_ok=True)
-    saved = {}
-    for i, f in enumerate(HOST_FILES):
-        if f.exists():
-            shutil.copy2(f, HOST / f"{i}.bak")
-            saved[str(f)] = f"{i}.bak"
-        else:
-            saved[str(f)] = None
-    (HOST / "manifest.json").write_text(json.dumps(
-        {"files": saved, "color-scheme": gsetting("color-scheme"),
-         "cursor-theme": gsetting("cursor-theme")}, indent=1))
-
-
-def host_keep(key):
-    """Yedek, bu ayar eklenmeden önce alındıysa ayarın ilk halini sonradan ekler."""
-    man = HOST / "manifest.json"
-    try:
-        m = json.loads(man.read_text())
-    except (OSError, ValueError):
-        return
-    if key not in m:
-        m[key] = gsetting(key)
-        man.write_text(json.dumps(m, indent=1))
-
-
-def host_keep_file(f):
-    """Yedek bu dosya listeye girmeden önce alındıysa dosyanın dwl öncesi halini ekler."""
-    import shutil
-    man = HOST / "manifest.json"
-    try:
-        m = json.loads(man.read_text())
-    except (OSError, ValueError):
-        host_save()
-        return
-    if str(f) in m["files"]:
-        return
-    bak = None
-    if f.exists():
-        bak = f"extra-{len(m['files'])}.bak"
-        shutil.copy2(f, HOST / bak)
-    m["files"][str(f)] = bak
-    man.write_text(json.dumps(m, indent=1))
-
-
-def host_restore():
-    """dwl'den önceki uygulama renklerini geri koyar ve yedeği siler."""
-    import shutil
-    man = HOST / "manifest.json"
-    if not man.exists():
-        return
-    m = json.loads(man.read_text())
-    for f, bak in m["files"].items():
-        if bak and (HOST / bak).exists():
-            shutil.copy2(HOST / bak, f)
-        elif bak is None:
-            Path(f).unlink(missing_ok=True)
-    if m.get("color-scheme"):
-        gsetting("color-scheme", m["color-scheme"])
-    if m.get("cursor-theme"):
-        gsetting("cursor-theme", m["cursor-theme"])
-    kde_notify()
-    shutil.rmtree(HOST, ignore_errors=True)
 
 
 def rgb(c):
@@ -404,7 +325,6 @@ inactive_colors={roles(fg, accent, on_accent)}
 @define-color theme_unfocused_selected_fg_color @accent_fg_color;
 """
 
-    host_save()
     for f, text in ((CFG / "qt6ct/colors/savpavi.conf", qt), (CFG / "qt5ct/colors/savpavi.conf", qt),
                     (DATA / "color-schemes/Savpavi.colors", scheme),
                     (CFG / "gtk-3.0/savpavi-colors.css", gtk), (CFG / "gtk-4.0/savpavi-colors.css", gtk)):
@@ -449,7 +369,6 @@ inactive_colors={roles(fg, accent, on_accent)}
             lines.append("gtk-cursor-theme-name=" + cur)
             ini.write_text("\n".join(lines) + "\n")
     gsetting("color-scheme", "prefer-dark" if dark else "prefer-light")
-    host_keep("cursor-theme")
     gsetting("cursor-theme", cur)
     os.environ["XCURSOR_THEME"] = cur
     quiet("dbus-update-activation-environment", "--systemd", "XCURSOR_THEME")
@@ -464,8 +383,7 @@ inactive_colors={roles(fg, accent, on_accent)}
 # --- Obsidian ve Discord: tema değişince CSS'i yeniden yaz; ikisi de dosyayı izleyip canlı yeniler ---
 OBSIDIAN_VAULTS = [Path(p).expanduser() for p in os.environ.get(
     "DWL_THEME_OBSIDIAN", "~/Documents/Obsidian/Aktif Kasa").split(":") if p]
-# Discord CSS'i Vencord/Vesktop üzerinden alır. Hyprland'deki dot-shell-theme de aynı
-# savpavi.css'i yazar (aynı şablonla); dwl'nin yazdığı host yedeğine girer, dwl kapanınca geri gelir.
+# Discord CSS'i Vencord/Vesktop üzerinden alır (themes/savpavi.css; istemcide bir kez etkinleştirilir).
 DISCORD_THEME_FILES = [Path.home() / ".config" / d / "themes/savpavi.css" for d in ("vesktop", "Vencord")]
 DISCORD_TEMPLATE = ROOT / "templates/vesktop.css"   # DankMaterialShell matugen şablonu, MIT
 
@@ -588,7 +506,6 @@ def render_discord(t, name):
         pass
     for f in DISCORD_THEME_FILES:
         if f.parent.is_dir():
-            host_keep_file(f)
             tmp = f.with_name("." + f.name + ".tmp")
             tmp.write_text(css)
             tmp.replace(f)
@@ -1102,10 +1019,6 @@ def main():
         }, ensure_ascii=False))
     elif len(a) == 2 and a[0] == "wall":
         wall(a[1])
-    elif a == ["host-save"]:
-        host_save()
-    elif a == ["host-restore"]:
-        host_restore()
     elif a == ["spotify-live"]:
         sys.exit(0 if spotify_live() else 1)
     elif a == ["current"]:

@@ -53,9 +53,9 @@ Wallpaper Engine Workshop kimlikleridir (waywallen ile oynatılır).
 
 Bilinen sınır: zaten açık Qt uygulamaları tema değişince yenilenmez, kapatıp açmak gerekir.
 
-dwl-theme Qt/KDE/GTK renk dosyalarına ilk yazmadan önce yedek alır ve çıkışta geri koyar (Hyprland
-oturumuyla ortak dosyalar olduğu günlerden kalma; Hyprland tarafı Kasım 2026'da kaldırıldı, bu mantık
-duruyor). Elle geri almak için: `dwl-theme host-restore`.
+Qt/KDE/GTK renk dosyalarının tek yazarı dwl-theme'dir ve renkler oturumlar arasında kalır. (Kasım
+2026'ya kadar bu dosyalar Hyprland oturumuyla ortaktı; dwl çıkışta eski hâllerini geri koyardı. O mantık
+kaldırıldı. Yedek olarak duran Plasma oturumu da aynı `kdeglobals` renklerini görür.)
 
 ### Uygulamalar
 
@@ -114,8 +114,8 @@ düz git: `git log`, `git checkout COMMIT`, sonra `install/dwl.sh derle kur`.
 
 ## Upstream'i güncelleme
 
-dwl kaynağı `dwl/` altında git subtree: eski `savpavi` dalı (codeberg `main`, v0.9-75 üstünde;
-`dwl.c` yaklaşık 1100 satır ekleme taşıyor) geçmişiyle birlikte alındı. C kaynağına dokunan değişiklikler
+dwl kaynağı `dwl/` altında git subtree: eski `savpavi` dalı geçmişiyle birlikte alındı. Taban v0.9
+SÜRÜMÜ (etiket), upstream `main` değil; `dwl.c` yaklaşık 1100 satır ekleme taşıyor. C kaynağına dokunan değişiklikler
 iki türlü ve aynı commit'lerde karışık: ayrı ayrı yama dosyası olarak DIŞA AKTARILMADI. Yeni bir dwl
 sürümüne geçerken neyin nereden geldiğini bu tablo söyler (commit kimlikleri subtree geçmişinde durur).
 
@@ -146,9 +146,14 @@ Yol (önce çalışan durumu commit'le; geri dönüş noktası odur):
 git subtree pull --prefix=dwl https://codeberg.org/dwl/dwl.git main
 ```
 
-Bu, upstream'deki yeni commit'leri `dwl/` altına birleştirir. Çakışma en çok `tile`, `applyrules`,
-`rendermon`/`animation_apply` ve `closemon`'da çıkar. Derledikten sonra `tests/themes.sh` çalıştır;
-kurulu ikiliyi değil yeni derlenen `dwl/dwl`'yi dener. Bu yol 14 Kas 2026 itibarıyla DENENMEDİ.
+Bu, upstream'deki yeni commit'leri `dwl/` altına birleştirir. Derledikten sonra `tests/themes.sh`
+çalıştır; kurulu ikiliyi değil yeni derlenen `dwl/dwl`'yi dener.
+
+Deneme (14 Kas 2026, geçici çalışma ağacında, sonra iptal edildi): komut çalışıyor, tabanı (v0.9) doğru
+buluyor. O gün upstream `main` v0.9'dan 75 commit ilerideydi (0.10-dev, yine wlroots 0.20) ve birleştirme
+16 çakışma bloğu verdi: `dwl.c` 13, `client.h` 2, `config.def.h` 1. Yani güncelleme mekanik olarak hazır,
+ama elle çözülecek gerçek bir iş. Geliştirme dalı yerine sürüm etiketini beklemek daha sakin bir yol:
+`main` yerine etiket adı verilir (ör. `v0.10`).
 
 ## Denetim ve test
 
