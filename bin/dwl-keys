@@ -36,7 +36,7 @@ SPAWN = [  # komutta geçen parça -> açıklama (ilk eşleşen)
     ("termcmd", "Terminal (Alacritty)"), ("menucmd", "Uygulama başlatıcı"),
     ("dwl-grab --clip", "İndir: panodaki link (yt-dlp / gallery-dl)"),
     ("dwl-grab", "İndir: tarayıcı sekmesi ya da panodaki link"),
-    ("dwl-theme pick", "Tema seç"), ("dwl-clip", "Pano geçmişi"), ("dwl-keys", "Bu kısayol listesi"),
+    ("dwl-theme pick", "Tema seç"), ("dwl-clip", "Pano geçmişi"), ("DigUp", "DigUp: dosyalarda içerikle ara"), ("dwl-keys", "Bu kısayol listesi"),
     ("dwl-shot region", "Ekran görüntüsü: alan"), ("dwl-shot edit", "Ekran görüntüsü: alan + düzenle"),
     ("dwl-shot screen", "Ekran görüntüsü: tüm ekran"),
     ("call lock", "Ekranı kilitle"), ("toggle power", "Güç menüsü"),
