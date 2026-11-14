@@ -1,3 +1,4 @@
+//@ pragma UseQApplication
 // dwl için Quickshell bar. Görünüm ~/.local/state/dwl-theme/theme.json'dan gelir
 // (bin/dwl-theme üretir); dosya değişince bar yeniden başlatılmadan güncellenir.
 import QtQuick
