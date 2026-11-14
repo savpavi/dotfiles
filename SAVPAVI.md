@@ -117,6 +117,9 @@ git checkout ETIKET && sudo make install
 
 - `~/dotfiles/bin/dot-drive`, `dot-send`, `dot-grab` ve
   `~/dotfiles/config/savpavi-shell/scripts/claude-usage.sh` (bar ve indirme kısayolu çağırır)
+- `~/dotfiles/bin/dot-wallfx` ve duvar geçişinin QML'i + shader'ı: `bar/WallFx.qml` ve `bar/shaders`
+  bu depoda `~/dotfiles/config/savpavi-shell/wallpaper/` altına göreli bağlantıdır (tek kopya orada;
+  depo `~/Projects/dwl`, dotfiles `~/dotfiles` altında durmalı). Eksikleri `./install.sh dotfiles` söyler.
 - waywallen (Flatpak) ve `~/.local/bin/waywallen-layer-shell` (hareketli duvar)
 - `brave-origin-bin` (AUR)
 - `vesktop-bin` (AUR), spicetify + `spotify-launcher`, `telegram-desktop` (uygulama renkleri)

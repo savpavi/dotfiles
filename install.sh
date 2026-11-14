@@ -3,7 +3,7 @@
 #
 #   ./install.sh            her adımı sırayla yap (sudo gereken yerde parola sorar)
 #   ./install.sh --dry-run  ne yapacağını yalnız yazdır
-#   ./install.sh ADIM...    yalnız verilen adımlar: paketler derle kur giris kullanici guvenlik
+#   ./install.sh ADIM...    yalnız verilen adımlar: paketler derle kur giris kullanici dotfiles guvenlik
 #
 # Depo /home/savpavi/Projects/dwl altında durmalı: config.h ve dwl.desktop bu yolu kullanır.
 set -eu
@@ -12,7 +12,7 @@ here=$(dirname "$(readlink -f "$0")")
 want=/home/savpavi/Projects/dwl
 dry=0
 [ "${1:-}" = "--dry-run" ] && { dry=1; shift; }
-steps=${*:-paketler derle kur giris kullanici guvenlik}
+steps=${*:-paketler derle kur giris kullanici dotfiles guvenlik}
 
 run() {
 	if [ "$dry" = 1 ]; then
@@ -72,6 +72,33 @@ for step in $steps; do
 		fi
 		run "$here/bin/dwl-theme" init
 		;;
+	dotfiles)
+		say "dotfiles bağımlılıkları (~/dotfiles; yalnız denetler, bir şey kurmaz)"
+		# Bar ve kısayollar bu dosyaları doğrudan çağırır; duvar geçişinin QML'i ve shader'ı
+		# depoda ~/dotfiles'a bağlantıdır (bar/WallFx.qml, bar/shaders). Eksik olan özellik
+		# sessizce çalışmaz, o yüzden burada adını söyle.
+		dot="$HOME/dotfiles"
+		missing=0
+		need() {
+			if [ -e "$1" ]; then
+				echo "  var    $1"
+			else
+				echo "  EKSİK  $1  ($2)"
+				missing=$((missing + 1))
+			fi
+		}
+		need "$dot/bin/dot-grab" "Super+Shift+D indirme"
+		need "$dot/bin/dot-wallfx" "statik duvar geçişi"
+		need "$dot/bin/dot-drive" "bar: Drive düğmesi"
+		need "$dot/bin/dot-send" "bar: telefon düğmesi"
+		need "$dot/config/savpavi-shell/scripts/claude-usage.sh" "bar: Claude limiti"
+		need "$dot/templates/apps/vesktop.css" "Vesktop teması"
+		need "$here/bar/WallFx.qml" "bağlantı kopuk: statik duvar çizilmez"
+		need "$here/bar/shaders/wallfx.frag.qsb" "bağlantı kopuk: statik duvar çizilmez"
+		if [ "$missing" -gt 0 ]; then
+			echo "  $missing eksik. Depoyu kur: git clone https://github.com/savpavi/dotfiles ~/dotfiles"
+		fi
+		;;
 	guvenlik)
 		say "Güvenlik duvarı: KDE Connect ve LocalSend (yalnız yerel ağ)"
 		if systemctl is-active --quiet firewalld 2>/dev/null; then
@@ -92,4 +119,4 @@ done
 say "Bitti"
 echo "Çıkış yapıp SDDM'de oturum olarak \"dwl\" seç."
 echo "Elle kurulanlar: brave-origin-bin (AUR), waywallen (Flatpak, hareketli duvar),"
-echo "~/dotfiles/bin içindeki dot-drive / dot-send / dot-grab ve claude-usage.sh."
+echo "~/dotfiles deposu (eksikleri görmek için: ./install.sh dotfiles)."
