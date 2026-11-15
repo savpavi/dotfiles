@@ -24,6 +24,9 @@ export XCURSOR_SIZE="${XCURSOR_SIZE:-24}"
 export QT_QPA_PLATFORM=wayland
 export QT_QPA_PLATFORMTHEME=qt6ct
 export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+# Java (Swing/AWT) pencereleri XWayland altında dwl'de bembeyaz açılıyor (MegaBasterd);
+# Java dwl'yi tanımadığı için yeniden ebeveynleyen WM varsayıyor.
+export _JAVA_AWT_WM_NONREPARENTING=1
 export TERMINAL=alacritty
 
 "$(dirname "$(readlink -f "$0")")/dwl-theme" init
