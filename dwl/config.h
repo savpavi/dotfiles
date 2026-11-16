@@ -187,6 +187,7 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_e,           spawn,            SHCMD("dolphin") },
 	{ MODKEY,                    XKB_KEY_b,           focusorspawn,     APP("=brave-origin", "gtk-launch brave-origin") },
 	{ MODKEY,                    XKB_KEY_w,           spawn,            SHCMD("/home/savpavi/.local/bin/start-windows-looking-glass") },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_w,           spawn,            SHCMD("/home/savpavi/.local/bin/vm-camera") },
 	{ MODKEY,                    XKB_KEY_s,           focusorspawn,     APP("spotify", "spotify-launcher") },
 	{ MODKEY,                    XKB_KEY_t,           focusorspawn,     APP("telegram", "Telegram") },
 	{ MODKEY,                    XKB_KEY_d,           focusorspawn,     APP("vesktop", "vesktop") },

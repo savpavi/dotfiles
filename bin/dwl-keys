@@ -43,7 +43,7 @@ SPAWN = [  # komutta geçen parça -> açıklama (ilk eşleşen)
     ("toggle notif", "Bildirim merkezi"), ("toggle theme", "Tema paneli"),
     ("claude-desktop", "Claude Desktop"),
     ("dolphin", "Dosya yöneticisi (Dolphin)"), ("brave", "Tarayıcı (Brave Origin)"),
-    ("looking-glass", "Windows VM (Looking Glass)"), ("spotify", "Spotify"),
+    ("looking-glass", "Windows VM (Looking Glass)"), ("vm-camera", "Kamerayı VM'e ver / geri al"), ("spotify", "Spotify"),
     ("Telegram", "Telegram"), ("discord", "Discord"), ("zed", "Zed editör"), ("obsidian", "Obsidian"),
     ("set-volume", "Ses seviyesi"), ("set-mute", "Sesi kapat/aç"),
     ("play-pause", "Oynat/duraklat"), ("playerctl next", "Sonraki parça"),
