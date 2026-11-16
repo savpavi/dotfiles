@@ -88,8 +88,14 @@ ShellRoot {
     // Claude kullanım limiti: scripts/claude-usage.sh
     // (uç nokta sık sorulunca 429 veriyor; script 150 sn içinde önbelleği yeniden kullanır).
     property var claude: null // { five_hour: {used_percentage, resets_at}, seven_day: {...} }
-    readonly property int claude5h: claude && claude.five_hour ? claude.five_hour.used_percentage : -1
-    readonly property int claude7d: claude && claude.seven_day ? claude.seven_day.used_percentage : -1
+    // Önbellek eskiyse (açılışta istek başarısız) sıfırlanma zamanı geçmiş blok %0 sayılır.
+    function claudePct(block) {
+        if (!block)
+            return -1;
+        return block.resets_at && block.resets_at * 1000 <= now.getTime() ? 0 : block.used_percentage;
+    }
+    readonly property int claude5h: claude ? claudePct(claude.five_hour) : -1
+    readonly property int claude7d: claude ? claudePct(claude.seven_day) : -1
     readonly property int claudeMax: Math.max(claude5h, claude7d)
     // barda: "58% · 50%" (5 saatlik · haftalık); haftalık yoksa yalnız ilki
     function claudeText(sep) {
@@ -206,17 +212,23 @@ ShellRoot {
             + "export CACHE_FILE; mkdir -p \"${CACHE_FILE%/*}\"; "
             // Uç nokta bazen bir saat 429 veriyor; o zaman script boş döner. Göstergenin
             // kaybolmaması için son önbelleğe düş (eski de olsa bir değer görünür).
-            + "\"$1\" || cat \"$CACHE_FILE\"", "claude-usage", Quickshell.shellDir + "/scripts/claude-usage.sh"]
+            // Başarısızsa çıktıya "stale" ekle; QML kısa sürede yeniden dener.
+            + "\"$1\" || { cat \"$CACHE_FILE\"; echo; echo stale; }", "claude-usage", Quickshell.shellDir + "/scripts/claude-usage.sh"]
         stdout: StdioCollector {
             onStreamFinished: {
+                const stale = /\nstale\s*$/.test(text);
                 try {
-                    const d = JSON.parse(text);
+                    const d = JSON.parse(text.replace(/\nstale\s*$/, ""));
                     if (d && d.five_hour) root.claude = d;
                 } catch (e) {}
+                // Açılışta ağ/token hazır olmayabilir: 5 dk yerine 30 sn sonra tekrar dene.
+                claudeTimer.interval = stale ? 30000 : 300000;
+                claudeTimer.restart();
             }
         }
     }
     Timer {
+        id: claudeTimer
         interval: 300000; running: true; repeat: true; triggeredOnStart: true
         onTriggered: claudePoll.running = true
     }
