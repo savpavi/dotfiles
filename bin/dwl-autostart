@@ -36,6 +36,7 @@ if [ -z "$DWL_NESTED" ]; then
 	systemctl --user start localsend.service 2>/dev/null &   # telefondan/başka cihazdan dosya alma
 	run /usr/lib/polkit-kde-authentication-agent-1          # parola/yetki pencereleri
 	run solaar --window=hide                                # fare DPI/tekerlek ayarları
+	run easyeffects --service-mode --hide-window            # mikrofon filtresi (G733-Mikrofon)
 	run wl-paste --watch cliphist store                     # pano geçmişi: metin
 	run wl-paste --type image --watch cliphist store        # pano geçmişi: görsel
 fi
