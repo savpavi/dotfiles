@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+"""dot-lcd: put the dwl theme on the cooler's LCD (Thermalright, via trcc-linux).
+
+  dot-lcd            picture for the active dwl theme
+  dot-lcd FILE       a given image, GIF or video (png/jpg/webp/gif/mp4/webm/mkv/mov)
+
+What the theme shows, first match wins:
+  1. ~/.config/dwl-theme/lcd.json   {"theme-id": "~/path/to/file.gif", ...}
+  2. the theme's current static wallpaper (same pick as `dwl-theme wall next`),
+     centre-cropped to the panel
+  3. a plain card in the theme colours
+
+Images go out with `trcc display load-image`, video with `load-video` (both become
+the panel's current theme, so the daemon restores them after a restart); a GIF is
+turned into an MP4 first (trcc does not take GIFs). Converted files are cached in
+~/.cache/dot-lcd. Needs the trcc daemon (trcc-daemon.service); without it this
+does nothing, so dwl-theme can call it blindly.
+
+Env: DOT_LCD_DEVICE (default 87ad:70db), DOT_LCD_SIZE (default 320x240).
+"""
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+DEVICE = os.environ.get("DOT_LCD_DEVICE", "87ad:70db")
+W, H = (int(x) for x in os.environ.get("DOT_LCD_SIZE", "320x240").split("x"))
+HOME = Path.home()
+CFG = Path(os.environ.get("XDG_CONFIG_HOME") or HOME / ".config") / "dwl-theme"
+STATE = Path(os.environ.get("XDG_STATE_HOME") or HOME / ".local/state") / "dwl-theme"
+CACHE = Path(os.environ.get("XDG_CACHE_HOME") or HOME / ".cache") / "dot-lcd"
+SOCK = Path(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}")) / "trcc.sock"
+ROOT = Path(__file__).resolve().parent.parent
+
+IMAGE = {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
+VIDEO = {".mp4", ".webm", ".mkv", ".mov", ".avi"}
+
+
+def load(p):
+    try:
+        return json.loads(Path(p).read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def ffmpeg(*args):
+    subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", *args], check=True)
+
+
+def cached(src, suffix, tag=""):
+    st = src.stat()
+    key = hashlib.sha1(f"{src}|{st.st_mtime_ns}|{W}x{H}|{tag}".encode()).hexdigest()[:16]
+    CACHE.mkdir(parents=True, exist_ok=True)
+    return CACHE / f"{key}{suffix}"
+
+
+# Fill the panel, cropping the overflow from the middle.
+FIT = f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H}"
+
+
+def theme_pick():
+    t = load(STATE / "theme.json")
+    tid = t.get("id", "")
+    override = load(CFG / "lcd.json").get(tid)
+    if override and Path(override).expanduser().is_file():
+        return Path(override).expanduser(), t
+    full = load(ROOT / "themes" / f"{tid}.json")
+    walls = full.get("wallpapers") or load(CFG / "walls.json").get(tid) or []
+    walls = [Path(w).expanduser() for w in walls if Path(w).expanduser().is_file()]
+    if walls:
+        i = load(STATE / "wall.json").get("static", {}).get(tid, 0)
+        return walls[i % len(walls)], t
+    return None, t
+
+
+def card(t):
+    """Plain picture in the theme colours when there is nothing else."""
+    bg = t.get("wm", {}).get("root", "#000000").lstrip("#")
+    fg = t.get("bar", {}).get("accent", "#ffffff").lstrip("#")
+    name = (t.get("name") or t.get("id") or "dwl").replace("'", "").replace(":", "")
+    out = CACHE / f"card-{bg}-{fg}-{W}x{H}.png"
+    if not out.exists():
+        CACHE.mkdir(parents=True, exist_ok=True)
+        ffmpeg("-f", "lavfi", "-i", f"color=c=0x{bg}:s={W}x{H}",
+               "-vf", f"drawtext=text='{name}':fontcolor=0x{fg}:fontsize={H // 6}:"
+                      "x=(w-tw)/2:y=(h-th)/2", "-frames:v", "1", str(out))
+    return out
+
+
+def send(src):
+    ext = src.suffix.lower()
+    if ext in IMAGE:
+        out = cached(src, ".png")
+        if not out.exists():
+            ffmpeg("-i", str(src), "-vf", FIT, "-frames:v", "1", str(out))
+        cmd = ["trcc", "display", "load-image", DEVICE, str(out)]
+    elif ext == ".gif":
+        out = cached(src, ".mp4")
+        if not out.exists():
+            ffmpeg("-i", str(src), "-vf", f"{FIT},format=yuv420p", "-c:v", "libx264",
+                   "-movflags", "+faststart", str(out))
+        cmd = ["trcc", "display", "load-video", DEVICE, str(out)]
+    elif ext in VIDEO:
+        cmd = ["trcc", "display", "load-video", DEVICE, str(src)]
+    else:
+        sys.exit(f"dot-lcd: unsupported file type: {src}")
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+    if r.returncode:
+        sys.exit(f"dot-lcd: {' '.join(cmd[:3])} failed: {(r.stderr or r.stdout).strip()}")
+
+
+def main():
+    if not shutil.which("trcc"):
+        sys.exit(0)
+    if not SOCK.exists():
+        print("dot-lcd: trcc daemon not running (systemctl --user start trcc-daemon)",
+              file=sys.stderr)
+        sys.exit(0)
+    if len(sys.argv) > 1:
+        src = Path(sys.argv[1]).expanduser()
+        if not src.is_file():
+            sys.exit(f"dot-lcd: no such file: {src}")
+    else:
+        src, t = theme_pick()
+        src = src or card(t)
+    send(src)
+
+
+if __name__ == "__main__":
+    main()

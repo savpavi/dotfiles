@@ -1,0 +1,16 @@
+[Unit]
+Description=trcc daemon for the Thermalright cooler LCD (dot-lcd, dwl-theme picture)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+# trcc-linux from pipx lives in ~/.local/bin.
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
+ExecStart=%h/.local/bin/trcc daemon
+# Wait for the socket, then show the theme picture.
+ExecStartPost=-/bin/sh -c 'for i in $(seq 30); do [ -S "$XDG_RUNTIME_DIR/trcc.sock" ] && break; sleep 1; done; exec %h/dotfiles/bin/dot-lcd'
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

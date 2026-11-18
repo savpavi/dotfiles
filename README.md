@@ -79,6 +79,7 @@ tests/themes.sh                         # every theme in a headless dwl session
 | `dot-wallfx <pick\|map\|warm\|install>` | Maps for the wallpaper transition: `sketch` draws the subject's outline with a pen and lets the rest bleed out, `spread` bleeds in from a few points. `install` sets up the cut-out (rembg in its own venv, about 900 MB) |
 | `dot-fm` | Actions behind the Dolphin service menus: video and PDF tools, copy path, rename, duplicates |
 | `dot-rgb [RRGGBB\|off]` | Paint RAM, mouse, board and ARGB headers (OpenRGB) plus the Logitech mouse/headset (Solaar) and the Epomaker HE75 Mag one colour; no argument = the dwl theme accent, which `dwl-theme apply` also sets |
+| `dot-lcd [FILE]` | Picture on the Thermalright cooler LCD (trcc-linux): no argument = the dwl theme's current static wallpaper cropped to the panel, or a per-theme file from `~/.config/dwl-theme/lcd.json`; GIFs are turned into MP4. `dwl-theme apply` calls it too |
 | `dot-ocr` | Select a region, copy its text (tesseract) |
 | `dot-webapp Name https://url` | Create a Brave Origin web-app launcher (never overwrites) |
 | `dot-resolve [FILE…]` | Prepare a video for DaVinci Resolve |
@@ -87,7 +88,7 @@ tests/themes.sh                         # every theme in a headless dwl session
 | `dot-link` | Symlink `config/*` into `~/.config`, backing up what is there |
 | `dot-askpass` | Zenity askpass helper for `sudo -A` |
 
-`dot-send` needs `kdeconnect` and `zenity`. `dot-drive` needs `rclone` with a remote named `gdrive:`; the units are in `extras/systemd/`. `dot-grab` needs `yt-dlp[default]` and `gallery-dl`, e.g. via `uv tool install`. `dot-wallfx` needs `python-numpy`, `python-pillow` and, for `install`, `uv`; rebuilding the shader needs `qsb` from `qt6-shadertools`. `dot-rgb` needs `openrgb` and the `openrgb-server.service` user unit from `extras/systemd/` (set ARGB zone sizes once in the OpenRGB GUI first); the keyboard step uses `iot_driver` from [monsgeek-akko-linux](https://github.com/echtzeit-solutions/monsgeek-akko-linux) in `~/.local/bin` with a local `set-led --invert-dazzle` flag (this firmware reads the dazzle byte the other way round: 8 = rainbow, 7 = solid) and a `uaccess` udev rule for `3151:502b` (2.4G) / `502f` (cable).
+`dot-send` needs `kdeconnect` and `zenity`. `dot-drive` needs `rclone` with a remote named `gdrive:`; the units are in `extras/systemd/`. `dot-grab` needs `yt-dlp[default]` and `gallery-dl`, e.g. via `uv tool install`. `dot-wallfx` needs `python-numpy`, `python-pillow` and, for `install`, `uv`; rebuilding the shader needs `qsb` from `qt6-shadertools`. `dot-rgb` needs `openrgb` and the `openrgb-server.service` user unit from `extras/systemd/` (set ARGB zone sizes once in the OpenRGB GUI first); the keyboard step uses `iot_driver` from [monsgeek-akko-linux](https://github.com/echtzeit-solutions/monsgeek-akko-linux) in `~/.local/bin` with a local `set-led --invert-dazzle` flag (this firmware reads the dazzle byte the other way round: 8 = rainbow, 7 = solid) and a `uaccess` udev rule for `3151:502b` (2.4G) / `502f` (cable). `dot-lcd` needs `trcc-linux` (`pipx install trcc-linux`), `ffmpeg`, the `trcc-daemon.service` user unit and a `uaccess` udev rule for the panel (`87ad:70db`); `trcc system setup` also works but installs much more.
 
 ## Updating dwl
 
