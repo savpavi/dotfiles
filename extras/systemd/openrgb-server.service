@@ -4,6 +4,8 @@ After=graphical-session.target
 PartOf=graphical-session.target
 
 [Service]
+# dot-rgb also calls iot_driver (HE75 keyboard) from ~/.local/bin.
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
 # User config (~/.config/OpenRGB) so ARGB zone sizes set in the GUI apply.
 # The GUI started afterwards connects to this server instead of grabbing the devices.
 ExecStart=/usr/bin/openrgb --server --server-host 127.0.0.1 --noautoconnect

@@ -5,8 +5,10 @@
 #   dot-rgb RRGGBB     a given colour (leading # optional)
 #   dot-rgb off        lights off
 #
+# Also the Logitech mouse/headset (Solaar) and the Epomaker HE75 Mag (iot_driver).
+#
 # Talks to the OpenRGB SDK server (openrgb-server.service, 127.0.0.1:6742), so it
-# returns at once. Without the server it does nothing: a stand-alone openrgb run
+# returns at once. Without the server it skips OpenRGB: a stand-alone openrgb run
 # rescans every bus for ~10 s and fights the server/GUI for the devices.
 set -eu
 
@@ -28,12 +30,6 @@ if [ "$c" != off ] && ! printf '%s' "$c" | grep -qiE '^[0-9a-f]{6}$'; then
 	exit 2
 fi
 
-# Server up? (bash-free port check)
-if ! ss -ltnH "sport = :$port" 2>/dev/null | grep -q .; then
-	echo "dot-rgb: OpenRGB server not running (systemctl --user start openrgb-server)" >&2
-	exit 0
-fi
-
 # Solaar owns the Logitech lights too and re-applies its saved colour when a device
 # wakes up, so tell it the new colour as well (saved in its config.yaml). The G733
 # only answers while it is switched on; failures are ignored. ~1 s each, so detached.
@@ -44,6 +40,25 @@ if command -v solaar >/dev/null; then
 		solaar config "G733 Gaming Headset" led_zone_1 "$eff"
 		solaar config "G733 Gaming Headset" led_zone_2 "$eff"
 	) >/dev/null 2>&1 &
+fi
+
+# Epomaker HE75 Mag (RongYuan RY5088) through iot_driver from monsgeek-akko-linux,
+# which OpenRGB does not know. Needs a uaccess udev rule for 3151:502b/502f.
+# This firmware has the dazzle byte the other way round (8 = rainbow, 7 = solid);
+# --invert-dazzle is a local patch to iot_driver. Read-back is no proof: look at it.
+if command -v iot_driver >/dev/null; then
+	if [ "$c" = off ]; then
+		iot_driver set-led 0 >/dev/null 2>&1 || true
+	else
+		iot_driver set-led --invert-dazzle 1 4 2 $((0x$(echo "$c" | cut -c1-2))) \
+			$((0x$(echo "$c" | cut -c3-4))) $((0x$(echo "$c" | cut -c5-6))) >/dev/null 2>&1 || true
+	fi
+fi
+
+# OpenRGB last; server up? (bash-free port check)
+if ! ss -ltnH "sport = :$port" 2>/dev/null | grep -q .; then
+	echo "dot-rgb: OpenRGB server not running (systemctl --user start openrgb-server)" >&2
+	exit 0
 fi
 
 if [ "$c" = off ]; then
