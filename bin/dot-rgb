@@ -1,0 +1,53 @@
+#!/bin/sh
+# dot-rgb: paint every OpenRGB device (RAM, mouse, Aura board + ARGB headers) one colour.
+#
+#   dot-rgb            colour of the active dwl theme (bar accent)
+#   dot-rgb RRGGBB     a given colour (leading # optional)
+#   dot-rgb off        lights off
+#
+# Talks to the OpenRGB SDK server (openrgb-server.service, 127.0.0.1:6742), so it
+# returns at once. Without the server it does nothing: a stand-alone openrgb run
+# rescans every bus for ~10 s and fights the server/GUI for the devices.
+set -eu
+
+port=6742
+state="${XDG_STATE_HOME:-$HOME/.local/state}/dwl-theme/theme.json"
+
+case "${1:-theme}" in
+theme)
+	[ -r "$state" ] || { echo "dot-rgb: no $state (dwl-theme init?)" >&2; exit 1; }
+	c=$(jq -r '.bar.accent // empty' "$state")
+	;;
+off) c=off ;;
+*) c=$1 ;;
+esac
+c=${c#\#}
+
+if [ "$c" != off ] && ! printf '%s' "$c" | grep -qiE '^[0-9a-f]{6}$'; then
+	echo "dot-rgb: not a colour: $c" >&2
+	exit 2
+fi
+
+# Server up? (bash-free port check)
+if ! ss -ltnH "sport = :$port" 2>/dev/null | grep -q .; then
+	echo "dot-rgb: OpenRGB server not running (systemctl --user start openrgb-server)" >&2
+	exit 0
+fi
+
+# Solaar owns the Logitech lights too and re-applies its saved colour when a device
+# wakes up, so tell it the new colour as well (saved in its config.yaml). The G733
+# only answers while it is switched on; failures are ignored. ~1 s each, so detached.
+if command -v solaar >/dev/null; then
+	if [ "$c" = off ]; then eff='{ID: 0}'; else eff="{ID: 1, color: 0x$c}"; fi
+	(
+		solaar config "G502 X PLUS" rgb_zone_1 "$eff"
+		solaar config "G733 Gaming Headset" led_zone_1 "$eff"
+		solaar config "G733 Gaming Headset" led_zone_2 "$eff"
+	) >/dev/null 2>&1 &
+fi
+
+if [ "$c" = off ]; then
+	exec openrgb -m off
+fi
+# Static keeps the colour on the device itself (Direct needs a live connection).
+exec openrgb -m static -c "$c"

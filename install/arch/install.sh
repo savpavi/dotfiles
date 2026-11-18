@@ -203,7 +203,7 @@ stage_services() {
   done
   for u in pipewire.socket pipewire-pulse.socket wireplumber.service \
            gnome-keyring-daemon.socket \
-           syncthing.service espanso.service localsend.service ydotool.service \
+           syncthing.service espanso.service localsend.service ydotool.service openrgb-server.service \
            rclone-gdrive.service dot-drive-watch.service dot-drive-sync.timer; do
     if systemctl --user cat "$u" >/dev/null 2>&1; then
       run systemctl --user enable "$u" || warn "could not enable user unit $u"

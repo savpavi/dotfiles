@@ -21,7 +21,8 @@ dosyaları izler, yeniden başlatma gerekmez. Ayrıca Obsidian snippet'i
 (<kasa>/.obsidian/snippets/dwl-theme.css, DWL_THEME_OBSIDIAN) ve Vesktop/Vencord temasını
 (themes/savpavi.css, templates/vesktop.css şablonundan), spicetify [dwl] renk şemasını
 (Spotify sonraki açılışta görür) ve Telegram temasını (~/.config/dwl-theme/telegram/, bir kez
-elle seçilir, sonra kendisi yenilenir) yazar.
+elle seçilir, sonra kendisi yenilenir) yazar. OpenRGB/Solaar ışıklarını da vurgu rengine
+boyar (bin/dot-rgb; openrgb-server.service yoksa sessizce geçer).
 """
 import json
 import os
@@ -667,7 +668,18 @@ def apply(tid, live=True):
                 fn(all_[tid], name)
             except OSError as e:
                 print(f"dwl-theme: {fn.__name__}: {e}", file=sys.stderr)
+        rgb_async()
         wall_async()
+
+
+def rgb_async():
+    """RAM/fare/kasa ışıkları tema vurgusuna (dot-rgb, OpenRGB sunucusu yoksa sessizce geçer)."""
+    try:
+        subprocess.Popen([str(ROOT / "bin/dot-rgb")], stdin=subprocess.DEVNULL,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         start_new_session=True)
+    except OSError:
+        pass
 
 
 # --- Hareketli duvar kağıdı: waywallen (Flatpak daemon) + waywallen-layer-shell ---

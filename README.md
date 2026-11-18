@@ -78,6 +78,7 @@ tests/themes.sh                         # every theme in a headless dwl session
 | `dot-send [FILE…]` | Send files to the paired phone over KDE Connect; LocalSend for other devices |
 | `dot-wallfx <pick\|map\|warm\|install>` | Maps for the wallpaper transition: `sketch` draws the subject's outline with a pen and lets the rest bleed out, `spread` bleeds in from a few points. `install` sets up the cut-out (rembg in its own venv, about 900 MB) |
 | `dot-fm` | Actions behind the Dolphin service menus: video and PDF tools, copy path, rename, duplicates |
+| `dot-rgb [RRGGBB\|off]` | Paint RAM, mouse, board and ARGB headers (OpenRGB) plus the Logitech mouse/headset (Solaar) one colour; no argument = the dwl theme accent, which `dwl-theme apply` also sets |
 | `dot-ocr` | Select a region, copy its text (tesseract) |
 | `dot-webapp Name https://url` | Create a Brave Origin web-app launcher (never overwrites) |
 | `dot-resolve [FILE…]` | Prepare a video for DaVinci Resolve |
@@ -86,7 +87,7 @@ tests/themes.sh                         # every theme in a headless dwl session
 | `dot-link` | Symlink `config/*` into `~/.config`, backing up what is there |
 | `dot-askpass` | Zenity askpass helper for `sudo -A` |
 
-`dot-send` needs `kdeconnect` and `zenity`. `dot-drive` needs `rclone` with a remote named `gdrive:`; the units are in `extras/systemd/`. `dot-grab` needs `yt-dlp[default]` and `gallery-dl`, e.g. via `uv tool install`. `dot-wallfx` needs `python-numpy`, `python-pillow` and, for `install`, `uv`; rebuilding the shader needs `qsb` from `qt6-shadertools`.
+`dot-send` needs `kdeconnect` and `zenity`. `dot-drive` needs `rclone` with a remote named `gdrive:`; the units are in `extras/systemd/`. `dot-grab` needs `yt-dlp[default]` and `gallery-dl`, e.g. via `uv tool install`. `dot-wallfx` needs `python-numpy`, `python-pillow` and, for `install`, `uv`; rebuilding the shader needs `qsb` from `qt6-shadertools`. `dot-rgb` needs `openrgb` and the `openrgb-server.service` user unit from `extras/systemd/` (set ARGB zone sizes once in the OpenRGB GUI first).
 
 ## Updating dwl
 
