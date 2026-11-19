@@ -21,15 +21,20 @@ state="${XDG_STATE_HOME:-$HOME/.local/state}/dwl-theme/theme.json"
 aura=${DOT_RGB_AURA:-ASUS}
 n=${DOT_RGB_ARGB_LEDS:-120}
 
-# boot: run as ExecStartPost of the server. Detection takes ~10 s. Some starts read
-# the HID devices wrong: the Aura board comes up without its mainboard zone (51
-# bogus headers, no board LEDs) and the mouse without its Static mode, both at once.
-# The tell: zone 0 is the fixed 2-LED mainboard zone, so resizing it must be refused.
-# If it is not, exit 1 so systemd restarts the server (Restart=on-failure), at most
-# DOT_RGB_BOOT_TRIES times (default 3); after that paint whatever was detected.
+# boot: run as ExecStartPost of the server. Detection takes ~12 s and nothing may
+# connect to the server before it is over: a client that connects while the server is
+# still probing gets its requests served in the middle of the HID exchanges, and the
+# replies come back one off (11 of 11 quiet starts were right, 5 of 8 polled with
+# `openrgb -l` were not: mouse without its Static mode, G733 probe looping for 40 s,
+# board without its mainboard zone). So wait on the server's own "Detection completed"
+# line in the journal (the unit runs it with -v), never by asking the server.
+# As a second net: zone 0 is the fixed 2-LED mainboard zone, so resizing it must be
+# refused. If it is not, exit 1 so systemd restarts the server (Restart=on-failure),
+# at most DOT_RGB_BOOT_TRIES times (default 3); after that paint whatever was detected.
 if [ "${1:-}" = boot ]; then
-	for i in $(seq 30); do
-		[ "$(openrgb -l 2>/dev/null | wc -l)" -ge "${DOT_RGB_DEVICES:-3}" ] && break
+	pid=${MAINPID:-$(systemctl --user show -p MainPID --value openrgb-server)}
+	for i in $(seq 60); do
+		journalctl --user _PID="$pid" -o cat 2>/dev/null | grep -q 'Detection completed' && break
 		sleep 1
 	done
 	tries="${XDG_RUNTIME_DIR:-/tmp}/dot-rgb-boot.tries"
@@ -118,6 +123,13 @@ fi
 # OpenRGB last; server up? (bash-free port check)
 if ! ss -ltnH "sport = :$port" 2>/dev/null | grep -q .; then
 	echo "dot-rgb: OpenRGB server not running (systemctl --user start openrgb-server)" >&2
+	exit 0
+fi
+
+# Still detecting (login, restart)? Then stay away, see boot above; boot paints when done.
+spid=$(systemctl --user show -p MainPID --value openrgb-server 2>/dev/null || echo 0)
+if [ "${spid:-0}" != 0 ] && ! journalctl --user _PID="$spid" -o cat 2>/dev/null | grep -q 'Detection completed'; then
+	echo "dot-rgb: OpenRGB server still detecting, leaving it to 'dot-rgb boot'" >&2
 	exit 0
 fi
 

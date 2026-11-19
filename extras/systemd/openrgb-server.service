@@ -8,9 +8,10 @@ PartOf=graphical-session.target
 Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin
 # User config (~/.config/OpenRGB) so ARGB zone sizes set in the GUI apply.
 # The GUI started afterwards connects to this server instead of grabbing the devices.
-ExecStart=/usr/bin/openrgb --server --server-host 127.0.0.1 --noautoconnect
-# Waits for detection (~10 s), restarts the server if the devices were read wrong
-# (exit 1, a few tries), then paints the theme colour. See dot-rgb.
+# -v: dot-rgb boot waits for the "Detection completed" line in the journal.
+ExecStart=/usr/bin/openrgb --server --server-host 127.0.0.1 --noautoconnect -v
+# Waits for detection (~12 s) without connecting (a client during detection makes the
+# server misread the devices), checks the result, then paints the theme colour.
 ExecStartPost=%h/dotfiles/bin/dot-rgb boot
 Restart=on-failure
 RestartSec=2
