@@ -4,6 +4,7 @@
 #   dot-rgb            colour of the active dwl theme (bar accent)
 #   dot-rgb RRGGBB     a given colour (leading # optional)
 #   dot-rgb off        lights off
+#   dot-rgb boot       for openrgb-server.service: wait for detection, check it, paint
 #
 # Also the Logitech mouse/headset (Solaar) and the Epomaker HE75 Mag (iot_driver).
 #
@@ -14,6 +15,42 @@ set -eu
 
 port=6742
 state="${XDG_STATE_HOME:-$HOME/.local/state}/dwl-theme/theme.json"
+
+# ASUS Aura board; DOT_RGB_AURA names the device (string search), DOT_RGB_ARGB_LEDS
+# the LEDs per ARGB header.
+aura=${DOT_RGB_AURA:-ASUS}
+n=${DOT_RGB_ARGB_LEDS:-120}
+
+# boot: run as ExecStartPost of the server. Detection takes ~10 s. Some starts read
+# the HID devices wrong: the Aura board comes up without its mainboard zone (51
+# bogus headers, no board LEDs) and the mouse without its Static mode, both at once.
+# The tell: zone 0 is the fixed 2-LED mainboard zone, so resizing it must be refused.
+# If it is not, exit 1 so systemd restarts the server (Restart=on-failure), at most
+# DOT_RGB_BOOT_TRIES times (default 3); after that paint whatever was detected.
+if [ "${1:-}" = boot ]; then
+	for i in $(seq 30); do
+		[ "$(openrgb -l 2>/dev/null | wc -l)" -ge "${DOT_RGB_DEVICES:-3}" ] && break
+		sleep 1
+	done
+	tries="${XDG_RUNTIME_DIR:-/tmp}/dot-rgb-boot.tries"
+	if openrgb -l 2>/dev/null | grep -q "$aura"; then
+		case "$(openrgb -d "$aura" -m direct -z 0 -sz 1 2>&1)" in
+		*"out of range"*) ;;
+		*)
+			t=$(cat "$tries" 2>/dev/null || echo 0)
+			if [ "$t" -lt "${DOT_RGB_BOOT_TRIES:-3}" ]; then
+				echo $((t + 1)) >"$tries"
+				echo "dot-rgb: $aura board misread, restarting the server (try $((t + 1)))" >&2
+				exit 1
+			fi
+			echo "dot-rgb: $aura board still misread, painting anyway" >&2
+			;;
+		esac
+	fi
+	rm -f "$tries"
+	"$0" theme || true
+	exit 0
+fi
 
 case "${1:-theme}" in
 theme)
@@ -93,9 +130,6 @@ openrgb -m static -c "$c"
 # ASUS Aura board: the three ADD_GEN2 headers (zones 1-3) start at 0 LEDs after every
 # server start, so nothing reaches the case fans until they are resized, and only
 # Direct was seen to drive them. The server holds the connection, so Direct stays on.
-# DOT_RGB_AURA names the device (string search), DOT_RGB_ARGB_LEDS the LEDs per header.
-aura=${DOT_RGB_AURA:-ASUS}
-n=${DOT_RGB_ARGB_LEDS:-120}
 # Now and then a server start reads the board wrong (no mainboard zone, header 1 at
 # zone 0), so zone 0 is resized too; on the normal layout that one just fails.
 for z in 0 1 2 3; do
