@@ -46,12 +46,35 @@ fi
 # which OpenRGB does not know. Needs a uaccess udev rule for 3151:502b/502f.
 # This firmware has the dazzle byte the other way round (8 = rainbow, 7 = solid);
 # --invert-dazzle is a local patch to iot_driver. Read-back is no proof: look at it.
-if command -v iot_driver >/dev/null; then
+# Over 2.4G the keyboard sleeps after a while and then does not answer; set-led still
+# exits 0. So check with `iot_driver info` (non-zero while asleep) and, if it is not
+# there, keep retrying in the background (every 5 s, up to DOT_RGB_KB_WAIT seconds,
+# default 600) until a key press wakes it. A newer dot-rgb run replaces the old waiter,
+# so the last colour wins.
+he75() {
+	timeout 8 iot_driver info >/dev/null 2>&1 || return 1
 	if [ "$c" = off ]; then
-		iot_driver set-led 0 >/dev/null 2>&1 || true
+		timeout 8 iot_driver set-led 0 >/dev/null 2>&1
 	else
-		iot_driver set-led --invert-dazzle 1 4 2 $((0x$(echo "$c" | cut -c1-2))) \
-			$((0x$(echo "$c" | cut -c3-4))) $((0x$(echo "$c" | cut -c5-6))) >/dev/null 2>&1 || true
+		timeout 8 iot_driver set-led --invert-dazzle 1 4 2 $((0x$(echo "$c" | cut -c1-2))) \
+			$((0x$(echo "$c" | cut -c3-4))) $((0x$(echo "$c" | cut -c5-6))) >/dev/null 2>&1
+	fi
+	return 0
+}
+if command -v iot_driver >/dev/null; then
+	kbpid="${XDG_RUNTIME_DIR:-/tmp}/dot-rgb-he75.pid"
+	[ -r "$kbpid" ] && kill "$(cat "$kbpid")" 2>/dev/null
+	rm -f "$kbpid"
+	if ! he75; then
+		(
+			trap 'rm -f "$kbpid"' EXIT
+			end=$(($(date +%s) + ${DOT_RGB_KB_WAIT:-600}))
+			while [ "$(date +%s)" -lt "$end" ]; do
+				sleep 5
+				he75 && break
+			done
+		) </dev/null >/dev/null 2>&1 &
+		echo $! >"$kbpid"
 	fi
 fi
 
