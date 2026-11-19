@@ -88,4 +88,17 @@ if [ "$c" = off ]; then
 	exec openrgb -m off
 fi
 # Static keeps the colour on the device itself (Direct needs a live connection).
-exec openrgb -m static -c "$c"
+openrgb -m static -c "$c"
+
+# ASUS Aura board: the three ADD_GEN2 headers (zones 1-3) start at 0 LEDs after every
+# server start, so nothing reaches the case fans until they are resized, and only
+# Direct was seen to drive them. The server holds the connection, so Direct stays on.
+# DOT_RGB_AURA names the device (string search), DOT_RGB_ARGB_LEDS the LEDs per header.
+aura=${DOT_RGB_AURA:-ASUS}
+n=${DOT_RGB_ARGB_LEDS:-120}
+# Now and then a server start reads the board wrong (no mainboard zone, header 1 at
+# zone 0), so zone 0 is resized too; on the normal layout that one just fails.
+for z in 0 1 2 3; do
+	openrgb -d "$aura" -m direct -z "$z" -sz "$n" >/dev/null 2>&1 || true
+done
+openrgb -d "$aura" -m direct -c "$c" >/dev/null 2>&1 || true
