@@ -4,7 +4,8 @@
 # Video siteleri → yt-dlp (~/Downloads/yt-dlp), görsel/galeri siteleri → gallery-dl (~/Downloads/gallery-dl).
 # Bilinmeyen site önce yt-dlp, olmazsa gallery-dl, o da olmazsa sayfadaki doğrudan dosya linkleri (direct). Çerezler Brave Origin profilinden okunur (girişli içerik için; 25.10.2026'dan beri, önce Zen).
 # Gerekli: yt-dlp ffmpeg gallery-dl (uv tool) wl-clipboard libnotify hyprctl. (11.10.2026)
-# Kullanım: dot-grab [--clip|--tab] [--force] [URL]
+# Kullanım: dot-grab [--clip|--tab] [--force] [URL...]
+# Panoda (veya argümanda) birden fazla link varsa hepsi sırayla indirilir, sonda tek özet bildirimi. (19.11.2026)
 set -u -o pipefail
 
 BROWSER_CLASS="brave-origin"
@@ -13,7 +14,9 @@ VIDEO_DIR="$HOME/Downloads/yt-dlp"
 GALLERY_DIR="$HOME/Downloads/gallery-dl"
 LOG_DIR="$HOME/.cache/dot-grab"
 
-notify() { notify-send -a "Grab" "$@"; }
+# GRAB_QUIET=1: bildirim yok (toplu indirmede her link için alt çağrı böyle çalışır; özeti üst çağrı verir).
+ns() { [ "${GRAB_QUIET:-0}" = 1 ] && return 0; notify-send "$@"; }
+notify() { ns -a "Grab" "$@"; }
 
 mode=auto url="" force=0
 for a in "$@"; do
@@ -21,7 +24,7 @@ for a in "$@"; do
         --clip) mode=clip ;;
         --tab)  mode=tab ;;
         --force) force=1 ;;
-        *)      url="$a" ;;
+        *)      url="$url $a" ;;
     esac
 done
 
@@ -42,18 +45,52 @@ tab_url() {
     printf '%s' "$new"
 }
 
-if [ -z "$url" ]; then
+if [ -z "${url// /}" ]; then
     if [ "$mode" = auto ]; then
         active="$(hyprctl activewindow -j 2>/dev/null | sed -n 's/.*"class": *"\([^"]*\)".*/\1/p' | head -1)"
         [ "$active" = "$BROWSER_CLASS" ] && mode=tab || mode=clip
     fi
     if [ "$mode" = tab ]; then url="$(tab_url)"; else url="$(wl-paste --no-newline 2>/dev/null || true)"; fi
 fi
-url="$(printf '%s' "$url" | head -1 | tr -d '[:space:]')"
-case "$url" in
-    http://*|https://*) ;;
-    *) notify "Link yok" "Geçerli bir http(s) linki bulunamadı (${mode})."; exit 1 ;;
-esac
+# Metindeki bütün http(s) linkleri (satır/boşluk/virgülle ayrılmış olabilir), sırası korunarak tekilleştirilir.
+mapfile -t urls < <(printf '%s\n' "$url" | grep -oE "https?://[^[:space:]<>\"',]+" | awk '!seen[$0]++')
+if [ ${#urls[@]} -eq 0 ]; then
+    notify "Link yok" "Geçerli bir http(s) linki bulunamadı (${mode})."; exit 1
+fi
+
+# Toplu indirme: her link kendi alt çağrısında (aynı korumalar ve sınırlar), sırayla; sonda tek özet.
+if [ ${#urls[@]} -gt 1 ]; then
+    n=${#urls[@]}
+    if [ "$n" -gt "${GRAB_MAX_LINKS:-50}" ]; then
+        notify -u critical "İndirilmedi: çok fazla link" "Panoda $n link var (sınır ${GRAB_MAX_LINKS:-50}). Yanlış metin kopyalanmış olabilir."
+        exit 2
+    fi
+    fargs=(); [ "$force" -eq 1 ] && fargs=(--force)
+    ok=0 skip=0 fail=0 i=0 bad=()
+    bid="$(ns -a Grab -p "Toplu indirme: $n link" "Başlıyor…" 2>/dev/null || true)"
+    brep=(); [ -n "$bid" ] && brep=(-r "$bid")
+    for u in "${urls[@]}"; do
+        i=$((i + 1))
+        ns -a Grab "${brep[@]}" "Toplu indirme: $i/$n" "$u" >/dev/null 2>&1 || true
+        GRAB_QUIET=1 "$0" "${fargs[@]}" "$u" </dev/null
+        case $? in
+            0) ok=$((ok + 1)) ;;
+            2) skip=$((skip + 1)); bad+=("akış: $u") ;;
+            *) fail=$((fail + 1)); bad+=("hata: $u") ;;
+        esac
+    done
+    msg="$ok indi"; [ $skip -gt 0 ] && msg="$msg, $skip akış linki atlandı"; [ $fail -gt 0 ] && msg="$msg, $fail hata"
+    [ ${#bad[@]} -gt 0 ] && msg="$msg"$'\n'"$(printf '%s\n' "${bad[@]}" | head -5 | cut -c1-120)"
+    urg=(); [ $((skip + fail)) -gt 0 ] && urg=(-u critical)
+    act="$(ns -a Grab "${brep[@]}" "${urg[@]}" -A open="Downloads'u aç" -A log="Logları aç" "Toplu indirme bitti ($ok/$n)" "$msg" 2>/dev/null || true)"
+    case "$act" in
+        open) setsid -f xdg-open "$HOME/Downloads" >/dev/null 2>&1 ;;
+        log)  setsid -f xdg-open "$LOG_DIR" >/dev/null 2>&1 ;;
+    esac
+    [ $fail -eq 0 ] && [ $skip -eq 0 ] && exit 0
+    [ $ok -gt 0 ] && exit 0 || exit 1
+fi
+url="${urls[0]}"
 
 host="$(printf '%s' "$url" | sed -E 's#^https?://([^/:]+).*#\1#; s#^www\.##; s#^m\.##')"
 path="$(printf '%s' "$url" | sed -E 's#^https?://[^/]+##; s#[?#].*##; s#/+$##')"
@@ -124,7 +161,7 @@ fi
 
 mkdir -p "$LOG_DIR" "$VIDEO_DIR" "$GALLERY_DIR"
 log="$LOG_DIR/$(date +%Y%m%d-%H%M%S)-${host//[^A-Za-z0-9.]/_}.log"
-nid="$(notify-send -a Grab -p "İndiriliyor…" "$host" 2>/dev/null || true)"
+nid="$(ns -a Grab -p "İndiriliyor…" "$host" 2>/dev/null || true)"
 replace=(); [ -n "$nid" ] && replace=(-r "$nid")
 
 run_yt() {
@@ -199,12 +236,12 @@ if [ $ok -eq 1 ]; then
     [ -n "$last" ] && [ -d "$(dirname "$last")" ] && dir="$(dirname "$last")"
     msg="$name"; [ "$count" -gt 1 ] && msg="$count dosya — son: $name"
     [ "$count" -eq 0 ] && msg="Yeni dosya yok (zaten indirilmiş olabilir)"
-    act="$(notify-send -a Grab "${replace[@]}" -A open="Klasörü aç" "Bitti ($(case "$used" in yt) echo yt-dlp ;; gallery) echo gallery-dl ;; *) echo direkt link ;; esac))" "$msg" 2>/dev/null || true)"
+    act="$(ns -a Grab "${replace[@]}" -A open="Klasörü aç" "Bitti ($(case "$used" in yt) echo yt-dlp ;; gallery) echo gallery-dl ;; *) echo direkt link ;; esac))" "$msg" 2>/dev/null || true)"
     [ "$act" = open ] && setsid -f xdg-open "$dir" >/dev/null 2>&1
     exit 0
 fi
 
 err="$(grep -E 'ERROR|\[error\]' "$log" | tail -1 | cut -c1-200)"
-act="$(notify-send -a Grab -u critical "${replace[@]}" -A log="Logu aç" "İndirilemedi: $host" "${err:-ayrıntılar logda}" 2>/dev/null || true)"
+act="$(ns -a Grab -u critical "${replace[@]}" -A log="Logu aç" "İndirilemedi: $host" "${err:-ayrıntılar logda}" 2>/dev/null || true)"
 [ "$act" = log ] && setsid -f xdg-open "$log" >/dev/null 2>&1
 exit 1
