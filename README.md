@@ -19,7 +19,7 @@ More screenshots are in [`docs/screenshots/`](docs/screenshots).
 | `bin/dot-*` | Tools that do not depend on the session (Drive, send to phone, downloads, file-manager actions, OCR…) |
 | `sddm/` | Login screen theme that follows the active theme |
 | `portal/` | xdg-desktop-portal settings for screen sharing |
-| `config/` | App configs symlinked into `~/.config` by `dot-link` (Alacritty, btop, fastfetch, Starship, environment.d) |
+| `config/` | App configs symlinked into `~/.config` by `dot-link` (Alacritty, btop, fastfetch, Neovim, Starship, environment.d) |
 | `templates/` | Colour templates for Vesktop and Telegram, filled by `dwl-theme` |
 | `wallpapers/omarchy/` | Backgrounds from Omarchy, used as static wallpapers |
 | `extras/` | Pieces installed by hand: Dolphin service menus, systemd user units, `.desktop` launchers, MIME defaults, Firefox Nord theme |
