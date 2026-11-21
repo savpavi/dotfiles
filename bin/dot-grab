@@ -4,7 +4,9 @@
 # Video siteleri → yt-dlp (~/Downloads/yt-dlp), görsel/galeri siteleri → gallery-dl (~/Downloads/gallery-dl).
 # Bilinmeyen site önce yt-dlp, olmazsa gallery-dl, o da olmazsa sayfadaki doğrudan dosya linkleri (direct). Çerezler Brave Origin profilinden okunur (girişli içerik için; 25.10.2026'dan beri, önce Zen).
 # Gerekli: yt-dlp ffmpeg gallery-dl (uv tool) wl-clipboard libnotify hyprctl. (11.10.2026)
-# Kullanım: dot-grab [--clip|--tab] [--force] [URL...]
+# Kullanım: dot-grab [--clip|--tab] [--force] [--playlist] [URL...]
+# Liste: spankbang liste kökü (…/<liste>/playlist/<ad>) kendiliğinden tüm liste olarak iner; listedeki tek video linki
+# (…/<liste>-<video>/playlist/…) yalnız o videoyu indirir, --playlist ile o da tüm listeye çevrilir. Sınır GRAB_MAX_FILES. (19.11.2026)
 # Panoda (veya argümanda) birden fazla link varsa hepsi sırayla indirilir, sonda tek özet bildirimi. (19.11.2026)
 set -u -o pipefail
 
@@ -18,12 +20,13 @@ LOG_DIR="$HOME/.cache/dot-grab"
 ns() { [ "${GRAB_QUIET:-0}" = 1 ] && return 0; notify-send "$@"; }
 notify() { ns -a "Grab" "$@"; }
 
-mode=auto url="" force=0
+mode=auto url="" force=0 playlist=0
 for a in "$@"; do
     case "$a" in
         --clip) mode=clip ;;
         --tab)  mode=tab ;;
         --force) force=1 ;;
+        --playlist) playlist=1 ;;
         *)      url="$url $a" ;;
     esac
 done
@@ -65,7 +68,7 @@ if [ ${#urls[@]} -gt 1 ]; then
         notify -u critical "İndirilmedi: çok fazla link" "Panoda $n link var (sınır ${GRAB_MAX_LINKS:-50}). Yanlış metin kopyalanmış olabilir."
         exit 2
     fi
-    fargs=(); [ "$force" -eq 1 ] && fargs=(--force)
+    fargs=(); [ "$force" -eq 1 ] && fargs=(--force); [ "$playlist" -eq 1 ] && fargs+=(--playlist)
     ok=0 skip=0 fail=0 i=0 bad=()
     bid="$(ns -a Grab -p "Toplu indirme: $n link" "Başlıyor…" 2>/dev/null || true)"
     brep=(); [ -n "$bid" ] && brep=(-r "$bid")
@@ -159,16 +162,28 @@ if [ "${tools[*]}" != gallery ] && [ -f "$EXTRA" ]; then
     done <"$EXTRA"
 fi
 
+# Liste modu: spankbang liste kökü kendiliğinden; --playlist ile listedeki video linki liste köküne çevrilir.
+case "$host$path" in
+    spankbang.com/*/playlist/*)
+        if [ "$playlist" -eq 1 ]; then url="$(printf '%s' "$url" | sed -E 's#(spankbang\.com/[a-z0-9]+)-[a-z0-9]+/playlist/#\1/playlist/#')"
+        elif ! printf '%s' "$path" | grep -qE '^/[a-z0-9]+-[a-z0-9]+/playlist/'; then playlist=1; fi ;;
+esac
+
 mkdir -p "$LOG_DIR" "$VIDEO_DIR" "$GALLERY_DIR"
 log="$LOG_DIR/$(date +%Y%m%d-%H%M%S)-${host//[^A-Za-z0-9.]/_}.log"
 nid="$(ns -a Grab -p "İndiriliyor…" "$host" 2>/dev/null || true)"
 replace=(); [ -n "$nid" ] && replace=(-r "$nid")
 
 run_yt() {
-    yt-dlp --no-playlist --newline --no-progress \
+    local pl=(--no-playlist) out="$VIDEO_DIR/%(title).150B [%(id)s].%(ext)s"
+    if [ "$playlist" -eq 1 ]; then
+        pl=(--yes-playlist --ignore-errors --playlist-end "${GRAB_MAX_FILES:-300}" --download-archive "$LOG_DIR/playlist-archive.txt")
+        out="$VIDEO_DIR/%(playlist_title,playlist_id|liste).100B/%(title).150B [%(id)s].%(ext)s"
+    fi
+    yt-dlp "${pl[@]}" --newline --no-progress \
         -f "bv*+ba/b" -S "res:1080" --merge-output-format mp4 --embed-metadata \
         --js-runtimes node "${cookie_args[@]}" \
-        -o "$VIDEO_DIR/%(title).150B [%(id)s].%(ext)s" \
+        -o "$out" \
         --no-simulate --print after_move:filepath "$url"
 }
 # İkinci emniyet: bir çağrı en fazla GRAB_MAX_FILES dosya ve GRAB_TIMEOUT süre (--force ile de geçerli).
