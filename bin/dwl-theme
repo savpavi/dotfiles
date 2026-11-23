@@ -802,6 +802,8 @@ def wall(cmd):
         idx = st.setdefault("index", {})
         idx[tid] = (idx.get(tid, 0) + 1) % n
         st["off"] = False
+    elif cmd == "next":
+        pass  # duvarsız tema: gezecek bir şey yok, hata da değil
     elif cmd == "off":
         st["off"] = True
     elif cmd == "on":
