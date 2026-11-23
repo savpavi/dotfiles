@@ -1,0 +1,81 @@
+{
+  "name": "Vesper",
+  "wm": {
+    "root": "#080808",
+    "border": "#232323",
+    "focus": "#FFC799",
+    "urgent": "#FF8080",
+    "borderpx": 1,
+    "gap": 6,
+    "anim": 260
+  },
+  "bar": {
+    "layout": "strip",
+    "size": 26,
+    "font": "JetBrainsMono Nerd Font",
+    "fontPx": 13,
+    "bg": "#101010",
+    "fg": "#FFFFFF",
+    "faded": "#7E7E7E",
+    "accent": "#FFC799",
+    "onAccent": "#101010",
+    "urgent": "#FF8080",
+    "title": "#A0A0A0",
+    "line": "#232323",
+    "clockBg": "#101010",
+    "clockFg": "#FFC799",
+    "clockFormat": "ddd d MMM HH:mm",
+    "zeroPad": false
+  },
+  "term": {
+    "bg": "#101010",
+    "fg": "#FFFFFF",
+    "cursor": "#FFC799",
+    "cursorText": "#101010",
+    "selBg": "#988049",
+    "selFg": "#FFFFFF",
+    "palette": [
+      "#101010",
+      "#F5A191",
+      "#90B99F",
+      "#E6B99D",
+      "#ACA1CF",
+      "#E29ECA",
+      "#EA83A5",
+      "#A0A0A0",
+      "#7E7E7E",
+      "#FF8080",
+      "#99FFE4",
+      "#FFC799",
+      "#B9AEDA",
+      "#ECAAD6",
+      "#F591B2",
+      "#FFFFFF"
+    ]
+  },
+  "menu": {
+    "bg": "#161616",
+    "text": "#FFFFFF",
+    "match": "#FFC799",
+    "selBg": "#FFC799",
+    "selText": "#101010",
+    "border": "#2A2A2A",
+    "borderpx": 1,
+    "radius": 0
+  },
+  "notify": {
+    "bg": "#161616",
+    "fg": "#FFFFFF",
+    "low": "#7E7E7E",
+    "frame": "#2A2A2A",
+    "critical": "#FF8080",
+    "radius": 0
+  },
+  "cursor": "Bibata-Modern-Classic",
+  "live": [
+    "3258069890",
+    "2977006353",
+    "2453522427",
+    "2697203117"
+  ]
+}

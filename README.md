@@ -1,6 +1,6 @@
 # dotfiles
 
-My Arch Linux desktop: a patched [dwl](https://codeberg.org/dwl/dwl) (dwm for Wayland) with a Quickshell bar I wrote for it, twelve themes that change the whole desktop while it runs, a lock screen, a login screen, and a set of small desktop tools.
+My Arch Linux desktop: a patched [dwl](https://codeberg.org/dwl/dwl) (dwm for Wayland) with a Quickshell bar I wrote for it, fifteen themes that change the whole desktop while it runs, a lock screen, a login screen, and a set of small desktop tools.
 
 These are personal configs. Monitor names (`DP-1`, `DP-3`), paths and app choices fit my machine, so read before you copy.
 
@@ -55,7 +55,7 @@ dwl-theme wall next       # next wallpaper of the active theme
 dwl-theme check           # validate the theme files
 ```
 
-Mürekkep, Kor, Fener, Evangelion, Bakır, Kar, Neon, Yosun, Nord, Catppuccin, Rosé Pine, Monokrom. A new theme is a copy of one JSON with other colours. `live` lists Wallpaper Engine Workshop ids played through waywallen; static wallpapers per theme live outside the repo in `~/.config/dwl-theme/walls.json`.
+Mürekkep, Kor, Fener, Evangelion, Bakır, Kar, Neon, Yosun, Nord, Catppuccin, Rosé Pine, Monokrom, Vesper, Cobalt2, Matcha. A new theme is a copy of one JSON with other colours. `live` lists Wallpaper Engine Workshop ids played through waywallen; static wallpapers per theme live outside the repo in `~/.config/dwl-theme/walls.json`.
 
 ## Tests
 

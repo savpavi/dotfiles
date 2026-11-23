@@ -1,0 +1,87 @@
+{
+  "name": "Cobalt2",
+  "wm": {
+    "root": "#0D1D2B",
+    "border": "#1F4662",
+    "focus": "#FFC600",
+    "urgent": "#FF628C",
+    "borderpx": 2,
+    "gap": 10,
+    "anim": 260,
+    "radius": 10,
+    "shadow": 14,
+    "blur": 3
+  },
+  "bar": {
+    "layout": "islands",
+    "size": 30,
+    "margin": 8,
+    "radius": 15,
+    "font": "Inter",
+    "fontPx": 13,
+    "bg": "#15232D",
+    "fg": "#FFFFFF",
+    "faded": "#5F7E97",
+    "accent": "#FFC600",
+    "onAccent": "#122738",
+    "urgent": "#FF628C",
+    "title": "#9FB7C9",
+    "line": "",
+    "clockBg": "#15232D",
+    "clockFg": "#FFC600",
+    "clockFormat": "HH:mm  ·  ddd d MMM",
+    "zeroPad": false
+  },
+  "term": {
+    "bg": "#122738",
+    "fg": "#FFFFFF",
+    "cursor": "#FFC600",
+    "cursorText": "#122738",
+    "selBg": "#0050A4",
+    "selFg": "#FFFFFF",
+    "palette": [
+      "#0D1D2B",
+      "#FF628C",
+      "#3AD900",
+      "#FFC600",
+      "#0088FF",
+      "#FB94FF",
+      "#80FCFF",
+      "#C7D5E0",
+      "#4F6F87",
+      "#FF8AA9",
+      "#6FE84A",
+      "#FFD84D",
+      "#4DA9FF",
+      "#FCB4FF",
+      "#A6FDFF",
+      "#FFFFFF"
+    ],
+    "opacity": 0.92
+  },
+  "menu": {
+    "bg": "#15232D",
+    "text": "#FFFFFF",
+    "match": "#FFC600",
+    "selBg": "#FFC600",
+    "selText": "#122738",
+    "border": "#FFC600",
+    "borderpx": 2,
+    "radius": 10
+  },
+  "notify": {
+    "bg": "#15232D",
+    "fg": "#FFFFFF",
+    "low": "#5F7E97",
+    "frame": "#1F4662",
+    "critical": "#FF628C",
+    "radius": 10
+  },
+  "cursor": "Bibata-Modern-Amber",
+  "live": [
+    "3329696602",
+    "3163333989",
+    "1672387064",
+    "2639910653"
+  ]
+}
