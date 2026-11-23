@@ -666,6 +666,25 @@ def render_browser(t, tid, name):
     tmp = BROWSER_DIR / ".theme.json.tmp"
     tmp.write_text(json.dumps(theme, ensure_ascii=False, indent=1) + "\n")
     tmp.replace(BROWSER_DIR / "theme.json")
+    stylus_import()
+
+
+def stylus_import():
+    """styles/*.user.css -> tek bir Stylus yedek dosyası (Yönet > İçe aktar ile hepsi birden eklenir).
+    Eklenti klasörünün dışına yazılır: orada olursa tarayıcı onu da eklenti dosyası sayar."""
+    import re
+    styles = []
+    for f in sorted((BROWSER_SRC / "styles").glob("*.user.css")):
+        text = f.read_text()
+        name = re.search(r"@name\s+(.+)", text)
+        sections = [{"code": body.strip("\n") + "\n", "domains": re.findall(r'domain\("([^"]+)"\)', head)}
+                    for head, body in re.findall(r"@-moz-document([^{]*)\{\n(.*?)\n\}", text, re.S)]
+        if name and sections:
+            styles.append({"name": name.group(1).strip(), "enabled": True, "sections": sections,
+                           "url": None, "updateUrl": None, "md5Url": None, "originalMd5": None})
+    if styles:
+        out = BROWSER_DIR.parent / "stylus-import.json"
+        out.write_text(json.dumps(styles, ensure_ascii=False, indent=1) + "\n")
 
 
 def quiet(*cmd):

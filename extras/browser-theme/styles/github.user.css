@@ -1,0 +1,141 @@
+/* ==UserStyle==
+@name         GitHub: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  GitHub in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("github.com") {
+  /* GitHub paints everything from Primer's CSS variables; point them at the theme.
+     The second selector covers parts of a page that set their own colour mode. */
+  :root[data-dwl-theme][data-dwl-scheme],
+  :root[data-dwl-theme][data-dwl-scheme] [data-color-mode] {
+    --bgColor-default: var(--dwl-bg);
+    --bgColor-muted: var(--dwl-raised);
+    --bgColor-inset: var(--dwl-bg3);
+    --bgColor-emphasis: var(--dwl-border);
+    --bgColor-disabled: var(--dwl-raised);
+    --bgColor-neutral-muted: color-mix(in srgb, var(--dwl-fg) 12%, transparent);
+    --bgColor-neutral-emphasis: var(--dwl-faint);
+    --bgColor-accent-muted: color-mix(in srgb, var(--dwl-accent) 15%, transparent);
+    --bgColor-accent-emphasis: var(--dwl-accent);
+    --bgColor-success-muted: color-mix(in srgb, var(--dwl-green) 15%, transparent);
+    --bgColor-success-emphasis: var(--dwl-green);
+    --bgColor-open-muted: color-mix(in srgb, var(--dwl-green) 15%, transparent);
+    --bgColor-open-emphasis: var(--dwl-green);
+    --bgColor-danger-muted: color-mix(in srgb, var(--dwl-red) 12%, transparent);
+    --bgColor-danger-emphasis: var(--dwl-red);
+    --bgColor-closed-muted: color-mix(in srgb, var(--dwl-red) 12%, transparent);
+    --bgColor-closed-emphasis: var(--dwl-red);
+    --bgColor-attention-muted: color-mix(in srgb, var(--dwl-yellow) 15%, transparent);
+    --bgColor-attention-emphasis: var(--dwl-yellow);
+    --bgColor-severe-muted: color-mix(in srgb, var(--dwl-urgent) 12%, transparent);
+    --bgColor-severe-emphasis: var(--dwl-urgent);
+    --bgColor-done-muted: color-mix(in srgb, var(--dwl-magenta) 15%, transparent);
+    --bgColor-done-emphasis: var(--dwl-magenta);
+
+    --fgColor-default: var(--dwl-fg);
+    --fgColor-muted: var(--dwl-muted);
+    --fgColor-neutral: var(--dwl-muted);
+    --fgColor-disabled: var(--dwl-faint);
+    --fgColor-onEmphasis: var(--dwl-bg);
+    --fgColor-accent: var(--dwl-accent);
+    --fgColor-link: var(--dwl-accent);
+    --fgColor-success: var(--dwl-green);
+    --fgColor-open: var(--dwl-green);
+    --fgColor-danger: var(--dwl-red);
+    --fgColor-closed: var(--dwl-red);
+    --fgColor-attention: var(--dwl-yellow);
+    --fgColor-severe: var(--dwl-urgent);
+    --fgColor-done: var(--dwl-magenta);
+
+    --borderColor-default: var(--dwl-border);
+    --borderColor-muted: color-mix(in srgb, var(--dwl-border) 70%, transparent);
+    --borderColor-emphasis: var(--dwl-faint);
+    --borderColor-disabled: color-mix(in srgb, var(--dwl-faint) 10%, transparent);
+    --borderColor-neutral-muted: color-mix(in srgb, var(--dwl-border) 70%, transparent);
+    --borderColor-neutral-emphasis: var(--dwl-faint);
+    --borderColor-accent-muted: color-mix(in srgb, var(--dwl-accent) 40%, transparent);
+    --borderColor-accent-emphasis: var(--dwl-accent);
+    --borderColor-success-muted: color-mix(in srgb, var(--dwl-green) 40%, transparent);
+    --borderColor-success-emphasis: var(--dwl-green);
+    --borderColor-open-muted: color-mix(in srgb, var(--dwl-green) 40%, transparent);
+    --borderColor-danger-muted: color-mix(in srgb, var(--dwl-red) 40%, transparent);
+    --borderColor-danger-emphasis: var(--dwl-red);
+    --borderColor-closed-muted: color-mix(in srgb, var(--dwl-red) 40%, transparent);
+    --borderColor-closed-emphasis: var(--dwl-red);
+    --borderColor-attention-muted: color-mix(in srgb, var(--dwl-yellow) 40%, transparent);
+    --borderColor-attention-emphasis: var(--dwl-yellow);
+    --borderColor-severe-muted: color-mix(in srgb, var(--dwl-urgent) 40%, transparent);
+    --borderColor-severe-emphasis: var(--dwl-urgent);
+    --borderColor-done-muted: color-mix(in srgb, var(--dwl-magenta) 40%, transparent);
+    --borderColor-done-emphasis: var(--dwl-magenta);
+
+    --header-bgColor: var(--dwl-bg2);
+    --header-fgColor-default: var(--dwl-muted);
+    --header-fgColor-logo: var(--dwl-fg);
+    --header-borderColor-divider: var(--dwl-border);
+    --headerSearch-bgColor: var(--dwl-bg);
+    --headerSearch-borderColor: var(--dwl-border);
+    --page-header-bgColor: var(--dwl-bg);
+    --overlay-bgColor: var(--dwl-bg2);
+    --overlay-backdrop-bgColor: color-mix(in srgb, var(--dwl-bg3) 60%, transparent);
+
+    --control-bgColor-rest: var(--dwl-raised);
+    --control-bgColor-hover: var(--dwl-hover);
+    --control-bgColor-active: var(--dwl-hover);
+    --control-transparent-bgColor-hover: color-mix(in srgb, var(--dwl-fg) 10%, transparent);
+    --control-transparent-bgColor-active: color-mix(in srgb, var(--dwl-fg) 15%, transparent);
+    --control-transparent-bgColor-selected: color-mix(in srgb, var(--dwl-fg) 8%, transparent);
+    --button-default-bgColor-rest: var(--dwl-raised);
+    --button-default-bgColor-hover: var(--dwl-hover);
+    --button-default-borderColor-rest: var(--dwl-border);
+    --button-primary-bgColor-rest: var(--dwl-accent);
+    --button-primary-bgColor-hover: var(--dwl-accent2);
+    --button-primary-bgColor-active: var(--dwl-accent2);
+    --button-primary-fgColor-rest: var(--dwl-on-accent);
+    --button-primary-iconColor-rest: var(--dwl-on-accent);
+    --button-primary-borderColor-rest: transparent;
+    --underlineNav-borderColor-active: var(--dwl-accent);
+    --focus-outlineColor: var(--dwl-accent);
+    --selection-bgColor: var(--dwl-sel);
+    --treeViewItem-leadingVisual-iconColor-rest: var(--dwl-accent);
+    --color-icon-directory: var(--dwl-accent);
+
+    --color-prettylights-syntax-comment: var(--dwl-faint);
+    --color-prettylights-syntax-keyword: var(--dwl-magenta);
+    --color-prettylights-syntax-string: var(--dwl-green);
+    --color-prettylights-syntax-string-regexp: var(--dwl-cyan);
+    --color-prettylights-syntax-entity: var(--dwl-blue);
+    --color-prettylights-syntax-entity-tag: var(--dwl-red);
+    --color-prettylights-syntax-constant: var(--dwl-yellow);
+    --color-prettylights-syntax-variable: var(--dwl-cyan);
+    --color-prettylights-syntax-storage-modifier-import: var(--dwl-fg);
+    --color-prettylights-syntax-markup-heading: var(--dwl-accent);
+    --color-prettylights-syntax-markup-inserted-text: var(--dwl-green);
+    --color-prettylights-syntax-markup-inserted-bg: color-mix(in srgb, var(--dwl-green) 15%, transparent);
+    --color-prettylights-syntax-markup-deleted-text: var(--dwl-red);
+    --color-prettylights-syntax-markup-deleted-bg: color-mix(in srgb, var(--dwl-red) 15%, transparent);
+
+    --diffBlob-additionLine-bgColor: color-mix(in srgb, var(--dwl-green) 12%, transparent);
+    --diffBlob-additionNum-bgColor: color-mix(in srgb, var(--dwl-green) 22%, transparent);
+    --diffBlob-additionWord-bgColor: color-mix(in srgb, var(--dwl-green) 35%, transparent);
+    --diffBlob-deletionLine-bgColor: color-mix(in srgb, var(--dwl-red) 12%, transparent);
+    --diffBlob-deletionNum-bgColor: color-mix(in srgb, var(--dwl-red) 22%, transparent);
+    --diffBlob-deletionWord-bgColor: color-mix(in srgb, var(--dwl-red) 35%, transparent);
+    --diffBlob-hunkLine-bgColor: color-mix(in srgb, var(--dwl-accent) 12%, transparent);
+
+    color-scheme: var(--dwl-color-scheme, dark);
+  }
+  /* bg3 is a darkened surface; on a light theme the recessed areas read better one step off the page */
+  :root[data-dwl-theme][data-dwl-scheme="light"],
+  :root[data-dwl-theme][data-dwl-scheme="light"] [data-color-mode] {
+    --dwl-color-scheme: light;
+    --bgColor-inset: var(--dwl-raised);
+  }
+  :root[data-dwl-theme] body {
+    background: var(--dwl-bg);
+    color: var(--dwl-fg);
+  }
+}

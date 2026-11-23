@@ -1,0 +1,144 @@
+/* ==UserStyle==
+@name         Ekşi Sözlük: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Ekşi Sözlük in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("eksisozluk.com") {
+  /* Ekşi has no colour variables, so the surfaces are painted directly. */
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body {
+    background: var(--dwl-bg) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] header,
+  :root[data-dwl-theme] #top-bar,
+  :root[data-dwl-theme] #sub-navigation,
+  :root[data-dwl-theme] #top-navigation {
+    background: var(--dwl-bg2) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] header {
+    border-bottom: 1px solid var(--dwl-border) !important;
+    box-shadow: none !important;
+  }
+  :root[data-dwl-theme] #container,
+  :root[data-dwl-theme] #main,
+  :root[data-dwl-theme] #content,
+  :root[data-dwl-theme] #content-body,
+  :root[data-dwl-theme] #partial-index,
+  :root[data-dwl-theme] #index-section,
+  :root[data-dwl-theme] #aside,
+  :root[data-dwl-theme] #entry-item-list > li,
+  :root[data-dwl-theme] footer {
+    background: transparent !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+
+  :root[data-dwl-theme] a {
+    color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] a:hover {
+    color: var(--dwl-accent2) !important;
+  }
+  :root[data-dwl-theme] #title a,
+  :root[data-dwl-theme] h1 a,
+  :root[data-dwl-theme] h2,
+  :root[data-dwl-theme] #sub-navigation a,
+  :root[data-dwl-theme] #top-navigation a,
+  :root[data-dwl-theme] .topic-list li a {
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .topic-list li a:hover,
+  :root[data-dwl-theme] .topic-list li a:focus,
+  :root[data-dwl-theme] #sub-navigation a:hover,
+  :root[data-dwl-theme] #top-navigation a:hover {
+    background: var(--dwl-hover) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .topic-list li a:visited {
+    color: var(--dwl-muted) !important;
+  }
+  :root[data-dwl-theme] .topic-list li a small,
+  :root[data-dwl-theme] .entry-date,
+  :root[data-dwl-theme] .entry-date a,
+  :root[data-dwl-theme] #entry-item-list footer,
+  :root[data-dwl-theme] #entry-item-list footer a,
+  :root[data-dwl-theme] footer,
+  :root[data-dwl-theme] footer a,
+  :root[data-dwl-theme] small,
+  :root[data-dwl-theme] .sub-title-menu a,
+  :root[data-dwl-theme] .pager,
+  :root[data-dwl-theme] .pager a {
+    color: var(--dwl-faint) !important;
+  }
+  :root[data-dwl-theme] .entry-author,
+  :root[data-dwl-theme] #entry-item-list footer .entry-author {
+    color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] #entry-item-list .content {
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] #entry-item-list .content a {
+    color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] #sub-navigation a.active,
+  :root[data-dwl-theme] #top-navigation a.active,
+  :root[data-dwl-theme] #quick-index-nav a.active {
+    color: var(--dwl-accent) !important;
+    border-color: var(--dwl-accent) !important;
+  }
+
+  :root[data-dwl-theme] input,
+  :root[data-dwl-theme] textarea,
+  :root[data-dwl-theme] select,
+  :root[data-dwl-theme] #search-textbox {
+    background: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] button,
+  :root[data-dwl-theme] .btn,
+  :root[data-dwl-theme] input[type="submit"] {
+    background: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] button.primary,
+  :root[data-dwl-theme] .btn.primary,
+  :root[data-dwl-theme] .primary[type="submit"] {
+    background: var(--dwl-accent) !important;
+    color: var(--dwl-on-accent) !important;
+    border-color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] .dropdown-menu,
+  :root[data-dwl-theme] .toggles-menu,
+  :root[data-dwl-theme] .ui-autocomplete,
+  :root[data-dwl-theme] .modal,
+  :root[data-dwl-theme] .popup {
+    background: var(--dwl-bg2) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] .dropdown-menu a:hover,
+  :root[data-dwl-theme] .toggles-menu a:hover,
+  :root[data-dwl-theme] .ui-autocomplete a:hover {
+    background: var(--dwl-hover) !important;
+  }
+  :root[data-dwl-theme] hr,
+  :root[data-dwl-theme] #entry-item-list > li,
+  :root[data-dwl-theme] .topic-list li {
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] svg.eksico,
+  :root[data-dwl-theme] header svg {
+    color: var(--dwl-muted) !important;
+    fill: currentColor;
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

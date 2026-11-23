@@ -1,0 +1,106 @@
+/* ==UserStyle==
+@name         Reddit: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Reddit in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("reddit.com") {
+  /* Reddit (the current "shreddit" site) paints from --color-* variables that it sets on
+     :root and again on .theme-dark / .theme-light / .theme-rpl wrappers. */
+  :root[data-dwl-theme][data-dwl-scheme],
+  :root[data-dwl-theme][data-dwl-scheme] .theme-dark,
+  :root[data-dwl-theme][data-dwl-scheme] .theme-light,
+  :root[data-dwl-theme][data-dwl-scheme] .theme-rpl {
+    --color-neutral-background: var(--dwl-bg);
+    --color-neutral-background-weak: var(--dwl-bg3);
+    --color-neutral-background-medium: var(--dwl-raised);
+    --color-neutral-background-strong: var(--dwl-bg2);
+    --color-neutral-background-hover: var(--dwl-raised);
+    --color-neutral-background-selected: var(--dwl-hover);
+    --color-neutral-background-container: var(--dwl-bg2);
+    --color-neutral-background-gilded: var(--dwl-raised);
+    --color-neutral-content: var(--dwl-fg);
+    --color-neutral-content-strong: var(--dwl-fg);
+    --color-neutral-content-weak: var(--dwl-muted);
+    --color-neutral-content-disabled: var(--dwl-faint);
+    --color-neutral-border: color-mix(in srgb, var(--dwl-fg) 18%, transparent);
+    --color-neutral-border-weak: color-mix(in srgb, var(--dwl-fg) 10%, transparent);
+    --color-neutral-border-medium: color-mix(in srgb, var(--dwl-fg) 45%, transparent);
+    --color-neutral-border-strong: var(--dwl-fg);
+
+    --color-secondary: var(--dwl-fg);
+    --color-secondary-hover: var(--dwl-fg);
+    --color-secondary-weak: var(--dwl-muted);
+    --color-secondary-plain: var(--dwl-fg);
+    --color-secondary-plain-hover: var(--dwl-fg);
+    --color-secondary-background: var(--dwl-raised);
+    --color-secondary-background-hover: var(--dwl-hover);
+    --color-secondary-background-selected: var(--dwl-border);
+    --color-secondary-onBackground: var(--dwl-fg);
+
+    --color-primary: var(--dwl-accent);
+    --color-primary-hover: var(--dwl-accent2);
+    --color-primary-visited: var(--dwl-magenta);
+    --color-primary-background: var(--dwl-accent);
+    --color-primary-background-hover: var(--dwl-accent2);
+    --color-primary-background-selected: var(--dwl-accent2);
+    --color-primary-onBackground: var(--dwl-on-accent);
+    --color-primary-onBackground-selected: var(--dwl-on-accent);
+    --color-action-primary: var(--dwl-accent);
+    --color-action-secondary: var(--dwl-accent);
+    --color-global-focus: var(--dwl-accent);
+
+    --color-brand-background: var(--dwl-accent);
+    --color-brand-background-hover: var(--dwl-accent2);
+    --color-brand-onBackground: var(--dwl-on-accent);
+
+    --color-upvote-content: var(--dwl-urgent);
+    --color-upvote-content-weak: var(--dwl-urgent);
+    --color-upvote-background: var(--dwl-urgent);
+    --color-upvote-background-hover: var(--dwl-urgent);
+    --color-upvote-onBackground: var(--dwl-bg);
+    --color-action-upvote: var(--dwl-urgent);
+    --color-downvote-content: var(--dwl-blue);
+    --color-downvote-content-weak: var(--dwl-blue);
+    --color-downvote-background: var(--dwl-blue);
+    --color-downvote-background-hover: var(--dwl-blue);
+    --color-downvote-onBackground: var(--dwl-bg);
+    --color-action-downvote: var(--dwl-blue);
+
+    --color-danger-content: var(--dwl-red);
+    --color-danger-content-hover: var(--dwl-red);
+    --color-danger-background: var(--dwl-red);
+    --color-danger-onBackground: var(--dwl-bg);
+    --color-success-content: var(--dwl-green);
+    --color-success-background: var(--dwl-green);
+    --color-success-onBackground: var(--dwl-bg);
+    --color-warning-content: var(--dwl-yellow);
+    --color-warning-background: var(--dwl-yellow);
+    --color-warning-onBackground: var(--dwl-bg);
+    --color-online: var(--dwl-green);
+    --color-identity-moderator: var(--dwl-green);
+    --color-identity-self: var(--dwl-cyan);
+
+    --color-interactive-background-disabled: color-mix(in srgb, var(--dwl-fg) 6%, transparent);
+    --color-interactive-content-disabled: var(--dwl-faint);
+    --color-interactive-pressed: color-mix(in srgb, var(--dwl-fg) 16%, transparent);
+    --color-ui-canvas: var(--dwl-bg3);
+    --color-ui-modalbackground: var(--dwl-bg2);
+    --color-tone-1: var(--dwl-fg);
+    --color-tone-2: var(--dwl-muted);
+    --color-tone-3: var(--dwl-faint);
+    --color-tone-4: var(--dwl-border);
+    --color-tone-5: var(--dwl-hover);
+    --color-tone-6: var(--dwl-raised);
+    --color-tone-7: var(--dwl-bg);
+  }
+  :root[data-dwl-theme] body {
+    background: var(--dwl-bg);
+    color: var(--dwl-fg);
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

@@ -78,7 +78,9 @@ Tema değişince bunlar da canlı döner (uygulamayı yeniden başlatmak gerekme
   Geliştirici modu → Paketlenmemiş öğe yükle → o klasör. Eklenti hiçbir siteyi kendisi boyamaz;
   her sayfanın `<html>` öğesine `--dwl-*` değişkenlerini ve `data-dwl-theme` / `data-dwl-scheme`
   koyar, Stylus stilleri renkleri oradan alır. Açık sekmeler tema değişimini en geç 3 saniyede,
-  yenilemeden izler. Örnek stil ve değişken listesi: `extras/browser-theme/README.md`.
+  yenilemeden izler. Hazır stiller `extras/browser-theme/styles/` altında (Hacker News, GitHub,
+  YouTube, Reddit, Ekşi Sözlük); değişken listesi `extras/browser-theme/README.md`. Dark Reader
+  bu stillerin üstüne yeniden boyar; stili olan sitede kapalı olmalı.
 
 ## Tuşlar
 

@@ -38,11 +38,28 @@ Hang every rule on `:root[data-dwl-theme]`, so the site is untouched when the ex
 }
 ```
 
-`examples/hackernews.user.css` is a complete one for Stylus.
-To add it: Stylus → Manage → Write new style, then paste the whole file into the editor and save. Stylus reads the `@-moz-document` block and fills in the domain itself; the empty `example.com` section it leaves behind can be deleted.
+## Styles
+
+`styles/` holds the userstyles written so far:
+
+| File | Site | How it works |
+| --- | --- | --- |
+| `hackernews.user.css` | news.ycombinator.com | paints the elements directly |
+| `github.user.css` | github.com | points Primer's `--bgColor-*`, `--fgColor-*`, `--borderColor-*` variables at the theme |
+| `youtube.user.css` | youtube.com | points YouTube's colour variables at the theme; the video player keeps its own colours |
+| `reddit.user.css` | reddit.com | points Reddit's `--color-*` variables at the theme |
+| `eksisozluk.user.css` | eksisozluk.com | paints the elements directly |
+
+YouTube names most of its variables with build-generated hashes. `tools/youtube-tokens.js` regenerates that part of the style: run it in the DevTools console on youtube.com and replace the block between the "generated" markers.
+
+To add them all at once: Stylus → Manage → Import (in the Backup section) and pick `~/.config/dwl-theme/stylus-import.json`. `dwl-theme apply` rebuilds that file from `styles/` every time, so after a style changes here, apply a theme and import again.
+
+To add a single one by hand: Stylus → Manage → Write new style, then paste the whole file into the editor and save. Stylus reads the `@-moz-document` block and fills in the domain itself; the empty `example.com` section it leaves behind can be deleted.
 
 ## Limits
 
+- Dark Reader recolours pages on top of these styles. Turn it off for a site that has a style here.
+- A style that follows a site's variables covers the main surfaces; a corner the site paints with a fixed colour keeps it until a rule is added.
 - Every site still needs its own userstyle; this only makes the colours live.
 - The browser's own UI (tabs, address bar) is not themed.
 - The variables are readable by the page's scripts, so a site could tell which theme is active.

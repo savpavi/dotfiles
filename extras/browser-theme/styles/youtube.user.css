@@ -1,0 +1,178 @@
+/* ==UserStyle==
+@name         YouTube: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  YouTube in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("youtube.com") {
+  /* YouTube has three generations of colour variables: build-hashed names (--t3e41...,
+     what most of the page uses now), --yt-sys-color-baseline--* and --yt-spec-* (older
+     components). All are pointed at the theme. The video player keeps its own colours. */
+  :root[data-dwl-theme][data-dwl-scheme],
+  :root[data-dwl-theme][data-dwl-scheme] ytd-app,
+  :root[data-dwl-theme][data-dwl-scheme] ytd-masthead,
+  :root[data-dwl-theme][data-dwl-scheme] tp-yt-iron-dropdown,
+  :root[data-dwl-theme][data-dwl-scheme] ytd-popup-container {
+    --yt-sys-color-baseline--base-background: var(--dwl-bg);
+    --yt-sys-color-baseline--raised-background: var(--dwl-bg2);
+    --yt-sys-color-baseline--menu-background: var(--dwl-bg2);
+    --yt-sys-color-baseline--surface-container: var(--dwl-raised);
+    --yt-sys-color-baseline--inverted-background: var(--dwl-fg);
+    --yt-sys-color-baseline--inverted-background-hover: var(--dwl-muted);
+    --yt-sys-color-baseline--additive-background: color-mix(in srgb, var(--dwl-fg) 8%, transparent);
+    --yt-sys-color-baseline--additive-background-inverse: color-mix(in srgb, var(--dwl-bg) 10%, transparent);
+    --yt-sys-color-baseline--text-primary: var(--dwl-fg);
+    --yt-sys-color-baseline--text-secondary: var(--dwl-muted);
+    --yt-sys-color-baseline--text-disabled: var(--dwl-faint);
+    --yt-sys-color-baseline--text-primary-inverse: var(--dwl-bg);
+    --yt-sys-color-baseline--text-secondary-inverse: var(--dwl-raised);
+    --yt-sys-color-baseline--text-disabled-inverse: var(--dwl-faint);
+    --yt-sys-color-baseline--outline: color-mix(in srgb, var(--dwl-fg) 14%, transparent);
+    --yt-sys-color-baseline--outline-opaque: var(--dwl-border);
+    --yt-sys-color-baseline--tonal-wash: color-mix(in srgb, var(--dwl-fg) 10%, transparent);
+    --yt-sys-color-baseline--tonal-rim: color-mix(in srgb, var(--dwl-fg) 8%, transparent);
+    --yt-sys-color-baseline--solid-wash: color-mix(in srgb, var(--dwl-fg) 12%, transparent);
+    --yt-sys-color-baseline--button-chip-background-hover: color-mix(in srgb, var(--dwl-fg) 16%, transparent);
+    --yt-sys-color-baseline--mono-filled-hover: var(--dwl-muted);
+    --yt-sys-color-baseline--mono-tonal-hover: color-mix(in srgb, var(--dwl-fg) 16%, transparent);
+    --yt-sys-color-baseline--state-mono-standard-hovered: color-mix(in srgb, var(--dwl-fg) 8%, transparent);
+    --yt-sys-color-baseline--state-mono-standard-pressed: color-mix(in srgb, var(--dwl-fg) 14%, transparent);
+    --yt-sys-color-baseline--touch-response: var(--dwl-fg);
+    --yt-sys-color-baseline--touch-response-inverse: var(--dwl-bg);
+    --yt-sys-color-baseline--call-to-action: var(--dwl-accent);
+    --yt-sys-color-baseline--call-to-action-hover: var(--dwl-accent2);
+    --yt-sys-color-baseline--call-to-action-inverse: var(--dwl-accent);
+    --yt-sys-color-baseline--suggested-action: color-mix(in srgb, var(--dwl-accent) 18%, transparent);
+    --yt-sys-color-baseline--themed-green: var(--dwl-green);
+    --yt-sys-color-baseline--error-indicator: var(--dwl-red);
+    --yt-sys-color-baseline--wordmark-text: var(--dwl-fg);
+    --yt-sys-color-baseline--frosted-glass-desktop: color-mix(in srgb, var(--dwl-bg) 92%, transparent);
+
+    /* generated: tools/youtube-tokens.js (YouTube's build-hashed variables; redo when they change) */
+    --t02c0a2c868c14ce8: var(--dwl-muted);
+    --t08a7c6c176cbc5c2: var(--dwl-bg2);
+    --t0a1249f7c9e82b5e: color-mix(in srgb, var(--dwl-bg) 20%, transparent);
+    --t0ccd1ace000d5e93: color-mix(in srgb, var(--dwl-bg) 80%, transparent);
+    --t1405e70a39276293: var(--dwl-fg);
+    --t1aab759cd9ddbe39: color-mix(in srgb, var(--dwl-fg) 6%, transparent);
+    --t20480717de80f555: color-mix(in srgb, var(--dwl-fg) 20%, transparent);
+    --t25a42c37f53e50e0: color-mix(in srgb, var(--dwl-bg) 75%, transparent);
+    --t2c3e55cb638348df: color-mix(in srgb, var(--dwl-bg) 10%, transparent);
+    --t2d807bb79e75606d: var(--dwl-accent);
+    --t3e41d7b17b187f69: var(--dwl-bg);
+    --t416e5931fc464589: color-mix(in srgb, var(--dwl-fg) 20%, transparent);
+    --t432fbdbd7f2f3f71: color-mix(in srgb, var(--dwl-bg) 15%, transparent);
+    --t441a0e44e495381a: var(--dwl-accent);
+    --t45b2a38314924357: var(--dwl-bg);
+    --t4a6da19e16bf221a: var(--dwl-muted);
+    --t4fb0f67b251e1a42: var(--dwl-fg);
+    --t518e925f61bdcb91: var(--dwl-bg2);
+    --t5355e7dcd3a33a2f: color-mix(in srgb, var(--dwl-bg) 95%, transparent);
+    --t53991d599b1488f5: var(--dwl-red);
+    --t5978da8d584b8fe9: color-mix(in srgb, var(--dwl-bg) 90%, transparent);
+    --t617db776af0de196: var(--dwl-accent2);
+    --t6216186c28b3834b: var(--dwl-bg);
+    --t7c4965c11f8537c0: color-mix(in srgb, var(--dwl-fg) 10%, transparent);
+    --t7d8b8e5ee291aec0: color-mix(in srgb, var(--dwl-bg) 10%, transparent);
+    --t7e34d5baa4ea6277: var(--dwl-faint);
+    --t7f4f2c6d54836ce0: color-mix(in srgb, var(--dwl-fg) 10%, transparent);
+    --t7f9b7e1603e20b94: var(--dwl-fg);
+    --t832f22ce6618e99e: var(--dwl-fg);
+    --t8533f30445e4a126: var(--dwl-red);
+    --t854c79338d8ca8a7: var(--dwl-red);
+    --t8cdc9846a76caf1f: var(--dwl-muted);
+    --t93a9a9c8ff5bfbfc: var(--dwl-muted);
+    --ta057e2d872f2a0d4: color-mix(in srgb, var(--dwl-bg) 6%, transparent);
+    --ta889dfda9605a358: color-mix(in srgb, var(--dwl-bg) 90%, transparent);
+    --tad8443faed66c111: var(--dwl-muted);
+    --tb315d8832c2ef6ef: var(--dwl-muted);
+    --tb628117fc164ad87: var(--dwl-accent);
+    --tb7d74bb3291c951d: color-mix(in srgb, var(--dwl-bg) 20%, transparent);
+    --tb927f5c0149004c6: var(--dwl-red);
+    --tbdeaf5bc17152abc: var(--dwl-raised);
+    --tc04ba3e73561953c: color-mix(in srgb, var(--dwl-bg) 10%, transparent);
+    --tc4b26042d4cb141f: var(--dwl-faint);
+    --tc54fd20dab7048eb: color-mix(in srgb, var(--dwl-bg) 60%, transparent);
+    --tc87f6a7f05e65fc4: color-mix(in srgb, var(--dwl-fg) 10%, transparent);
+    --td545df04e2c659d7: var(--dwl-red);
+    --td8562cdc203bc683: var(--dwl-border);
+    --tde41338fc2bd4ba5: var(--dwl-fg);
+    --te1b64e6971040396: var(--dwl-hover);
+    --tf3fc855af2285f5f: color-mix(in srgb, var(--dwl-fg) 20%, transparent);
+    --tf5f050c65aebead5: color-mix(in srgb, var(--dwl-fg) 10%, transparent);
+    --tf8fd38cbdab81862: color-mix(in srgb, var(--dwl-bg) 30%, transparent);
+    --tfa3475c508f5dfef: color-mix(in srgb, var(--dwl-accent) 18%, transparent);
+    --tffc2fd3a644f6275: var(--dwl-fg);
+    /* end generated */
+
+    --yt-spec-base-background: var(--dwl-bg);
+    --yt-spec-raised-background: var(--dwl-bg2);
+    --yt-spec-menu-background: var(--dwl-bg2);
+    --yt-spec-inverted-background: var(--dwl-fg);
+    --yt-spec-additive-background: color-mix(in srgb, var(--dwl-fg) 8%, transparent);
+    --yt-spec-general-background-a: var(--dwl-bg);
+    --yt-spec-general-background-b: var(--dwl-bg);
+    --yt-spec-general-background-c: var(--dwl-bg3);
+    --yt-spec-brand-background-solid: var(--dwl-bg);
+    --yt-spec-brand-background-primary: color-mix(in srgb, var(--dwl-bg) 96%, transparent);
+    --yt-spec-brand-background-secondary: var(--dwl-bg2);
+    --yt-spec-text-primary: var(--dwl-fg);
+    --yt-spec-text-secondary: var(--dwl-muted);
+    --yt-spec-text-disabled: var(--dwl-faint);
+    --yt-spec-text-primary-inverse: var(--dwl-bg);
+    --yt-spec-call-to-action: var(--dwl-accent);
+    --yt-spec-call-to-action-inverse: var(--dwl-accent);
+    --yt-spec-icon-active-other: var(--dwl-fg);
+    --yt-spec-icon-inactive: var(--dwl-fg);
+    --yt-spec-icon-disabled: var(--dwl-faint);
+    --yt-spec-badge-chip-background: color-mix(in srgb, var(--dwl-fg) 10%, transparent);
+    --yt-spec-10-percent-layer: color-mix(in srgb, var(--dwl-fg) 10%, transparent);
+    --yt-spec-outline: color-mix(in srgb, var(--dwl-fg) 14%, transparent);
+    --yt-spec-touch-response: var(--dwl-fg);
+    --yt-spec-themed-blue: var(--dwl-accent);
+    --yt-spec-themed-green: var(--dwl-green);
+    --yt-spec-wordmark-text: var(--dwl-fg);
+    --yt-spec-static-brand-red: var(--dwl-accent);
+
+    --ytd-searchbox-background: var(--dwl-bg);
+    --ytd-searchbox-border-color: var(--dwl-border);
+    --ytd-searchbox-legacy-border-color: var(--dwl-border);
+    --ytd-searchbox-legacy-button-color: var(--dwl-raised);
+    --ytd-searchbox-legacy-button-border-color: var(--dwl-border);
+    --ytd-searchbox-legacy-button-hover-color: var(--dwl-hover);
+    --ytd-searchbox-legacy-button-icon-color: var(--dwl-fg);
+    --ytd-searchbox-text-color: var(--dwl-fg);
+    --yt-live-chat-background-color: var(--dwl-bg);
+    --yt-live-chat-header-background-color: var(--dwl-bg2);
+    --yt-live-chat-primary-text-color: var(--dwl-fg);
+    --yt-live-chat-secondary-text-color: var(--dwl-muted);
+  }
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body,
+  :root[data-dwl-theme] ytd-app {
+    background: var(--dwl-bg) !important;
+    color: var(--dwl-fg);
+  }
+  /* the selected filter chip and the progress bar under watched thumbnails */
+  :root[data-dwl-theme] yt-chip-cloud-chip-renderer[selected] #chip-container,
+  :root[data-dwl-theme] .ytChipShapeActive {
+    background: var(--dwl-accent) !important;
+    color: var(--dwl-on-accent) !important;
+  }
+  :root[data-dwl-theme] ytd-thumbnail-overlay-resume-playback-renderer #progress,
+  :root[data-dwl-theme] .ytThumbnailOverlayProgressBarHostWatchedProgressBarSegment {
+    background: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] .ytSearchboxComponentSearchButton,
+  :root[data-dwl-theme] #search-icon-legacy {
+    background: var(--dwl-raised) !important;
+    border-color: var(--dwl-border) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] a.yt-simple-endpoint.yt-formatted-string,
+  :root[data-dwl-theme] .yt-core-attributed-string__link--call-to-action-color {
+    color: var(--dwl-accent) !important;
+  }
+}
