@@ -1,0 +1,116 @@
+/* ==UserStyle==
+@name         Basketball Monster: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Basketball Monster in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("basketballmonster.com") {
+  /* The site has named colour variables for its surfaces and text. Tier, position and
+     team colours carry meaning and are left alone. */
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body {
+    --color-bg-primary: var(--dwl-bg) !important;
+    --color-bg-secondary: var(--dwl-bg2) !important;
+    --color-bg-card: var(--dwl-bg2) !important;
+    --color-border: var(--dwl-border) !important;
+    --color-border-light: color-mix(in srgb, var(--dwl-border) 60%, transparent) !important;
+    --color-text-primary: var(--dwl-fg) !important;
+    --color-text-secondary: var(--dwl-muted) !important;
+    --color-text-tertiary: var(--dwl-faint) !important;
+    --color-text-light: var(--dwl-faint) !important;
+    --color-link: var(--dwl-accent) !important;
+    --color-link-hover: var(--dwl-accent2) !important;
+    --brand-primary: var(--dwl-accent) !important;
+    --brand-primary-dark: var(--dwl-accent2) !important;
+    --brand-primary-light: var(--dwl-accent) !important;
+    --brand-accent: var(--dwl-accent) !important;
+    --table-header-bg: var(--dwl-hover) !important;
+    --table-header-link: var(--dwl-fg) !important;
+    --monster-bar-header-bg: var(--dwl-bg2) !important;
+    --monster-bar-header-label: var(--dwl-fg) !important;
+    --monster-bar-header-text: var(--dwl-muted) !important;
+    --monster-bar-border: var(--dwl-border) !important;
+    --monster-bar-header-border: var(--dwl-border) !important;
+    --season-progress-track: var(--dwl-raised) !important;
+    --season-progress-fill: var(--dwl-accent) !important;
+    --season-progress-pending-border: var(--dwl-accent) !important;
+    --tweet-card-bg: var(--dwl-bg2) !important;
+    --tweet-card-ai-bg: var(--dwl-raised) !important;
+    --tweet-card-keyword-bg: var(--dwl-raised) !important;
+    --tweet-card-media-bg: var(--dwl-raised) !important;
+    --tweet-card-border: var(--dwl-border) !important;
+    --tweet-card-ai-border: var(--dwl-border) !important;
+    --tweet-card-keyword-border: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body {
+    background: var(--dwl-bg) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .page-title-row,
+  :root[data-dwl-theme] .player-search,
+  :root[data-dwl-theme] .modern-filter-container,
+  :root[data-dwl-theme] .bm-custom-select-options,
+  :root[data-dwl-theme] .dropdown-menu,
+  :root[data-dwl-theme] .navbar,
+  :root[data-dwl-theme] .card,
+  :root[data-dwl-theme] .modal-content {
+    background-color: var(--dwl-bg2) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] .modern-filter-btn,
+  :root[data-dwl-theme] .bm-custom-select-trigger,
+  :root[data-dwl-theme] .bm-native-select-input,
+  :root[data-dwl-theme] select,
+  :root[data-dwl-theme] input,
+  :root[data-dwl-theme] textarea {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] table th {
+    background-color: var(--dwl-hover) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] table th a {
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] table td {
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] .manager-message {
+    background-color: color-mix(in srgb, var(--dwl-accent) 10%, transparent) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .manager-message-subject {
+    color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] .bm-custom-select-option {
+    color: var(--dwl-fg) !important;
+  }
+  /* Heat-map cells keep the site's pale backgrounds, so their text must stay dark. */
+  :root[data-dwl-theme] .text-force-black {
+    color: #16161a !important;
+  }
+  :root[data-dwl-theme] .daily-status-updates-game-1 {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] footer {
+    background-color: var(--dwl-bg2) !important;
+    color: var(--dwl-muted) !important;
+  }
+  /* Position and team labels use dark colours meant for a white page. On a dark theme
+     they are flipped to the light shade of the same hue. */
+  :root[data-dwl-theme][data-dwl-scheme="dark"] .display-player-pos,
+  :root[data-dwl-theme][data-dwl-scheme="dark"] span.ml-2.mr-1.ms-2 {
+    filter: invert(1) hue-rotate(180deg);
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

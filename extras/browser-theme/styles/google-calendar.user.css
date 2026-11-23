@@ -1,0 +1,69 @@
+/* ==UserStyle==
+@name         Google Calendar: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Google Calendar in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("calendar.google.com") {
+  /* Calendar paints from Material 3 tokens (--gm3-sys-color-*), set on <body>.
+     Event colours are the user's own calendar colours and are left alone. */
+  :root[data-dwl-theme][data-dwl-scheme],
+  :root[data-dwl-theme][data-dwl-scheme] body {
+    --gm3-sys-color-background: var(--dwl-bg) !important;
+    --gm3-sys-color-surface: var(--dwl-bg) !important;
+    --gm3-sys-color-surface-dim: var(--dwl-bg3) !important;
+    --gm3-sys-color-surface-bright: var(--dwl-hover) !important;
+    --gm3-sys-color-surface-variant: var(--dwl-raised) !important;
+    --gm3-sys-color-surface-container-lowest: var(--dwl-bg3) !important;
+    --gm3-sys-color-surface-container-low: var(--dwl-bg2) !important;
+    --gm3-sys-color-surface-container: var(--dwl-bg2) !important;
+    --gm3-sys-color-surface-container-high: var(--dwl-raised) !important;
+    --gm3-sys-color-surface-container-highest: var(--dwl-hover) !important;
+    --gm3-sys-color-on-background: var(--dwl-fg) !important;
+    --gm3-sys-color-on-surface: var(--dwl-fg) !important;
+    --gm3-sys-color-on-surface-variant: var(--dwl-muted) !important;
+    --gm3-sys-color-outline: var(--dwl-faint) !important;
+    --gm3-sys-color-outline-variant: var(--dwl-border) !important;
+    --gm3-sys-color-primary: var(--dwl-accent) !important;
+    --gm3-sys-color-on-primary: var(--dwl-on-accent) !important;
+    --gm3-sys-color-primary-container: color-mix(in srgb, var(--dwl-accent) 30%, var(--dwl-bg)) !important;
+    --gm3-sys-color-on-primary-container: var(--dwl-fg) !important;
+    --gm3-sys-color-primary-fixed: var(--dwl-accent) !important;
+    --gm3-sys-color-primary-fixed-dim: var(--dwl-accent) !important;
+    --gm3-sys-color-on-primary-fixed: var(--dwl-on-accent) !important;
+    --gm3-sys-color-secondary: var(--dwl-accent2) !important;
+    --gm3-sys-color-on-secondary: var(--dwl-on-accent) !important;
+    --gm3-sys-color-secondary-container: color-mix(in srgb, var(--dwl-accent) 22%, var(--dwl-bg)) !important;
+    --gm3-sys-color-on-secondary-container: var(--dwl-fg) !important;
+    --gm3-sys-color-tertiary: var(--dwl-green) !important;
+    --gm3-sys-color-tertiary-container: color-mix(in srgb, var(--dwl-green) 25%, var(--dwl-bg)) !important;
+    --gm3-sys-color-on-tertiary-container: var(--dwl-fg) !important;
+    --gm3-sys-color-error: var(--dwl-red) !important;
+    --gm3-sys-color-error-container: color-mix(in srgb, var(--dwl-red) 25%, var(--dwl-bg)) !important;
+    --gm3-sys-color-on-error-container: var(--dwl-fg) !important;
+    --gm3-sys-color-inverse-surface: var(--dwl-fg) !important;
+    --gm3-sys-color-inverse-on-surface: var(--dwl-bg) !important;
+    --gm3-sys-color-inverse-primary: var(--dwl-accent) !important;
+
+    --cal-sys-color-now-indicator: var(--dwl-urgent) !important;
+    --cal-sys-color-scrollbar: var(--dwl-border) !important;
+    --cal-sys-color-helper-variant: var(--dwl-faint) !important;
+    --gm3-menu-surface-container-color: var(--dwl-bg2) !important;
+    --gm3-menu-list-item-selected-container-color: color-mix(in srgb, var(--dwl-accent) 22%, var(--dwl-bg)) !important;
+    --gm3-list-list-item-selected-container-color: color-mix(in srgb, var(--dwl-accent) 22%, var(--dwl-bg)) !important;
+    --gm3-select-filled-text-field-container-color: var(--dwl-raised) !important;
+    --gm3-text-field-filled-container-color: var(--dwl-raised) !important;
+    --gm3-autocomplete-filled-text-field-container-color: var(--dwl-raised) !important;
+    --gm3-tooltip-rich-container-color: var(--dwl-bg2) !important;
+    --gm3-tooltip-rich-supporting-text-color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] body {
+    background: var(--dwl-bg) !important;
+    color: var(--dwl-fg);
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

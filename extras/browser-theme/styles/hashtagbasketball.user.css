@@ -1,0 +1,115 @@
+/* ==UserStyle==
+@name         Hashtag Basketball: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Hashtag Basketball in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("hashtagbasketball.com") {
+  /* The site's dark layout uses fixed colours, so surfaces are painted directly.
+     The green/red cells of the stat tables carry meaning and keep their colours. */
+  :root[data-dwl-theme] {
+    --bs-primary: var(--dwl-accent);
+    --bs-primary-rgb: var(--dwl-accent-rgb);
+    --bs-body-bg: var(--dwl-bg);
+    --bs-body-color: var(--dwl-fg);
+  }
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body,
+  :root[data-dwl-theme] .app-content,
+  :root[data-dwl-theme] .content-wrapper {
+    background: var(--dwl-bg) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] header.main-header,
+  :root[data-dwl-theme] .social-bar {
+    background: var(--dwl-accent) !important;
+    color: var(--dwl-on-accent) !important;
+  }
+  :root[data-dwl-theme] header.main-header a,
+  :root[data-dwl-theme] header.main-header .nav-link,
+  :root[data-dwl-theme] header.main-header i,
+  :root[data-dwl-theme] header.main-header svg {
+    color: var(--dwl-on-accent) !important;
+  }
+  :root[data-dwl-theme] .card,
+  :root[data-dwl-theme] .dropdown-menu,
+  :root[data-dwl-theme] .modal-content,
+  :root[data-dwl-theme] .main-menu,
+  :root[data-dwl-theme] .navigation,
+  :root[data-dwl-theme] [class^="psg-"],
+  :root[data-dwl-theme] [class*=" psg-"] {
+    background-color: var(--dwl-bg2) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] .psg-category-item.active {
+    background-color: var(--dwl-hover) !important;
+    color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] .bottom-bar,
+  :root[data-dwl-theme] footer {
+    background: var(--dwl-bg3) !important;
+    color: var(--dwl-muted) !important;
+  }
+
+  :root[data-dwl-theme] table,
+  :root[data-dwl-theme] .table {
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] table th {
+    background-color: var(--dwl-hover) !important;
+    color: var(--dwl-muted) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] table td:not([class]),
+  :root[data-dwl-theme] table td[class=""] {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+
+  :root[data-dwl-theme] a {
+    color: var(--dwl-fg);
+  }
+  :root[data-dwl-theme] a:hover {
+    color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] h1,
+  :root[data-dwl-theme] h2,
+  :root[data-dwl-theme] h3,
+  :root[data-dwl-theme] h4,
+  :root[data-dwl-theme] h5,
+  :root[data-dwl-theme] label {
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .text-muted,
+  :root[data-dwl-theme] small {
+    color: var(--dwl-faint) !important;
+  }
+  :root[data-dwl-theme] input,
+  :root[data-dwl-theme] select,
+  :root[data-dwl-theme] textarea,
+  :root[data-dwl-theme] .form-control,
+  :root[data-dwl-theme] .form-select {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] .btn-primary,
+  :root[data-dwl-theme] .btn-blue-banner {
+    background-color: var(--dwl-accent) !important;
+    border-color: var(--dwl-accent) !important;
+    color: var(--dwl-on-accent) !important;
+  }
+  :root[data-dwl-theme] .alert {
+    background-color: color-mix(in srgb, var(--dwl-accent) 12%, transparent) !important;
+    color: var(--dwl-fg) !important;
+    border-color: color-mix(in srgb, var(--dwl-accent) 30%, transparent) !important;
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

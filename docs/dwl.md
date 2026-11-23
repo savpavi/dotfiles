@@ -73,13 +73,15 @@ Tema değişince bunlar da canlı döner (uygulamayı yeniden başlatmak gerekme
   matugen-themes şablonu, MIT). Bir kez uygulanır: dosyayı Kayıtlı Mesajlar'a gönder, mesajdaki
   dosyaya tıkla, Uygula. Telegram o yerel dosyayı izler. (Ayarlar'dan dosya seçme ya da pencereye
   sürükleme 7.4.4'te çalışmıyor.)
-- **Tarayıcı (Brave, Chromium):** `~/.config/dwl-theme/browser/` altına küçük bir eklenti ve
-  `theme.json` yazılır (kaynak `extras/browser-theme/`). Bir kez yüklenir: `brave://extensions` →
-  Geliştirici modu → Paketlenmemiş öğe yükle → o klasör. Eklenti hiçbir siteyi kendisi boyamaz;
-  her sayfanın `<html>` öğesine `--dwl-*` değişkenlerini ve `data-dwl-theme` / `data-dwl-scheme`
-  koyar, Stylus stilleri renkleri oradan alır. Açık sekmeler tema değişimini en geç 3 saniyede,
-  yenilemeden izler. Hazır stiller `extras/browser-theme/styles/` altında (Hacker News, GitHub,
-  YouTube, Reddit, Ekşi Sözlük); değişken listesi `extras/browser-theme/README.md`. Dark Reader
+- **Tarayıcı (Brave, Chromium):** `~/.config/dwl-theme/browser/` altına küçük bir eklenti,
+  `theme.json` (renkler) ve `styles.json` (site stilleri) yazılır (kaynak `extras/browser-theme/`).
+  Bir kez yüklenir: `brave://extensions` → Geliştirici modu → Paketlenmemiş öğe yükle → o klasör.
+  Eklenti her sayfanın `<html>` öğesine `--dwl-*` değişkenlerini koyar ve `styles/` altında o site
+  için stil varsa onu uygular (Hacker News, GitHub, YouTube, Reddit, Ekşi Sözlük, Claude, WhatsApp, Google Takvim,
+  Instagram, Facebook, Hashtag Basketball, Basketball Monster, Yahoo Fantasy, Tailscale, Cloudflare).
+  Açık sekmeler tema ya da stil değişimini en geç 3 saniyede, yenilemeden izler. Stylus gerekmez;
+  isteyen için `~/.config/dwl-theme/stylus-import.json` da üretilir. Eklentinin kendi dosyaları
+  (js, manifest) değişince `brave://extensions` sayfasında yenile düğmesine basılır. Dark Reader
   bu stillerin üstüne yeniden boyar; stili olan sitede kapalı olmalı.
 
 ## Tuşlar

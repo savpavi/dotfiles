@@ -1,0 +1,78 @@
+/* ==UserStyle==
+@name         WhatsApp Web: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  WhatsApp Web in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("web.whatsapp.com") {
+  /* WhatsApp's current design tokens are --WDS-*; a few older names are still in use.
+     Both are set on <body class="dark|light">, so the override sits there too. */
+  :root[data-dwl-theme][data-dwl-scheme],
+  :root[data-dwl-theme][data-dwl-scheme] body {
+    --WDS-surface-default: var(--dwl-bg);
+    --WDS-surface-emphasized: var(--dwl-bg2);
+    --WDS-surface-elevated-default: var(--dwl-bg2);
+    --WDS-surface-elevated-emphasized: var(--dwl-raised);
+    --WDS-surface-highlight: color-mix(in srgb, var(--dwl-fg) 10%, transparent);
+    --WDS-surface-pressed: color-mix(in srgb, var(--dwl-fg) 18%, transparent);
+    --WDS-surface-inverse: var(--dwl-fg);
+    --WDS-background-wash-plain: var(--dwl-bg);
+    --WDS-background-wash-inset: var(--dwl-bg);
+    --WDS-background-elevated-wash-plain: var(--dwl-bg2);
+    --WDS-background-elevated-wash-inset: var(--dwl-bg2);
+    --WDS-content-default: var(--dwl-fg);
+    --WDS-content-deemphasized: var(--dwl-muted);
+    --WDS-content-disabled: var(--dwl-faint);
+    --WDS-content-inverse: var(--dwl-bg);
+    --WDS-content-action-default: var(--dwl-fg);
+    --WDS-content-action-emphasized: var(--dwl-accent);
+    --WDS-content-external-link: var(--dwl-accent);
+    --WDS-content-on-accent: var(--dwl-on-accent);
+    --WDS-content-read: var(--dwl-blue);
+    --WDS-accent: var(--dwl-accent);
+    --WDS-accent-emphasized: var(--dwl-accent2);
+    --WDS-accent-deemphasized: color-mix(in srgb, var(--dwl-accent) 22%, var(--dwl-bg));
+    --WDS-persistent-always-branded: var(--dwl-accent);
+    --WDS-persistent-activity-indicator: var(--dwl-accent);
+    --WDS-systems-bubble-surface-incoming: var(--dwl-raised);
+    --WDS-systems-bubble-surface-outgoing: color-mix(in srgb, var(--dwl-accent) 26%, var(--dwl-bg));
+    --WDS-systems-bubble-surface-system: var(--dwl-bg2);
+    --WDS-systems-bubble-surface-business: var(--dwl-bg2);
+    --WDS-systems-bubble-surface-e2e: var(--dwl-bg2);
+    --WDS-systems-bubble-content-e2e: var(--dwl-yellow);
+    --WDS-systems-chat-background-wallpaper: var(--dwl-bg3);
+    --WDS-systems-chat-foreground-wallpaper: color-mix(in srgb, var(--dwl-fg) 6%, transparent);
+    --WDS-systems-chat-surface-composer: var(--dwl-raised);
+    --WDS-systems-chat-surface-tray: var(--dwl-bg);
+    --WDS-systems-status-seen: var(--dwl-faint);
+
+    --app-background: var(--dwl-bg);
+    --panel-background: var(--dwl-bg2);
+    --primary: var(--dwl-fg);
+    --primary-stronger: var(--dwl-fg);
+    --message-primary: var(--dwl-fg);
+    --text-primary-strong: var(--dwl-fg);
+    --modal-title: var(--dwl-fg);
+    --secondary-stronger: var(--dwl-muted);
+    --icon: var(--dwl-muted);
+    --text-muted: var(--dwl-faint);
+    --text-disabled: var(--dwl-faint);
+    --icon-disabled: var(--dwl-faint);
+    --text-action: var(--dwl-accent);
+    --icon-primary: var(--dwl-accent);
+    --icon-high-emphasis: var(--dwl-accent);
+    --link-alt: var(--dwl-accent);
+    --button-alternative: var(--dwl-accent);
+    --input-border-active: var(--dwl-accent);
+    --status-ring-unread: var(--dwl-accent);
+    --pill-background: var(--dwl-raised);
+    --pill-text: var(--dwl-muted);
+    --border-bubble: color-mix(in srgb, var(--dwl-fg) 10%, transparent);
+    --ptt-blue: var(--dwl-blue);
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

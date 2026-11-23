@@ -1,0 +1,128 @@
+/* ==UserStyle==
+@name         Yahoo Fantasy: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Yahoo Fantasy Sports in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("fantasysports.yahoo.com") {
+  /* An old site with fixed colours and a few newer parts on --ys-colors-* variables.
+     The page surfaces are painted directly; coloured buttons, tags and the Yahoo bar's
+     purple search button keep their colours. */
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body {
+    --ys-colors-surface-primary: var(--dwl-bg);
+    --ys-colors-surface-secondary: var(--dwl-bg2);
+    --ys-colors-surface-tertiary: var(--dwl-raised);
+    --ys-colors-surface-ghost-accent: color-mix(in srgb, var(--dwl-fg) 12%, transparent);
+    --ys-colors-text-primary: var(--dwl-fg);
+    --ys-colors-text-secondary: var(--dwl-muted);
+    --ys-colors-text-tertiary: var(--dwl-faint);
+    --ys-colors-stroke-primary: var(--dwl-border);
+    --ys-colors-stroke-secondary: var(--dwl-border);
+    --lv2BgColor: var(--dwl-bg);
+    --lv3BgColor: var(--dwl-bg);
+    --yb-l2-background-color: var(--dwl-bg2);
+    --yb-l2-background: var(--dwl-bg2);
+  }
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body,
+  :root[data-dwl-theme] body::before,
+  :root[data-dwl-theme] body::after,
+  :root[data-dwl-theme] .Page-bd::before,
+  :root[data-dwl-theme] .Page-bd::after,
+  :root[data-dwl-theme] #outer-wrapper,
+  :root[data-dwl-theme] .Page-wrap,
+  :root[data-dwl-theme] .Page,
+  :root[data-dwl-theme] .Page-bd,
+  :root[data-dwl-theme] .Page-ft,
+  :root[data-dwl-theme] .Page-maincontent,
+  :root[data-dwl-theme] .Mod,
+  :root[data-dwl-theme] .Page-bd div:not([class]),
+  :root[data-dwl-theme] .Page-bd div[class=""],
+  :root[data-dwl-theme] [class*="Bgc(--ys-colors-surface-primary)"] {
+    background-color: var(--dwl-bg) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .Card,
+  :root[data-dwl-theme] .Bg-shade,
+  :root[data-dwl-theme] .Bg-shade2,
+  :root[data-dwl-theme] .Mod.Bg-shade,
+  :root[data-dwl-theme] .Page-bd thead,
+  :root[data-dwl-theme] .Page-bd th {
+    background-color: var(--dwl-bg2) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] #ybar-inner-wrap,
+  :root[data-dwl-theme] #ybar,
+  :root[data-dwl-theme] #ybar div[class^="_yb_"],
+  :root[data-dwl-theme] #ybar nav,
+  :root[data-dwl-theme] #ybar ul,
+  :root[data-dwl-theme] #ybar-l1-more-menu,
+  :root[data-dwl-theme] #ybarAccountMenuBody {
+    background-color: var(--dwl-bg2) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] #ybar a,
+  :root[data-dwl-theme] #ybar span,
+  :root[data-dwl-theme] #ybar button:not(#ybar-search) {
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] #ybar-sbq,
+  :root[data-dwl-theme] .Page-bd input,
+  :root[data-dwl-theme] .Page-bd select,
+  :root[data-dwl-theme] .Page-bd textarea {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+
+  :root[data-dwl-theme] .Page-bd,
+  :root[data-dwl-theme] .Page-bd td,
+  :root[data-dwl-theme] .Page-bd li,
+  :root[data-dwl-theme] .Page-bd p,
+  :root[data-dwl-theme] .Page-bd h1,
+  :root[data-dwl-theme] .Page-bd h2,
+  :root[data-dwl-theme] .Page-bd h3,
+  :root[data-dwl-theme] .Page-bd h4,
+  :root[data-dwl-theme] .Page-bd span:not([class]),
+  :root[data-dwl-theme] .Page-bd .F-reset,
+  :root[data-dwl-theme] .Page-bd .F-icon:not([class*="gradient"]),
+  :root[data-dwl-theme] .Page-bd a.Blocklink {
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .Page-bd a:not(.Btn):not([class*="Btn-"]) {
+    color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] [class*="F-shade"],
+  :root[data-dwl-theme] [class*="Fc-shade"],
+  :root[data-dwl-theme] .Page-bd small,
+  :root[data-dwl-theme] .Page-ft,
+  :root[data-dwl-theme] .Page-ft a {
+    color: var(--dwl-muted) !important;
+  }
+  :root[data-dwl-theme] .Page-bd table,
+  :root[data-dwl-theme] .Page-bd td,
+  :root[data-dwl-theme] .Page-bd th,
+  :root[data-dwl-theme] .Page-bd tr,
+  :root[data-dwl-theme] .Mod,
+  :root[data-dwl-theme] [class*="Bd"] {
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] .Btn:not(.Btn-primary):not([class*="Btn-primary"]),
+  :root[data-dwl-theme] .Btn-tertiary {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] .Btn-primary {
+    background-color: var(--dwl-accent) !important;
+    color: var(--dwl-on-accent) !important;
+    border-color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

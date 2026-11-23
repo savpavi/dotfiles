@@ -1,0 +1,81 @@
+/* ==UserStyle==
+@name         Instagram: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Instagram in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("instagram.com") {
+  /* Instagram's --ig-* variables hold bare "r, g, b" components (used as
+     rgb(var(--ig-primary-background))), so they take the theme's -rgb variables.
+     Photos, stories and the brand gradient are left alone. */
+  :root[data-dwl-theme][data-dwl-scheme],
+  :root[data-dwl-theme][data-dwl-scheme] body {
+    --ig-primary-background: var(--dwl-bg-rgb) !important;
+    --ig-secondary-background: var(--dwl-raised-rgb) !important;
+    --ig-elevated-background: var(--dwl-bg2-rgb) !important;
+    --ig-secondary-elevated-background: var(--dwl-raised-rgb) !important;
+    --ig-highlight-background: var(--dwl-raised-rgb) !important;
+    --ig-banner-background: var(--dwl-raised-rgb) !important;
+    --ig-bubble-background: var(--dwl-bg2-rgb) !important;
+    --ig-dropdown-background: var(--dwl-bg2-rgb) !important;
+    --ig-menu-background-color: var(--dwl-bg2-rgb) !important;
+    --ig-menu-text-color: var(--dwl-fg-rgb) !important;
+    --ig-stroke-prism: var(--dwl-bg-rgb) !important;
+
+    --ig-primary-text: var(--dwl-fg-rgb) !important;
+    --ig-secondary-text: var(--dwl-muted-rgb) !important;
+    --ig-tertiary-text: var(--dwl-faint-rgb) !important;
+    --ig-primary-icon: var(--dwl-fg-rgb) !important;
+    --ig-secondary-icon: var(--dwl-muted-rgb) !important;
+    --ig-tertiary-icon: var(--dwl-faint-rgb) !important;
+    --ig-input-text-and-icon-primary: var(--dwl-fg-rgb) !important;
+    --ig-input-text-and-icon-secondary: var(--dwl-muted-rgb) !important;
+    --ig-input-border-primary: var(--dwl-fg-rgb) !important;
+    --ig-input-border-secondary: var(--dwl-faint-rgb) !important;
+    --ig-input-disabled-background-color: var(--dwl-raised-rgb) !important;
+    --ig-text-input-border-prism: var(--dwl-border-rgb) !important;
+    --ig-text-input-border-hover-prism: var(--dwl-fg-rgb) !important;
+    --ig-tab-underline-active: var(--dwl-fg-rgb) !important;
+    --ig-tablist-border: var(--dwl-border-rgb) !important;
+
+    --ig-separator: var(--dwl-border-rgb) !important;
+    --ig-elevated-separator: var(--dwl-border-rgb) !important;
+    --ig-stroke: var(--dwl-border-rgb) !important;
+    --ig-focus-stroke: var(--dwl-faint-rgb) !important;
+
+    --ig-link: var(--dwl-accent-rgb) !important;
+    --ig-colors-link-text: var(--dwl-accent-rgb) !important;
+    --ig-primary-button: var(--dwl-accent-rgb) !important;
+    --ig-primary-button-hover: var(--dwl-accent2-rgb) !important;
+    --ig-colors-button-primary-background: var(--dwl-accent-rgb) !important;
+    --ig-colors-button-primary-background--hover: var(--dwl-accent2-rgb) !important;
+    --ig-colors-button-primary-background--pressed: var(--dwl-accent2-rgb) !important;
+    --ig-colors-button-primary-text: var(--dwl-on-accent-rgb) !important;
+    --ig-colors-button-primary-link-text: var(--dwl-accent-rgb) !important;
+    --ig-colors-button-primary-link-text--hover: var(--dwl-accent2-rgb) !important;
+    --ig-colors-button-borderless-text: var(--dwl-accent-rgb) !important;
+    --ig-colors-button-borderless-text--hover: var(--dwl-accent2-rgb) !important;
+    --ig-colors-button-secondary-background: var(--dwl-raised-rgb) !important;
+    --ig-colors-button-secondary-background--hover: var(--dwl-hover-rgb) !important;
+    --ig-colors-button-secondary-text: var(--dwl-fg-rgb) !important;
+    --ig-colors-button-secondary-link-text: var(--dwl-fg-rgb) !important;
+    --ig-secondary-button: var(--dwl-fg-rgb) !important;
+    --ig-secondary-button-background: var(--dwl-raised-rgb) !important;
+    --ig-secondary-button-hover: var(--dwl-hover-rgb) !important;
+    --ig-outgoing-message-bubble: var(--dwl-accent-rgb) !important;
+    --ig-incoming-message-bubble: var(--dwl-raised-rgb) !important;
+    --ig-temporary-highlight: var(--dwl-accent-rgb) !important;
+    --ig-error-or-destructive: var(--dwl-red-rgb) !important;
+    --ig-badge: var(--dwl-urgent-rgb) !important;
+    --ig-success: var(--dwl-green-rgb) !important;
+  }
+  :root[data-dwl-theme] body {
+    background: var(--dwl-bg) !important;
+    color: var(--dwl-fg);
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

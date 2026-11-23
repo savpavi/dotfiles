@@ -1,0 +1,106 @@
+/* ==UserStyle==
+@name         Claude: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  claude.ai in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("claude.ai") {
+  /* claude.ai has two sets of colour variables: older ones holding bare HSL components
+     (--bg-100: 0 0% 8%), used as hsl(var(--bg-100) / alpha), and newer --cds-* ones
+     holding whole colours. The first set takes the theme's -hsl variables. The site sets
+     its variables from long selectors, hence !important. */
+  :root[data-dwl-theme][data-dwl-scheme],
+  :root[data-dwl-theme][data-dwl-scheme] [data-mode],
+  :root[data-dwl-theme][data-dwl-scheme] [data-theme],
+  :root[data-dwl-theme][data-dwl-scheme] .cds-root {
+    --bg-000: var(--dwl-raised-hsl) !important;
+    --bg-100: var(--dwl-bg-hsl) !important;
+    --bg-200: var(--dwl-bg2-hsl) !important;
+    --bg-300: var(--dwl-bg3-hsl) !important;
+    --bg-400: var(--dwl-bg3-hsl) !important;
+    --bg-500: var(--dwl-bg3-hsl) !important;
+    --text-000: var(--dwl-fg-hsl) !important;
+    --text-100: var(--dwl-fg-hsl) !important;
+    --text-200: var(--dwl-muted-hsl) !important;
+    --text-300: var(--dwl-muted-hsl) !important;
+    --text-400: var(--dwl-faint-hsl) !important;
+    --text-500: var(--dwl-faint-hsl) !important;
+    --border-100: var(--dwl-fg-hsl) !important;
+    --border-200: var(--dwl-fg-hsl) !important;
+    --border-300: var(--dwl-fg-hsl) !important;
+    --border-400: var(--dwl-fg-hsl) !important;
+    --accent-000: var(--dwl-accent2-hsl) !important;
+    --accent-100: var(--dwl-accent-hsl) !important;
+    --accent-200: var(--dwl-accent-hsl) !important;
+    --accent-900: var(--dwl-hover-hsl) !important;
+    --accent-brand: var(--dwl-accent-hsl) !important;
+    --brand-000: var(--dwl-accent-hsl) !important;
+    --brand-100: var(--dwl-accent-hsl) !important;
+    --brand-200: var(--dwl-accent2-hsl) !important;
+    --oncolor-100: var(--dwl-on-accent-hsl) !important;
+    --oncolor-200: var(--dwl-on-accent-hsl) !important;
+    --oncolor-300: var(--dwl-on-accent-hsl) !important;
+    --danger-000: var(--dwl-red-hsl) !important;
+    --danger-100: var(--dwl-red-hsl) !important;
+    --danger-200: var(--dwl-red-hsl) !important;
+    --success-000: var(--dwl-green-hsl) !important;
+    --success-100: var(--dwl-green-hsl) !important;
+    --success-200: var(--dwl-green-hsl) !important;
+    --warning-000: var(--dwl-yellow-hsl) !important;
+    --warning-100: var(--dwl-yellow-hsl) !important;
+    --warning-200: var(--dwl-yellow-hsl) !important;
+
+    --cds-page-bg: var(--dwl-bg) !important;
+    --cds-surface-0: var(--dwl-bg3) !important;
+    --cds-surface-1: var(--dwl-bg) !important;
+    --cds-surface-2: var(--dwl-bg2) !important;
+    --cds-surface-3: var(--dwl-raised) !important;
+    --cds-surface-panel: var(--dwl-bg2) !important;
+    --cds-surface-sidebar: var(--dwl-bg2) !important;
+    --cds-surface-popover: var(--dwl-raised) !important;
+    --cds-text-primary: var(--dwl-fg) !important;
+    --cds-text-secondary: var(--dwl-muted) !important;
+    --cds-text-stays-secondary: var(--dwl-muted) !important;
+    --cds-text-muted: var(--dwl-faint) !important;
+    --cds-text-disabled: var(--dwl-faint) !important;
+    --cds-text-accent: var(--dwl-accent) !important;
+    --cds-text-danger: var(--dwl-red) !important;
+    --cds-text-success: var(--dwl-green) !important;
+    --cds-text-warning: var(--dwl-yellow) !important;
+    --cds-border: color-mix(in srgb, var(--dwl-fg) 8%, transparent) !important;
+    --cds-border-strong: color-mix(in srgb, var(--dwl-fg) 20%, transparent) !important;
+    --cds-border-stronger: color-mix(in srgb, var(--dwl-fg) 40%, transparent) !important;
+    --cds-ring-color: color-mix(in srgb, var(--dwl-fg) 8%, transparent) !important;
+    --cds-fill-brand: var(--dwl-accent) !important;
+    --cds-fill-brand-hover: var(--dwl-accent2) !important;
+    --cds-fill-brand-icon-only: var(--dwl-accent) !important;
+    --cds-on-brand: var(--dwl-on-accent) !important;
+    --cds-fill-accent: var(--dwl-accent) !important;
+    --cds-fill-accent-hover: var(--dwl-accent2) !important;
+    --cds-on-accent: var(--dwl-on-accent) !important;
+    --cds-fill-primary: var(--dwl-fg) !important;
+    --cds-fill-primary-hover: var(--dwl-muted) !important;
+    --cds-on-primary: var(--dwl-bg) !important;
+    --cds-fill-secondary: color-mix(in srgb, var(--dwl-fg) 14%, transparent) !important;
+    --cds-fill-secondary-hover: color-mix(in srgb, var(--dwl-fg) 22%, transparent) !important;
+    --cds-fill-ghost-hover: color-mix(in srgb, var(--dwl-fg) 8%, transparent) !important;
+    --cds-fill-ghost-selected: color-mix(in srgb, var(--dwl-fg) 15%, transparent) !important;
+    --cds-fill-control: color-mix(in srgb, var(--dwl-fg) 10%, transparent) !important;
+    --cds-fill-control-hover: color-mix(in srgb, var(--dwl-fg) 20%, transparent) !important;
+    --cds-fill-field: color-mix(in srgb, var(--dwl-fg) 5%, transparent) !important;
+    --cds-fill-field-ring: color-mix(in srgb, var(--dwl-fg) 10%, transparent) !important;
+    --cds-fill-card-hover: color-mix(in srgb, var(--dwl-fg) 5%, transparent) !important;
+    --cds-fill-disabled: color-mix(in srgb, var(--dwl-fg) 5%, transparent) !important;
+    --cds-bg-neutral: color-mix(in srgb, var(--dwl-fg) 5%, transparent) !important;
+    --cds-bg-neutral-hover: color-mix(in srgb, var(--dwl-fg) 8%, transparent) !important;
+    --cds-bg-user-message: var(--dwl-raised) !important;
+    --cds-fill-danger: var(--dwl-red) !important;
+    --cds-fill-success: var(--dwl-green) !important;
+    --cds-fill-warning: var(--dwl-yellow) !important;
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

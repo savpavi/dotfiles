@@ -1,0 +1,57 @@
+/* ==UserStyle==
+@name         Tailscale admin console: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  The Tailscale admin console in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("tailscale.com") {
+  /* The console has named variables holding whole colours and a grey ramp holding bare
+     "r g b" channels (used as rgb(var(--color-gray-900) / alpha)); the ramp takes the
+     theme's -channels variables. Only the console's dark mode is covered: in its light
+     mode the same ramp is used the other way round. */
+  :root.dark[data-dwl-theme] {
+    --color-bg-app: var(--dwl-bg3) !important;
+    --color-bg-base: var(--dwl-bg) !important;
+    --color-bg-menu-item-hover: var(--dwl-hover) !important;
+    --color-border-base: var(--dwl-border) !important;
+    --color-border-interactive: var(--dwl-border) !important;
+    --color-border-interactive-hover: var(--dwl-faint) !important;
+    --color-border-focus: var(--dwl-accent) !important;
+    --color-outline-focus: var(--dwl-accent) !important;
+    --color-text-base: var(--dwl-fg) !important;
+    --color-text-muted: var(--dwl-muted) !important;
+    --color-text-disabled: var(--dwl-faint) !important;
+    --color-text-primary: var(--dwl-accent) !important;
+    --color-text-danger: var(--dwl-red) !important;
+    --color-text-warning: var(--dwl-yellow) !important;
+    --color-text-success: var(--dwl-green) !important;
+    --color-codemirror-background: var(--dwl-bg2) !important;
+    --color-codemirror-border: var(--dwl-border) !important;
+
+    --color-gray-1100: var(--dwl-bg3-channels) !important;
+    --color-gray-1000: var(--dwl-bg3-channels) !important;
+    --color-gray-900: var(--dwl-bg-channels) !important;
+    --color-gray-800: var(--dwl-raised-channels) !important;
+    --color-gray-700: var(--dwl-border-channels) !important;
+    --color-gray-600: var(--dwl-faint-channels) !important;
+    --color-gray-500: var(--dwl-faint-channels) !important;
+    --color-gray-400: var(--dwl-muted-channels) !important;
+    --color-gray-300: var(--dwl-fg-channels) !important;
+    --color-gray-200: var(--dwl-fg-channels) !important;
+    --color-gray-100: var(--dwl-fg-channels) !important;
+    --color-gray-50: var(--dwl-fg-channels) !important;
+    --color-gray-0: var(--dwl-fg-channels) !important;
+  }
+  :root.dark[data-dwl-theme] body {
+    background: var(--dwl-bg) !important;
+    color: var(--dwl-fg);
+  }
+  :root.dark[data-dwl-theme] input {
+    color: var(--dwl-fg);
+  }
+  :root.dark[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

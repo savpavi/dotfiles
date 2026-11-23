@@ -1,0 +1,76 @@
+/* ==UserStyle==
+@name         Facebook: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Facebook in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("facebook.com") {
+  /* Facebook paints from named variables set on <html class="__fb-dark-mode|__fb-light-mode">
+     and repeated on nested wrappers with the same classes. */
+  :root[data-dwl-theme][data-dwl-scheme],
+  :root[data-dwl-theme][data-dwl-scheme] body,
+  :root[data-dwl-theme][data-dwl-scheme] .__fb-dark-mode,
+  :root[data-dwl-theme][data-dwl-scheme] .__fb-light-mode {
+    --web-wash: var(--dwl-bg3) !important;
+    --surface-background: var(--dwl-bg) !important;
+    --card-background: var(--dwl-bg) !important;
+    --card-background-flat: var(--dwl-raised) !important;
+    --nav-bar-background: var(--dwl-bg2) !important;
+    --popover-background: var(--dwl-bg2) !important;
+    --popover-card-background: var(--dwl-bg2) !important;
+    --messenger-card-background: var(--dwl-bg) !important;
+    --comment-background: var(--dwl-raised) !important;
+    --comment-footer-background: var(--dwl-hover) !important;
+    --wash: var(--dwl-raised) !important;
+    --background-deemphasized: color-mix(in srgb, var(--dwl-fg) 10%, transparent) !important;
+    --hover-overlay: color-mix(in srgb, var(--dwl-fg) 10%, transparent) !important;
+    --press-overlay: color-mix(in srgb, var(--dwl-fg) 16%, transparent) !important;
+    --divider: var(--dwl-border) !important;
+    --divider-on-color: var(--dwl-border) !important;
+    --media-inner-border: color-mix(in srgb, var(--dwl-fg) 6%, transparent) !important;
+
+    --primary-text: var(--dwl-fg) !important;
+    --secondary-text: var(--dwl-muted) !important;
+    --placeholder-text: var(--dwl-faint) !important;
+    --disabled-text: var(--dwl-faint) !important;
+    --primary-icon: var(--dwl-fg) !important;
+    --secondary-icon: var(--dwl-muted) !important;
+    --placeholder-icon: var(--dwl-faint) !important;
+    --disabled-icon: var(--dwl-faint) !important;
+
+    --accent: var(--dwl-accent) !important;
+    --blue-link: var(--dwl-accent) !important;
+    --primary-button-background: var(--dwl-accent) !important;
+    --primary-button-pressed: var(--dwl-accent2) !important;
+    --primary-button-text: var(--dwl-on-accent) !important;
+    --primary-button-icon: var(--dwl-on-accent) !important;
+    --primary-deemphasized-button-background: color-mix(in srgb, var(--dwl-accent) 20%, transparent) !important;
+    --primary-deemphasized-button-text: var(--dwl-accent) !important;
+    --secondary-button-background: color-mix(in srgb, var(--dwl-fg) 10%, transparent) !important;
+    --secondary-button-background-floating: var(--dwl-hover) !important;
+    --secondary-button-text: var(--dwl-fg) !important;
+    --disabled-button-background: color-mix(in srgb, var(--dwl-fg) 12%, transparent) !important;
+    --disabled-button-text: var(--dwl-faint) !important;
+    --input-background: var(--dwl-raised) !important;
+    --input-background-hover: var(--dwl-hover) !important;
+    --input-background-disabled: var(--dwl-bg3) !important;
+    --input-border-color: var(--dwl-border) !important;
+    --input-border-color-hover: var(--dwl-faint) !important;
+    --input-label-color-inside: var(--dwl-muted) !important;
+    --input-label-color-highlighted: var(--dwl-accent) !important;
+    --highlight-bg: color-mix(in srgb, var(--dwl-accent) 30%, transparent) !important;
+    --text-highlight: color-mix(in srgb, var(--dwl-accent) 40%, transparent) !important;
+    --notification-badge: var(--dwl-urgent) !important;
+    --positive: var(--dwl-green) !important;
+    --negative: var(--dwl-red) !important;
+  }
+  :root[data-dwl-theme] body {
+    background: var(--dwl-bg3) !important;
+    color: var(--dwl-fg);
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

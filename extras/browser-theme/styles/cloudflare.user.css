@@ -1,0 +1,70 @@
+/* ==UserStyle==
+@name         Cloudflare dashboard: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  The Cloudflare dashboard in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("dash.cloudflare.com") {
+  /* The dashboard's current design tokens are --color-kumo-* (surfaces, lines, states)
+     and --text-color-kumo-* (text). Charts and badges keep their own colours. */
+  :root[data-dwl-theme][data-dwl-scheme],
+  :root[data-dwl-theme][data-dwl-scheme] body {
+    --color-kumo-canvas: var(--dwl-bg3) !important;
+    --color-kumo-base: var(--dwl-bg) !important;
+    --color-kumo-recessed: var(--dwl-bg3) !important;
+    --color-kumo-elevated: var(--dwl-bg2) !important;
+    --color-kumo-control: var(--dwl-raised) !important;
+    --color-kumo-overlay: var(--dwl-bg2) !important;
+    --color-kumo-tint: var(--dwl-raised) !important;
+    --color-kumo-fill: var(--dwl-raised) !important;
+    --color-kumo-fill-hover: var(--dwl-hover) !important;
+    --color-kumo-interact: var(--dwl-hover) !important;
+    --color-kumo-line: var(--dwl-border) !important;
+    --color-kumo-hairline: color-mix(in srgb, var(--dwl-border) 70%, transparent) !important;
+    --color-kumo-arrow-stroke: var(--dwl-border) !important;
+    --color-kumo-contrast: var(--dwl-fg) !important;
+    --color-kumo-focus: var(--dwl-accent) !important;
+    --color-kumo-brand: var(--dwl-accent) !important;
+    --color-kumo-brand-hover: var(--dwl-accent2) !important;
+    --color-kumo-info: var(--dwl-blue) !important;
+    --color-kumo-info-tint: color-mix(in srgb, var(--dwl-blue) 20%, transparent) !important;
+    --color-kumo-success: var(--dwl-green) !important;
+    --color-kumo-success-tint: color-mix(in srgb, var(--dwl-green) 20%, transparent) !important;
+    --color-kumo-warning: var(--dwl-yellow) !important;
+    --color-kumo-warning-tint: color-mix(in srgb, var(--dwl-yellow) 20%, transparent) !important;
+    --color-kumo-danger: var(--dwl-red) !important;
+    --color-kumo-danger-tint: color-mix(in srgb, var(--dwl-red) 17%, transparent) !important;
+    --color-kumo-neutral-1000: var(--dwl-bg3) !important;
+    --color-kumo-neutral-975: var(--dwl-bg3) !important;
+    --color-kumo-neutral-950: var(--dwl-bg3) !important;
+    --color-kumo-neutral-925: var(--dwl-bg) !important;
+    --color-kumo-neutral-750: var(--dwl-border) !important;
+
+    --text-color-kumo-default: var(--dwl-fg) !important;
+    --text-color-kumo-strong: var(--dwl-fg) !important;
+    --text-color-kumo-subtle: var(--dwl-muted) !important;
+    --text-color-kumo-inactive: var(--dwl-faint) !important;
+    --text-color-kumo-placeholder: var(--dwl-faint) !important;
+    --text-color-kumo-inverse: var(--dwl-bg) !important;
+    --text-color-kumo-link: var(--dwl-accent) !important;
+    --text-color-kumo-brand: var(--dwl-accent) !important;
+    --text-color-kumo-info: var(--dwl-blue) !important;
+    --text-color-kumo-success: var(--dwl-green) !important;
+    --text-color-kumo-warning: var(--dwl-yellow) !important;
+    --text-color-kumo-danger: var(--dwl-red) !important;
+    --text-color-surface: var(--dwl-fg) !important;
+    --text-color-primary: var(--dwl-fg) !important;
+    --text-color-label: var(--dwl-muted) !important;
+    --text-color-error: var(--dwl-red) !important;
+    --text-color-info: var(--dwl-blue) !important;
+  }
+  :root[data-dwl-theme] body {
+    background: var(--dwl-bg3) !important;
+    color: var(--dwl-fg);
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}
