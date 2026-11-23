@@ -663,6 +663,16 @@ def render_browser(t, tid, name):
     dark = c.pop("dark")
     theme = {"id": tid, "name": name, "scheme": "dark" if dark else "light",
              "vars": {"--dwl-" + k.replace("_", "-"): v for k, v in c.items()}}
+    # Bazı siteler rengi bileşenleriyle ister (Tailwind tarzı "hsl(var(--x) / 0.5)"):
+    # --dwl-bg-rgb = "18, 39, 56", --dwl-bg-channels = "18 39 56", --dwl-bg-hsl = "207 51% 15%"
+    import colorsys
+    for k, v in c.items():
+        r, g, b = rgb(v)
+        h, l, s = colorsys.rgb_to_hls(r / 255, g / 255, b / 255)
+        key = "--dwl-" + k.replace("_", "-")
+        theme["vars"][key + "-rgb"] = f"{r}, {g}, {b}"
+        theme["vars"][key + "-channels"] = f"{r} {g} {b}"
+        theme["vars"][key + "-hsl"] = f"{h * 360:.0f} {s * 100:.0f}% {l * 100:.0f}%"
     tmp = BROWSER_DIR / ".theme.json.tmp"
     tmp.write_text(json.dumps(theme, ensure_ascii=False, indent=1) + "\n")
     tmp.replace(BROWSER_DIR / "theme.json")
@@ -670,8 +680,8 @@ def render_browser(t, tid, name):
 
 
 def stylus_import():
-    """styles/*.user.css -> tek bir Stylus yedek dosyası (Yönet > İçe aktar ile hepsi birden eklenir).
-    Eklenti klasörünün dışına yazılır: orada olursa tarayıcı onu da eklenti dosyası sayar."""
+    """styles/*.user.css -> eklentinin okuduğu styles.json ve isteyen için tek bir Stylus yedek
+    dosyası (Yönet > İçe aktar; eklenti stilleri kendisi uyguladığı için ikisi birden kullanılmaz)."""
     import re
     styles = []
     for f in sorted((BROWSER_SRC / "styles").glob("*.user.css")):
@@ -685,6 +695,11 @@ def stylus_import():
     if styles:
         out = BROWSER_DIR.parent / "stylus-import.json"
         out.write_text(json.dumps(styles, ensure_ascii=False, indent=1) + "\n")
+    # Eklentinin kendisi de aynı stilleri uygular (Stylus şart değil): alan adı + kod.
+    own = [{"domains": d, "code": s["code"]} for st in styles for s in st["sections"] if (d := s["domains"])]
+    tmp = BROWSER_DIR / ".styles.json.tmp"
+    tmp.write_text(json.dumps(own, ensure_ascii=False) + "\n")
+    tmp.replace(BROWSER_DIR / "styles.json")
 
 
 def quiet(*cmd):

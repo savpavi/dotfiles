@@ -1,15 +1,20 @@
-// dwl-theme writes theme.json next to this file. An extension cannot watch a file,
-// so the visible tab asks for a check every few seconds; the result goes to
-// storage, and storage.onChanged carries it to every open tab at once.
-async function sync() {
+// dwl-theme writes theme.json (colours) and styles.json (the site styles) next to this
+// file. An extension cannot watch a file, so the visible tab asks for a check every few
+// seconds; the result goes to storage, and storage.onChanged carries it to every open tab.
+async function syncFile(file, rawKey, key) {
   try {
-    const res = await fetch(chrome.runtime.getURL("theme.json"), { cache: "no-store" });
+    const res = await fetch(chrome.runtime.getURL(file), { cache: "no-store" });
     const raw = await res.text();
-    const old = await chrome.storage.local.get("raw");
-    if (raw !== old.raw) await chrome.storage.local.set({ raw, theme: JSON.parse(raw) });
+    const old = await chrome.storage.local.get(rawKey);
+    if (raw !== old[rawKey]) await chrome.storage.local.set({ [rawKey]: raw, [key]: JSON.parse(raw) });
   } catch (e) {
-    // theme.json missing or half-written: keep the last good theme
+    // missing or half-written: keep the last good copy
   }
+}
+
+function sync() {
+  syncFile("theme.json", "raw", "theme");
+  syncFile("styles.json", "rawStyles", "styles");
 }
 
 chrome.runtime.onInstalled.addListener(sync);

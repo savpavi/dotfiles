@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "dwl-theme",
-  "version": "0.1",
-  "description": "Puts the colours of the active dwl theme on every page as --dwl-* CSS variables, so userstyles can follow the desktop theme.",
+  "version": "0.2",
+  "description": "Puts the colours of the active dwl theme on every page as --dwl-* CSS variables, and applies the site styles written for that theme.",
   "permissions": ["storage"],
   "background": { "service_worker": "background.js" },
   "content_scripts": [
