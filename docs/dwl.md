@@ -73,6 +73,12 @@ Tema değişince bunlar da canlı döner (uygulamayı yeniden başlatmak gerekme
   matugen-themes şablonu, MIT). Bir kez uygulanır: dosyayı Kayıtlı Mesajlar'a gönder, mesajdaki
   dosyaya tıkla, Uygula. Telegram o yerel dosyayı izler. (Ayarlar'dan dosya seçme ya da pencereye
   sürükleme 7.4.4'te çalışmıyor.)
+- **Tarayıcı (Brave, Chromium):** `~/.config/dwl-theme/browser/` altına küçük bir eklenti ve
+  `theme.json` yazılır (kaynak `extras/browser-theme/`). Bir kez yüklenir: `brave://extensions` →
+  Geliştirici modu → Paketlenmemiş öğe yükle → o klasör. Eklenti hiçbir siteyi kendisi boyamaz;
+  her sayfanın `<html>` öğesine `--dwl-*` değişkenlerini ve `data-dwl-theme` / `data-dwl-scheme`
+  koyar, Stylus stilleri renkleri oradan alır. Açık sekmeler tema değişimini en geç 3 saniyede,
+  yenilemeden izler. Örnek stil ve değişken listesi: `extras/browser-theme/README.md`.
 
 ## Tuşlar
 

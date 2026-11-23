@@ -22,7 +22,7 @@ More screenshots are in [`docs/screenshots/`](docs/screenshots).
 | `config/` | App configs symlinked into `~/.config` by `dot-link` (Alacritty, btop, fastfetch, Neovim, Starship, environment.d) |
 | `templates/` | Colour templates for Vesktop and Telegram, filled by `dwl-theme` |
 | `wallpapers/omarchy/` | Backgrounds from Omarchy, used as static wallpapers |
-| `extras/` | Pieces installed by hand: Dolphin service menus, systemd user units, `.desktop` launchers, MIME defaults, Firefox Nord theme |
+| `extras/` | Pieces installed by hand: Dolphin service menus, systemd user units, `.desktop` launchers, MIME defaults, Firefox Nord theme, `browser-theme` (extension that gives web pages the theme colours as CSS variables) |
 | `install/` | `arch/install.sh` bootstraps a fresh Arch install; `dwl.sh` builds and installs the desktop |
 | `tests/` | Unit tests for the tools and a headless test that applies every theme |
 | `docs/dwl.md` | The details and the traps (in Turkish) |

@@ -1,0 +1,61 @@
+/* ==UserStyle==
+@name         Hacker News: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Hacker News in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("news.ycombinator.com") {
+  /* Every rule hangs on data-dwl-theme, so the page is untouched without the extension. */
+  :root[data-dwl-theme] body {
+    background: var(--dwl-bg3);
+  }
+  :root[data-dwl-theme] #hnmain,
+  :root[data-dwl-theme] #hnmain td {
+    background: var(--dwl-bg);
+    color: var(--dwl-fg);
+  }
+  :root[data-dwl-theme] #hnmain > tbody > tr:first-child td {
+    background: var(--dwl-accent);
+    color: var(--dwl-on-accent);
+  }
+  :root[data-dwl-theme] #hnmain .pagetop,
+  :root[data-dwl-theme] #hnmain .pagetop a:link,
+  :root[data-dwl-theme] #hnmain .pagetop a:visited {
+    color: var(--dwl-on-accent);
+  }
+  :root[data-dwl-theme] a:link,
+  :root[data-dwl-theme] .titleline > a {
+    color: var(--dwl-fg);
+  }
+  :root[data-dwl-theme] a:visited,
+  :root[data-dwl-theme] .titleline > a:visited {
+    color: var(--dwl-muted);
+  }
+  :root[data-dwl-theme] #hnmain .subtext,
+  :root[data-dwl-theme] #hnmain .subtext a:link,
+  :root[data-dwl-theme] #hnmain .subtext a:visited,
+  :root[data-dwl-theme] #hnmain .sitebit a:link,
+  :root[data-dwl-theme] #hnmain .comhead,
+  :root[data-dwl-theme] #hnmain .comhead a:link,
+  :root[data-dwl-theme] #hnmain .rank {
+    color: var(--dwl-faint);
+  }
+  :root[data-dwl-theme] #hnmain .commtext {
+    color: var(--dwl-fg);
+  }
+  :root[data-dwl-theme] #hnmain .commtext a:link,
+  :root[data-dwl-theme] #hnmain a.morelink:link {
+    color: var(--dwl-accent);
+  }
+  :root[data-dwl-theme] input,
+  :root[data-dwl-theme] textarea {
+    background: var(--dwl-raised);
+    color: var(--dwl-fg);
+    border: 1px solid var(--dwl-border);
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}
