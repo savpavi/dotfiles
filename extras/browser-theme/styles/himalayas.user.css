@@ -1,0 +1,83 @@
+/* ==UserStyle==
+@name         Himalayas: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Himalayas (remote jobs) in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("himalayas.app") {
+  /* A Tailwind site without colour variables: the colour is in the class name
+     (bg-white, text-gray-600), so the grey scale and the purple brand classes are
+     mapped one by one. Company logos and coloured badges are left alone. */
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body {
+    background-color: var(--dwl-bg) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .bg-white { background-color: var(--dwl-bg2) !important; }
+  :root[data-dwl-theme] [class*="bg-[#FCFCFD]"],
+  :root[data-dwl-theme] [class*=":bg-white"] { background-color: var(--dwl-bg2) !important; }
+  :root[data-dwl-theme] .bg-hero-gradient { background-image: none !important; background-color: var(--dwl-bg) !important; }
+  :root[data-dwl-theme] .bg-gray-50 { background-color: var(--dwl-bg) !important; }
+  :root[data-dwl-theme] .bg-gray-100 { background-color: var(--dwl-raised) !important; }
+  :root[data-dwl-theme] .bg-gray-200,
+  :root[data-dwl-theme] .bg-gray-300 { background-color: var(--dwl-hover) !important; }
+  :root[data-dwl-theme] .bg-gray-800,
+  :root[data-dwl-theme] .bg-gray-900,
+  :root[data-dwl-theme] .bg-black { background-color: var(--dwl-bg3) !important; color: var(--dwl-fg) !important; }
+  :root[data-dwl-theme] .hover\:bg-gray-50:hover,
+  :root[data-dwl-theme] .hover\:bg-gray-100:hover,
+  :root[data-dwl-theme] .hover\:bg-white:hover { background-color: var(--dwl-hover) !important; }
+
+  :root[data-dwl-theme] .text-gray-900,
+  :root[data-dwl-theme] .text-gray-800,
+  :root[data-dwl-theme] .text-gray-700,
+  :root[data-dwl-theme] .text-black,
+  :root[data-dwl-theme] .hover\:text-gray-900:hover,
+  :root[data-dwl-theme] .hover\:text-gray-800:hover,
+  :root[data-dwl-theme] .hover\:text-gray-700:hover { color: var(--dwl-fg) !important; }
+  :root[data-dwl-theme] [class*="[&_a]:text-gray-600"] a,
+  :root[data-dwl-theme] .text-gray-600,
+  :root[data-dwl-theme] .text-gray-500 { color: var(--dwl-muted) !important; }
+  :root[data-dwl-theme] .text-gray-400,
+  :root[data-dwl-theme] .text-gray-300,
+  :root[data-dwl-theme] .text-gray-200 { color: var(--dwl-faint) !important; }
+
+  :root[data-dwl-theme] .border-gray-100,
+  :root[data-dwl-theme] .border-gray-200,
+  :root[data-dwl-theme] .border-gray-300,
+  :root[data-dwl-theme] .divide-gray-100 > *,
+  :root[data-dwl-theme] .divide-gray-200 > * { border-color: var(--dwl-border) !important; }
+
+  :root[data-dwl-theme] .text-primary-500,
+  :root[data-dwl-theme] .text-primary-600,
+  :root[data-dwl-theme] .text-primary-700,
+  :root[data-dwl-theme] .text-primary-800 { color: var(--dwl-accent) !important; }
+  :root[data-dwl-theme] .bg-primary-500,
+  :root[data-dwl-theme] .bg-primary-600,
+  :root[data-dwl-theme] .bg-primary-700 { background-color: var(--dwl-accent) !important; color: var(--dwl-on-accent) !important; }
+  :root[data-dwl-theme] .bg-primary-500 .text-white,
+  :root[data-dwl-theme] .bg-primary-600 .text-white,
+  :root[data-dwl-theme] .bg-primary-700 .text-white,
+  :root[data-dwl-theme] .bg-primary-500.text-white,
+  :root[data-dwl-theme] .bg-primary-600.text-white,
+  :root[data-dwl-theme] .bg-primary-700.text-white { color: var(--dwl-on-accent) !important; }
+  :root[data-dwl-theme] .hover\:bg-primary-800:hover,
+  :root[data-dwl-theme] .hover\:bg-primary-700:hover { background-color: var(--dwl-accent2) !important; }
+  :root[data-dwl-theme] .bg-primary-50,
+  :root[data-dwl-theme] .bg-primary-100 { background-color: color-mix(in srgb, var(--dwl-accent) 16%, transparent) !important; }
+  :root[data-dwl-theme] .border-primary-400,
+  :root[data-dwl-theme] .border-primary-500 { border-color: var(--dwl-accent) !important; }
+
+  :root[data-dwl-theme] input,
+  :root[data-dwl-theme] select,
+  :root[data-dwl-theme] textarea {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

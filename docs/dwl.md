@@ -78,7 +78,8 @@ Tema değişince bunlar da canlı döner (uygulamayı yeniden başlatmak gerekme
   Bir kez yüklenir: `brave://extensions` → Geliştirici modu → Paketlenmemiş öğe yükle → o klasör.
   Eklenti her sayfanın `<html>` öğesine `--dwl-*` değişkenlerini koyar ve `styles/` altında o site
   için stil varsa onu uygular (Hacker News, GitHub, YouTube, Reddit, Ekşi Sözlük, Claude, WhatsApp, Google Takvim,
-  Instagram, Facebook, Hashtag Basketball, Basketball Monster, Yahoo Fantasy, Tailscale, Cloudflare).
+  Instagram, Facebook, Hashtag Basketball, Basketball Monster, Yahoo Fantasy, Tailscale, Cloudflare,
+  Google Mesajlar, X, LinkedIn, Himalayas, Kariyer.net, Gmail).
   Açık sekmeler tema ya da stil değişimini en geç 3 saniyede, yenilemeden izler. Stylus gerekmez;
   isteyen için `~/.config/dwl-theme/stylus-import.json` da üretilir. Eklentinin kendi dosyaları
   (js, manifest) değişince `brave://extensions` sayfasında yenile düğmesine basılır. Dark Reader

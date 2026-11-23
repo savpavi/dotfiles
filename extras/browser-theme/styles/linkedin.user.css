@@ -1,0 +1,151 @@
+/* ==UserStyle==
+@name         LinkedIn: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  LinkedIn in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("linkedin.com") {
+  /* LinkedIn's colour variables have generated names (--cfsa4m). Their roles were read
+     from their values in LinkedIn's light theme: black at 90% is text, white is a card,
+     and so on. When LinkedIn regenerates the names this block stops matching and has to
+     be redone the same way; the direct rules below keep the page readable until then. */
+  /* #interop-outlet holds the messaging box in a shadow tree. Styles from outside do not
+     reach into it, but variables set on its host element are inherited by it. */
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body,
+  :root[data-dwl-theme] #interop-outlet,
+  :root[data-dwl-theme] .theme--light,
+  :root[data-dwl-theme] .theme--dark {
+    /* text */
+    --cfsa4l: var(--dwl-fg) !important;
+    --cfsa4m: var(--dwl-fg) !important;
+    --cfsbe0: var(--dwl-fg) !important;
+    --cfsbe1: var(--dwl-fg) !important;
+    --cfsbez: var(--dwl-fg) !important;
+    /* secondary text */
+    --cfsa4j: var(--dwl-muted) !important;
+    --cfsa4k: var(--dwl-muted) !important;
+    --cfsbev: var(--dwl-muted) !important;
+    --cfsbew: var(--dwl-muted) !important;
+    --cfsbex: var(--dwl-muted) !important;
+    --cfsbey: var(--dwl-muted) !important;
+    --cfspx: var(--dwl-muted) !important;
+    --cfspy: var(--dwl-muted) !important;
+    --cfspz: var(--dwl-muted) !important;
+    /* faint text */
+    --cfsa4h: var(--dwl-faint) !important;
+    --cfsa4i: var(--dwl-faint) !important;
+    --cfsbet: var(--dwl-faint) !important;
+    --cfsbeu: var(--dwl-faint) !important;
+    /* lines and washes */
+    --cfsa4g: color-mix(in srgb, var(--dwl-fg) 14%, transparent) !important;
+    --cfsbep: color-mix(in srgb, var(--dwl-fg) 14%, transparent) !important;
+    --cfsbeq: color-mix(in srgb, var(--dwl-fg) 14%, transparent) !important;
+    --cfsber: color-mix(in srgb, var(--dwl-fg) 14%, transparent) !important;
+    --cfsbes: color-mix(in srgb, var(--dwl-fg) 14%, transparent) !important;
+    /* cards (white) */
+    --cfsa30: var(--dwl-bg2) !important;
+    --cfsa45: var(--dwl-bg2) !important;
+    --cfsa51: var(--dwl-bg2) !important;
+    --cfsa6x: var(--dwl-bg2) !important;
+    --cfsa79: var(--dwl-bg2) !important;
+    --cfsa7t: var(--dwl-bg2) !important;
+    --cfsa85: var(--dwl-bg2) !important;
+    --cfsa8p: var(--dwl-bg2) !important;
+    --cfsba0: var(--dwl-bg2) !important;
+    --cfsbbg: var(--dwl-bg2) !important;
+    --cfsbce: var(--dwl-bg2) !important;
+    --cfsbcu: var(--dwl-bg2) !important;
+    --cfsbdd: var(--dwl-bg2) !important;
+    --cfsbde: var(--dwl-bg2) !important;
+    --cfsbdf: var(--dwl-bg2) !important;
+    --cfsbdq: var(--dwl-bg2) !important;
+    --cfsbe2: var(--dwl-bg2) !important;
+    --cfsbe3: var(--dwl-bg2) !important;
+    --cfsbe4: var(--dwl-bg2) !important;
+    --cfsbe5: var(--dwl-bg2) !important;
+    --cfsbe6: var(--dwl-bg2) !important;
+    --cfsbea: var(--dwl-bg2) !important;
+    /* page (off-white) */
+    --cfsa46: var(--dwl-bg) !important;
+    --cfsa4n: var(--dwl-bg) !important;
+    --cfsa5l: var(--dwl-bg) !important;
+    --cfsa5m: var(--dwl-bg) !important;
+    --cfsa6h: var(--dwl-bg) !important;
+    --cfsa6y: var(--dwl-bg) !important;
+    --cfsa7u: var(--dwl-bg) !important;
+    --cfsa86: var(--dwl-bg) !important;
+    --cfsa91: var(--dwl-bg) !important;
+    --cfsa92: var(--dwl-bg) !important;
+    --cfsa9l: var(--dwl-bg) !important;
+    --cfsa9m: var(--dwl-bg) !important;
+    --cfsbak: var(--dwl-bg) !important;
+    --cfsbcf: var(--dwl-bg) !important;
+    --cfsbdg: var(--dwl-bg) !important;
+    --cfsbeb: var(--dwl-bg) !important;
+    --cfsbec: var(--dwl-bg) !important;
+    --cfsbed: var(--dwl-bg) !important;
+    /* brand blue */
+    --cfsa41: var(--dwl-accent) !important;
+    /* brand blue, hover */
+    --cfsa42: var(--dwl-accent2) !important;
+  }
+  /* The messaging box still uses LinkedIn's older, named variables. */
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] #interop-outlet,
+  :root[data-dwl-theme] .theme--light,
+  :root[data-dwl-theme] .theme--dark {
+    --color-background: var(--dwl-bg) !important;
+    --color-background-canvas: var(--dwl-bg) !important;
+    --color-background-canvas-tint: var(--dwl-raised) !important;
+    --color-background-canvas-dark: var(--dwl-bg3) !important;
+    --color-background-canvas-mobile: var(--dwl-bg) !important;
+    --color-background-container: var(--dwl-bg2) !important;
+    --color-background-container-tint: var(--dwl-raised) !important;
+    --color-background-container-dark-tint: var(--dwl-hover) !important;
+    --color-background-new: var(--dwl-raised) !important;
+    --color-background-none-hover: color-mix(in srgb, var(--dwl-fg) 8%, transparent) !important;
+    --color-background-none-tint-hover: color-mix(in srgb, var(--dwl-fg) 8%, transparent) !important;
+    --color-background-none-active: color-mix(in srgb, var(--dwl-fg) 14%, transparent) !important;
+    --color-background-scrim: color-mix(in srgb, var(--dwl-bg3) 70%, transparent) !important;
+    --color-input-container-background: var(--dwl-raised) !important;
+    --color-text: var(--dwl-fg) !important;
+    --color-text-hover: var(--dwl-fg) !important;
+    --color-text-active: var(--dwl-fg) !important;
+    --color-text-low-emphasis: var(--dwl-muted) !important;
+    --color-text-secondary: var(--dwl-muted) !important;
+    --color-text-disabled: var(--dwl-faint) !important;
+    --color-text-brand: var(--dwl-accent) !important;
+    --color-icon: var(--dwl-muted) !important;
+    --color-icon-hover: var(--dwl-fg) !important;
+    --color-icon-active: var(--dwl-fg) !important;
+    --color-icon-disabled: var(--dwl-faint) !important;
+    --color-border: var(--dwl-border) !important;
+    --color-border-low-emphasis: var(--dwl-border) !important;
+    --color-border-low-emphasis-hover: var(--dwl-faint) !important;
+    --color-border-faint: color-mix(in srgb, var(--dwl-border) 60%, transparent) !important;
+    --color-border-on-dark: var(--dwl-border) !important;
+    --color-divider: var(--dwl-border) !important;
+    --color-action: var(--dwl-accent) !important;
+    --color-action-hover: var(--dwl-accent2) !important;
+    --color-action-active: var(--dwl-accent2) !important;
+    --color-brand: var(--dwl-accent) !important;
+    --color-link: var(--dwl-accent) !important;
+    --color-link-hover: var(--dwl-accent2) !important;
+    --color-link-visited: var(--dwl-accent) !important;
+    --color-checked: var(--dwl-accent) !important;
+    --color-signal-positive: var(--dwl-green) !important;
+    --color-signal-negative: var(--dwl-red) !important;
+    --color-signal-caution: var(--dwl-yellow) !important;
+  }
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body {
+    background-color: var(--dwl-bg) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

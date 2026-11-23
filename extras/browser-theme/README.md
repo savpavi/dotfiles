@@ -60,6 +60,12 @@ A style is a `styles/<site>.user.css` file with one or more `@-moz-document doma
 | `yahoo-fantasy.user.css` | fantasysports.yahoo.com | paints the old fixed-colour layout directly, plus the few `--ys-colors-*` variables |
 | `tailscale.user.css` | tailscale.com | points the console's named variables and its grey ramp (bare `r g b`) at the theme; dark mode only |
 | `cloudflare.user.css` | dash.cloudflare.com | points the `--color-kumo-*` and `--text-color-kumo-*` tokens at the theme |
+| `google-messages.user.css` | messages.google.com | paints the surfaces directly; the open-conversation rules are unchecked |
+| `x.user.css` | x.com | maps X's per-colour generated classes and inline colours; X's black display mode only |
+| `linkedin.user.css` | linkedin.com | maps LinkedIn's generated variable names by the role their values show |
+| `himalayas.user.css` | himalayas.app | maps the Tailwind colour classes (`bg-white`, `text-gray-600`, ...) |
+| `kariyer.user.css` | kariyer.net | paints the Bootstrap-based layout directly |
+| `gmail.user.css` | mail.google.com | paints Gmail directly (list, opened message, compose); an e-mail's own backgrounds are dropped and its text takes the theme colours |
 
 YouTube names most of its variables with build-generated hashes. `tools/youtube-tokens.js` regenerates that part of the style: run it in the DevTools console on youtube.com and replace the block between the "generated" markers.
 
@@ -67,6 +73,8 @@ The extension applies these itself. To use them in Stylus instead, import `~/.co
 
 ## Limits
 
+- Styles do not reach into a shadow tree. Variables do: set them on the shadow host and the tree inherits them (LinkedIn's messaging box in `linkedin.user.css`). A shadow tree that paints with fixed colours, such as another extension's widget, cannot be themed from here.
+- A site rule in a stylesheet from another origin cannot be read while writing a style. When a colour will not change although the rule clearly matches, such a rule is outranking it: add `:not(#_)` to the selector to give it the weight of an id (see `kariyer.user.css`).
 - Some sites set their variables from long selectors or on `<body>`; a style for such a site needs `!important` on its variable overrides (see `claude.user.css`).
 - Dark Reader recolours pages on top of these styles. Turn it off for a site that has a style here.
 - A style that follows a site's variables covers the main surfaces; a corner the site paints with a fixed colour keeps it until a rule is added.

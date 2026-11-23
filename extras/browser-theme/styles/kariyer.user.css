@@ -1,0 +1,194 @@
+/* ==UserStyle==
+@name         Kariyer.net: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Kariyer.net in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("kariyer.net") {
+  /* A Bootstrap-based site with fixed colours, painted directly. Checked on the job
+     list; company logos and the purple-tinted placeholders keep their colours. */
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body,
+  :root[data-dwl-theme] .jobs-list-container,
+  :root[data-dwl-theme] .bg-light,
+  :root[data-dwl-theme] main,
+  :root[data-dwl-theme] footer {
+    background-color: var(--dwl-bg) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .bg-white,
+  :root[data-dwl-theme] .k-ad-card,
+  :root[data-dwl-theme] .k-collapse,
+  :root[data-dwl-theme] .k-radius,
+  :root[data-dwl-theme] .kl-header,
+  :root[data-dwl-theme] .search-layout,
+  :root[data-dwl-theme] .card,
+  :root[data-dwl-theme] .dropdown-menu,
+  :root[data-dwl-theme] .modal-content,
+  :root[data-dwl-theme] .popover,
+  :root[data-dwl-theme] .list-group-item,
+  :root[data-dwl-theme] [class*="job-detail"],
+  :root[data-dwl-theme] [class*="headline-top-box"],
+  :root[data-dwl-theme] [class*="suggestion"],
+  :root[data-dwl-theme] [class*="slick-item"],
+  :root[data-dwl-theme] [class*="seo-field"],
+  :root[data-dwl-theme] [class*="slick-container"],
+  :root[data-dwl-theme] [class*="-module"],
+  :root[data-dwl-theme] [class*="-card"]:not(img),
+  :root[data-dwl-theme] [class*="-box"]:not(input):not(img),
+  :root[data-dwl-theme] [class*="alarm"],
+  :root[data-dwl-theme] [class*="radio-button-items"],
+  :root[data-dwl-theme] [class*="-filter-"] {
+    background-color: var(--dwl-bg2) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] .badge-gray,
+  :root[data-dwl-theme] .badge-light,
+  :root[data-dwl-theme] .field,
+  :root[data-dwl-theme] .kds-ti-field,
+  :root[data-dwl-theme] input,
+  :root[data-dwl-theme] select,
+  :root[data-dwl-theme] textarea,
+  :root[data-dwl-theme] .form-control,
+  :root[data-dwl-theme] .btn.dropdown-toggle,
+  :root[data-dwl-theme] .btn-light,
+  :root[data-dwl-theme] .btn-outline-secondary,
+  :root[data-dwl-theme] .checkbox-wrapper,
+  :root[data-dwl-theme] .kds-text-right,
+  :root[data-dwl-theme] .chip,
+  :root[data-dwl-theme] .kds-secondary,
+  :root[data-dwl-theme] .page-link {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] [class*="job-detail"] ul li[style*="background"],
+  :root[data-dwl-theme] [class*="job-detail"] li:not([class]):has(> span:only-child),
+  :root[data-dwl-theme] .job-feature-item,
+  :root[data-dwl-theme] .badge.badge-primary:not(.new-badge),
+  :root[data-dwl-theme] .quick-apply,
+  :root[data-dwl-theme] [class*="salary-content"] {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-muted) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] .quick-apply,
+  :root[data-dwl-theme] .quick-apply * {
+    color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] [class*="mock-interview-banner"] {
+    background-color: color-mix(in srgb, var(--dwl-accent) 14%, var(--dwl-bg2)) !important;
+    border-color: color-mix(in srgb, var(--dwl-accent) 40%, transparent) !important;
+  }
+  :root[data-dwl-theme] [class*="job-detail"] *,
+  :root[data-dwl-theme] [class*="suggestion"] *,
+  :root[data-dwl-theme] [class*="slick-item"] *,
+  :root[data-dwl-theme] [class*="alignment"],
+  :root[data-dwl-theme] .vue-clamp,
+  :root[data-dwl-theme] .switch-label {
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] .k-ad-card:hover,
+  :root[data-dwl-theme] .dropdown-item:hover,
+  :root[data-dwl-theme] .list-group-item:hover {
+    background-color: var(--dwl-hover) !important;
+  }
+  :root[data-dwl-theme] .kds-primary,
+  :root[data-dwl-theme] .btn-primary,
+  :root[data-dwl-theme] .bg-primary {
+    background-color: var(--dwl-accent) !important;
+    border-color: var(--dwl-accent) !important;
+    color: var(--dwl-on-accent) !important;
+  }
+  :root[data-dwl-theme] .kds-primary *,
+  :root[data-dwl-theme] .btn-primary * {
+    color: var(--dwl-on-accent) !important;
+  }
+
+  :root[data-dwl-theme] h1,
+  :root[data-dwl-theme] h2,
+  :root[data-dwl-theme] h3,
+  :root[data-dwl-theme] h4,
+  :root[data-dwl-theme] h5,
+  :root[data-dwl-theme] h6,
+  :root[data-dwl-theme] p,
+  :root[data-dwl-theme] label,
+  :root[data-dwl-theme] li,
+  :root[data-dwl-theme] .text-dark,
+  :root[data-dwl-theme] .text-black,
+  :root[data-dwl-theme] .text-body,
+  :root[data-dwl-theme] .dropdown-item {
+    color: var(--dwl-fg) !important;
+  }
+  /* labels and icon glyphs carry a fixed dark grey or the brand purple of their own */
+  :root[data-dwl-theme] span:not([class]),
+  :root[data-dwl-theme] i,
+  :root[data-dwl-theme] [class^="kl-header-nav"],
+  :root[data-dwl-theme] [class^="kds-rb"],
+  :root[data-dwl-theme] .total-count-animated-value {
+    color: inherit !important;
+  }
+  :root[data-dwl-theme] .kariyer-icons:not(.text-primary) {
+    color: var(--dwl-muted) !important;
+  }
+  :root[data-dwl-theme] .kds-primary .kariyer-icons,
+  :root[data-dwl-theme] .btn-primary .kariyer-icons {
+    color: var(--dwl-on-accent) !important;
+  }
+  :root[data-dwl-theme] .show-more-button,
+  :root[data-dwl-theme] .show-more-button span {
+    color: var(--dwl-accent) !important;
+  }
+  /* the job text gets a forced dark grey from a rule this style cannot read (it is in a
+     stylesheet on another origin); :not(#_) lends the selector the weight of an id */
+  :root:not(#_):not(#_)[data-dwl-theme] [class*="qualifications"] :is(ul, ol, li, p, span, div, strong, b, u, em, font, a),
+  :root:not(#_):not(#_)[data-dwl-theme] [class*="description"] :is(ul, ol, li, p, span, div, strong, b, u, em, font, a),
+  :root[data-dwl-theme] strong,
+  :root[data-dwl-theme] b,
+  :root[data-dwl-theme] [class*="title"]:not([class*="subtitle"]),
+  :root[data-dwl-theme] [class*="company-name"],
+  :root[data-dwl-theme] [class*="-count"],
+  :root[data-dwl-theme] [class*="alignment"],
+  :root[data-dwl-theme] .vue-clamp,
+  :root[data-dwl-theme] .switch-label {
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] [class*="subtitle"],
+  :root[data-dwl-theme] .kds-content,
+  :root[data-dwl-theme] .share,
+  :root[data-dwl-theme] .btn-link,
+  :root[data-dwl-theme] a:not([class]) {
+    color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] .kds-primary .kds-content {
+    color: var(--dwl-on-accent) !important;
+  }
+  :root[data-dwl-theme] .text-muted,
+  :root[data-dwl-theme] .text-secondary,
+  :root[data-dwl-theme] .text-gray,
+  :root[data-dwl-theme] small {
+    color: var(--dwl-muted) !important;
+  }
+  :root[data-dwl-theme] a {
+    color: var(--dwl-fg);
+  }
+  :root[data-dwl-theme] .text-primary,
+  :root[data-dwl-theme] a.text-primary,
+  :root[data-dwl-theme] a:hover {
+    color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] hr,
+  :root[data-dwl-theme] .border,
+  :root[data-dwl-theme] .border-top,
+  :root[data-dwl-theme] .border-bottom,
+  :root[data-dwl-theme] .border-left,
+  :root[data-dwl-theme] .border-right {
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

@@ -92,9 +92,28 @@
   :root[data-dwl-theme] .bm-custom-select-option {
     color: var(--dwl-fg) !important;
   }
-  /* Heat-map cells keep the site's pale backgrounds, so their text must stay dark. */
+  /* Heat-map cells have pale backgrounds made for a white page (white = average, pale
+     green = good, pale red = bad) with dark text. On a dark theme each cell is flipped to
+     the dark shade of the same hue, which keeps the scale and stops the table glaring. */
   :root[data-dwl-theme] .text-force-black {
     color: #16161a !important;
+  }
+  :root[data-dwl-theme] table span[style*="background"]:not(.text-force-black *) {
+    color: #16161a !important;
+  }
+  :root[data-dwl-theme][data-dwl-scheme="dark"] .text-force-black,
+  :root[data-dwl-theme][data-dwl-scheme="dark"] table span[style*="background"]:not(.text-force-black *) {
+    filter: invert(1) hue-rotate(180deg);
+  }
+  :root[data-dwl-theme] tr.myteam,
+  :root[data-dwl-theme] tr.myteam > td:not(.text-force-black) {
+    background-color: color-mix(in srgb, var(--dwl-accent) 22%, var(--dwl-bg)) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .alert-warning {
+    background-color: color-mix(in srgb, var(--dwl-yellow) 14%, var(--dwl-bg2)) !important;
+    border-color: color-mix(in srgb, var(--dwl-yellow) 40%, transparent) !important;
+    color: var(--dwl-fg) !important;
   }
   :root[data-dwl-theme] .daily-status-updates-game-1 {
     background-color: var(--dwl-raised) !important;

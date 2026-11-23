@@ -1,0 +1,81 @@
+/* ==UserStyle==
+@name         X: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  X (Twitter) in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("x.com"), domain("twitter.com") {
+  /* X has no colour variables: every colour is its own generated class (.r-kemksi is
+     "background black", .r-1nao33i is "text near-white", ...). The classes below are the
+     ones of X's black ("Lights out") display mode, read from the site's stylesheet. With
+     another display mode chosen in X, or after X regenerates its class names, the style
+     stops matching and the page falls back to X's own colours. */
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body {
+    background-color: var(--dwl-bg) !important;
+    scrollbar-color: var(--dwl-border) var(--dwl-bg);
+  }
+  /* backgrounds */
+  :root[data-dwl-theme] .r-kemksi { background-color: var(--dwl-bg) !important; }
+  :root[data-dwl-theme] .r-5zmot { background-color: color-mix(in srgb, var(--dwl-bg) 80%, transparent) !important; }
+  :root[data-dwl-theme] .r-z32n2g { background-color: var(--dwl-raised) !important; }
+  :root[data-dwl-theme] .r-1hdo0pc { background-color: color-mix(in srgb, var(--dwl-fg) 10%, transparent) !important; }
+  :root[data-dwl-theme] .r-gu4em3,
+  :root[data-dwl-theme] .r-1bnu78o { background-color: var(--dwl-border) !important; }
+  :root[data-dwl-theme] .r-l5o3uw { background-color: var(--dwl-accent) !important; }
+  :root[data-dwl-theme] .r-l5o3uw span,
+  :root[data-dwl-theme] .r-l5o3uw svg { color: var(--dwl-on-accent) !important; }
+  /* the light "Post" / "Follow" buttons: light fill, dark label */
+  :root[data-dwl-theme] .r-1sw30gj { background-color: var(--dwl-fg) !important; }
+  :root[data-dwl-theme] .r-jc7xae { background-color: var(--dwl-muted) !important; }
+  :root[data-dwl-theme] .r-18jsvk2,
+  :root[data-dwl-theme] .r-cqee49 { color: var(--dwl-bg) !important; }
+  /* text */
+  :root[data-dwl-theme] .r-1nao33i,
+  :root[data-dwl-theme] .r-54znze { color: var(--dwl-fg) !important; }
+  :root[data-dwl-theme] .r-1bwzh9t { color: var(--dwl-muted) !important; }
+  :root[data-dwl-theme] .r-1cvl2hr { color: var(--dwl-accent) !important; }
+  /* lines */
+  :root[data-dwl-theme] .r-1kqtdi0,
+  :root[data-dwl-theme] .r-2sztyj,
+  :root[data-dwl-theme] .r-1igl3o0,
+  :root[data-dwl-theme] .r-1roi411,
+  :root[data-dwl-theme] .r-12s0y0c { border-color: var(--dwl-border) !important; }
+  :root[data-dwl-theme] .r-1xc7w19,
+  :root[data-dwl-theme] .r-doqw36 { border-color: var(--dwl-bg) !important; }
+  :root[data-dwl-theme] .r-jxzhtn,
+  :root[data-dwl-theme] .r-1dgieki,
+  :root[data-dwl-theme] .r-j5o65s,
+  :root[data-dwl-theme] .r-1gfp8yy { border-color: var(--dwl-fg) !important; }
+  :root[data-dwl-theme] .r-xzxzvz { border-color: var(--dwl-muted) !important; }
+  :root[data-dwl-theme] .r-vhj8yc,
+  :root[data-dwl-theme] .r-v35349 { border-color: var(--dwl-accent) !important; }
+  :root[data-dwl-theme] .r-16cnnyw { border-color: var(--dwl-raised) !important; }
+  :root[data-dwl-theme] .r-14wv3jr { border-color: var(--dwl-bg2) !important; }
+  /* the same colours again where X writes them as inline styles */
+  :root[data-dwl-theme] [style*="background-color: rgb(0, 0, 0)"] { background-color: var(--dwl-bg) !important; }
+  :root[data-dwl-theme] [style*="background-color: rgb(22, 24, 28)"] { background-color: var(--dwl-bg2) !important; }
+  :root[data-dwl-theme] [style*="background-color: rgb(32, 35, 39)"] { background-color: var(--dwl-raised) !important; }
+  :root[data-dwl-theme] [style*="background-color: rgb(239, 243, 244)"] { background-color: var(--dwl-fg) !important; }
+  :root[data-dwl-theme] [style*="background-color: rgb(239, 243, 244)"] span,
+  :root[data-dwl-theme] [style*="background-color: rgb(239, 243, 244)"] svg { color: var(--dwl-bg) !important; }
+  :root[data-dwl-theme] [style*="background-color: rgb(29, 155, 240)"] { background-color: var(--dwl-accent) !important; }
+  :root[data-dwl-theme] [style*="background-color: rgb(29, 155, 240)"] span,
+  :root[data-dwl-theme] [style*="background-color: rgb(29, 155, 240)"] svg { color: var(--dwl-on-accent) !important; }
+  :root[data-dwl-theme] [style*="border-color: rgb(47, 51, 54)"],
+  :root[data-dwl-theme] [style*="border-color: rgb(51, 54, 57)"] { border-color: var(--dwl-border) !important; }
+  :root[data-dwl-theme] [style*="color: rgb(231, 233, 234)"]:not([style*="background-color: rgb(231"]) { color: var(--dwl-fg) !important; }
+  :root[data-dwl-theme] [style*="color: rgb(113, 118, 123)"]:not([style*="background-color: rgb(113"]) { color: var(--dwl-muted) !important; }
+  :root[data-dwl-theme] [style*="color: rgb(29, 155, 240)"]:not([style*="background-color: rgb(29"]) { color: var(--dwl-accent) !important; }
+  :root[data-dwl-theme] input,
+  :root[data-dwl-theme] textarea,
+  :root[data-dwl-theme] [contenteditable="true"] {
+    color: var(--dwl-fg) !important;
+    caret-color: var(--dwl-accent);
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

@@ -1,0 +1,194 @@
+/* ==UserStyle==
+@name         Gmail: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Gmail in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("mail.google.com") {
+  /* Gmail has no colour variables and its class names are short generated codes
+     (.zA is a message row, .zE an unread one, .aeN the left column), so every surface is
+     painted directly, including the body of an opened e-mail (see below). */
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body,
+  :root[data-dwl-theme] .wl,
+  :root[data-dwl-theme] .nH,
+  :root[data-dwl-theme] .aeN,
+  :root[data-dwl-theme] [role="navigation"],
+  :root[data-dwl-theme] [role="complementary"],
+  :root[data-dwl-theme] [role="banner"],
+  :root[data-dwl-theme] header,
+  :root[data-dwl-theme] header > div {
+    background-color: var(--dwl-bg) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] form[role="search"],
+  :root[data-dwl-theme] form[role="search"] input {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] form[role="search"] input::placeholder {
+    color: var(--dwl-faint) !important;
+  }
+
+  /* message list */
+  :root[data-dwl-theme] tr.zA {
+    background-color: var(--dwl-bg) !important;
+    color: var(--dwl-muted) !important;
+    box-shadow: inset 0 -1px 0 var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] tr.zA.zE {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] tr.zA:hover {
+    background-color: var(--dwl-hover) !important;
+  }
+  :root[data-dwl-theme] tr.zA.x7 {
+    background-color: color-mix(in srgb, var(--dwl-accent) 20%, var(--dwl-bg)) !important;
+  }
+  :root[data-dwl-theme] tr.zA .yP,
+  :root[data-dwl-theme] tr.zA .zF,
+  :root[data-dwl-theme] tr.zA .bog,
+  :root[data-dwl-theme] tr.zA .bqe,
+  :root[data-dwl-theme] tr.zA span:not([class]) {
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] tr.zA .y2,
+  :root[data-dwl-theme] tr.zA .Zt,
+  :root[data-dwl-theme] tr.zA .xW span,
+  :root[data-dwl-theme] tr.zA .bx0 {
+    color: var(--dwl-muted) !important;
+  }
+  /* label chips: only the default grey one; labels with a colour chosen in Gmail keep it */
+  :root[data-dwl-theme] .at:not([style*="background"]),
+  :root[data-dwl-theme] .at[style*="#e1e3e1"],
+  :root[data-dwl-theme] .hN:not([style*="background"]),
+  :root[data-dwl-theme] .hN[style*="#e1e3e1"] {
+    background-color: var(--dwl-hover) !important;
+    border-color: var(--dwl-hover) !important;
+    color: var(--dwl-muted) !important;
+  }
+  :root[data-dwl-theme] .at:not([style*="background"]) .av,
+  :root[data-dwl-theme] .at[style*="#e1e3e1"] .av {
+    color: var(--dwl-muted) !important;
+  }
+
+  /* left column */
+  :root[data-dwl-theme] .TO,
+  :root[data-dwl-theme] .TN {
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .TO:hover {
+    background-color: var(--dwl-hover) !important;
+  }
+  :root[data-dwl-theme] .TO.nZ,
+  :root[data-dwl-theme] .V6.CL {
+    background-color: color-mix(in srgb, var(--dwl-accent) 22%, var(--dwl-bg)) !important;
+  }
+  :root[data-dwl-theme] .TO a,
+  :root[data-dwl-theme] a.J-Ke,
+  :root[data-dwl-theme] .aAv,
+  :root[data-dwl-theme] .apW,
+  :root[data-dwl-theme] .CJ,
+  :root[data-dwl-theme] h1:not(.a3s *),
+  :root[data-dwl-theme] h2:not(.a3s *),
+  :root[data-dwl-theme] h3:not(.a3s *),
+  :root[data-dwl-theme] .nH span:not([class]):not(.a3s *) {
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .TO .bsU,
+  :root[data-dwl-theme] .ts,
+  :root[data-dwl-theme] .Dj,
+  :root[data-dwl-theme] .l8,
+  :root[data-dwl-theme] a.l9,
+  :root[data-dwl-theme] .aiD,
+  :root[data-dwl-theme] .hNbco {
+    color: var(--dwl-muted) !important;
+  }
+  :root[data-dwl-theme] .T-I.T-I-KE.L3 {
+    background-color: var(--dwl-accent) !important;
+    color: var(--dwl-on-accent) !important;
+    box-shadow: none !important;
+  }
+  /* opened message */
+  :root[data-dwl-theme] .Tm,
+  :root[data-dwl-theme] .aeJ,
+  :root[data-dwl-theme] .AO {
+    background-color: var(--dwl-bg) !important;
+  }
+  /* The e-mail itself: its own backgrounds are dropped and its text takes the theme
+     colours, so a white newsletter does not glare in a dark theme. This flattens the
+     sender's design (coloured buttons become plain links); pictures are untouched. */
+  :root[data-dwl-theme] .a3s {
+    background-color: var(--dwl-bg2) !important;
+    color: var(--dwl-fg) !important;
+    border-radius: 8px;
+    padding: 12px !important;
+  }
+  :root[data-dwl-theme] .a3s *:not(img):not(svg):not(svg *) {
+    background-color: transparent !important;
+    background-image: none !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+    box-shadow: none !important;
+  }
+  :root[data-dwl-theme] .a3s a,
+  :root[data-dwl-theme] .a3s a *:not(img) {
+    color: var(--dwl-accent) !important;
+  }
+  :root[data-dwl-theme] .a3s blockquote,
+  :root[data-dwl-theme] .a3s .gmail_quote {
+    color: var(--dwl-muted) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] .nr,
+  :root[data-dwl-theme] .amn,
+  :root[data-dwl-theme] .ams {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] [role="tooltip"] {
+    background-color: var(--dwl-fg) !important;
+    color: var(--dwl-bg) !important;
+  }
+  /* compose window */
+  :root[data-dwl-theme] [role="dialog"] .aaZ,
+  :root[data-dwl-theme] [role="dialog"] .aGb,
+  :root[data-dwl-theme] [role="dialog"] .qz,
+  :root[data-dwl-theme] [role="dialog"] td.Ap,
+  :root[data-dwl-theme] [role="dialog"] .aDj,
+  :root[data-dwl-theme] [role="dialog"] .aoD,
+  :root[data-dwl-theme] [role="dialog"] .aoI,
+  :root[data-dwl-theme] [role="dialog"] input,
+  :root[data-dwl-theme] [role="dialog"] textarea,
+  :root[data-dwl-theme] [role="dialog"] [role="textbox"] {
+    background-color: var(--dwl-bg2) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] [role="dialog"] .l.m,
+  :root[data-dwl-theme] [role="dialog"] [role="toolbar"] {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] [role="dialog"] .gO,
+  :root[data-dwl-theme] [role="dialog"] .aB,
+  :root[data-dwl-theme] [role="dialog"] [role="option"],
+  :root[data-dwl-theme] [role="dialog"] ::placeholder {
+    color: var(--dwl-muted) !important;
+  }
+  :root[data-dwl-theme] .T-I.J-J5-Ji.aoO,
+  :root[data-dwl-theme] .T-I.T-I-atl {
+    background-color: var(--dwl-accent) !important;
+    color: var(--dwl-on-accent) !important;
+  }
+  :root[data-dwl-theme] .aiC {
+    background-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}

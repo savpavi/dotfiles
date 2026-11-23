@@ -1,0 +1,118 @@
+/* ==UserStyle==
+@name         Google Messages: dwl theme
+@namespace    savpavi/dotfiles
+@version      0.1.0
+@description  Google Messages for web in the colours of the active dwl theme (needs the dwl-theme extension).
+@license      MIT
+==/UserStyle== */
+
+@-moz-document domain("messages.google.com") {
+  /* Messages has a handful of colour variables and otherwise fixed colours inside its
+     components, so the surfaces are painted directly. The conversation list was checked
+     in a browser; the rules for an open conversation (bubbles, compose box) are written
+     from the element names alone. */
+  :root[data-dwl-theme],
+  :root[data-dwl-theme] body {
+    --body-bg-color: var(--dwl-bg) !important;
+    --dialog-bg-color: var(--dwl-bg2) !important;
+    --focus-ring-color: var(--dwl-accent) !important;
+    --icon-button-color: var(--dwl-muted) !important;
+    --button-hover-bg-color: color-mix(in srgb, var(--dwl-fg) 9%, transparent) !important;
+    --mention-pill-incoming-bg: var(--dwl-raised) !important;
+    --mention-pill-incoming-color: var(--dwl-accent) !important;
+    --mention-pill-outgoing-bg: var(--dwl-bg3) !important;
+    --mention-pill-outgoing-color: var(--dwl-fg) !important;
+    --mat-app-background-color: var(--dwl-bg) !important;
+    --mat-app-text-color: var(--dwl-fg) !important;
+    --mat-menu-container-color: var(--dwl-bg2) !important;
+    --mat-menu-item-label-text-color: var(--dwl-fg) !important;
+    --mat-menu-item-icon-color: var(--dwl-muted) !important;
+    --mat-dialog-container-color: var(--dwl-bg2) !important;
+    --mat-dialog-subhead-color: var(--dwl-fg) !important;
+    --mat-dialog-supporting-text-color: var(--dwl-muted) !important;
+    --mat-select-panel-background-color: var(--dwl-bg2) !important;
+    --mat-snack-bar-container-color: var(--dwl-raised) !important;
+    --mat-tooltip-container-color: var(--dwl-fg) !important;
+    --mat-tooltip-supporting-text-color: var(--dwl-bg) !important;
+  }
+  :root[data-dwl-theme] body,
+  :root[data-dwl-theme] mw-app,
+  :root[data-dwl-theme] mw-main-container,
+  :root[data-dwl-theme] mw-main-landing,
+  :root[data-dwl-theme] mw-new-conversation-container,
+  :root[data-dwl-theme] mw-new-conversation-sub-header,
+  :root[data-dwl-theme] mw-conversation-container,
+  :root[data-dwl-theme] mws-conversation-container,
+  :root[data-dwl-theme] mws-messages-list,
+  :root[data-dwl-theme] mws-message-compose,
+  :root[data-dwl-theme] mws-header,
+  :root[data-dwl-theme] .load-more {
+    background-color: var(--dwl-bg) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] mw-branded-header,
+  :root[data-dwl-theme] mw-main-nav {
+    background-color: var(--dwl-bg2) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  :root[data-dwl-theme] .conversation-name,
+  :root[data-dwl-theme] .title-text,
+  :root[data-dwl-theme] .group-label,
+  :root[data-dwl-theme] .logo-link,
+  :root[data-dwl-theme] h1,
+  :root[data-dwl-theme] h2,
+  :root[data-dwl-theme] h3 {
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] mws-conversation-snippet,
+  :root[data-dwl-theme] mws-conversation-snippet span,
+  :root[data-dwl-theme] mws-relative-timestamp,
+  :root[data-dwl-theme] .snippet-timestamp,
+  :root[data-dwl-theme] .weekday-label,
+  :root[data-dwl-theme] .info-number,
+  :root[data-dwl-theme] .mid-dot {
+    color: var(--dwl-muted) !important;
+  }
+  :root[data-dwl-theme] mws-conversation-list-item a:hover,
+  :root[data-dwl-theme] mws-conversation-list-item a.selected,
+  :root[data-dwl-theme] mws-conversation-list-item .selected {
+    background-color: var(--dwl-hover) !important;
+  }
+  :root[data-dwl-theme] .fab,
+  :root[data-dwl-theme] mw-fab-link a {
+    background-color: var(--dwl-accent) !important;
+    color: var(--dwl-on-accent) !important;
+  }
+  :root[data-dwl-theme] .fab .fab-label,
+  :root[data-dwl-theme] .fab mws-icon,
+  :root[data-dwl-theme] .fab svg {
+    color: var(--dwl-on-accent) !important;
+    fill: currentColor;
+  }
+  :root[data-dwl-theme] input,
+  :root[data-dwl-theme] textarea,
+  :root[data-dwl-theme] .input,
+  :root[data-dwl-theme] .input-box,
+  :root[data-dwl-theme] .compose-container {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+    border-color: var(--dwl-border) !important;
+  }
+  /* open conversation: bubbles */
+  :root[data-dwl-theme] .text-msg.incoming,
+  :root[data-dwl-theme] mws-text-message-part.incoming .text-msg,
+  :root[data-dwl-theme] .incoming .text-msg-content {
+    background-color: var(--dwl-raised) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] .text-msg.outgoing,
+  :root[data-dwl-theme] mws-text-message-part.outgoing .text-msg,
+  :root[data-dwl-theme] .outgoing .text-msg-content {
+    background-color: color-mix(in srgb, var(--dwl-accent) 28%, var(--dwl-bg)) !important;
+    color: var(--dwl-fg) !important;
+  }
+  :root[data-dwl-theme] ::selection {
+    background: var(--dwl-sel);
+  }
+}
