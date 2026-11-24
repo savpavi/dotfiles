@@ -21,7 +21,9 @@ dosyaları izler, yeniden başlatma gerekmez. Ayrıca Obsidian snippet'i
 (<kasa>/.obsidian/snippets/dwl-theme.css, DWL_THEME_OBSIDIAN) ve Vesktop/Vencord temasını
 (themes/savpavi.css, templates/vesktop.css şablonundan), spicetify [dwl] renk şemasını
 (Spotify sonraki açılışta görür) ve Telegram temasını (~/.config/dwl-theme/telegram/, bir kez
-elle seçilir, sonra kendisi yenilenir) ve tarayıcı eklentisini (~/.config/dwl-theme/browser/,
+elle seçilir, sonra kendisi yenilenir), Pear Desktop / YouTube Music CSS'ini
+(~/.config/dwl-theme/pear/, options.themes'e kendisi eklenir; açık uygulamaya 9334 portundan
+canlı verilir) ve tarayıcı eklentisini (~/.config/dwl-theme/browser/,
 tarayıcıya bir kez "paketlenmemiş" olarak yüklenir; sayfalara --dwl-* değişkenlerini koyar) yazar. OpenRGB/Solaar ışıklarını da vurgu rengine
 boyar (bin/dot-rgb; openrgb-server.service yoksa sessizce geçer), soğutucu ekranına
 temanın duvarını koyar (bin/dot-lcd; trcc-daemon.service yoksa sessizce geçer).
@@ -644,6 +646,116 @@ def spotify_live():
     return cdp_eval(SPOTIFY_DEBUG_PORT, "xpui", js)
 
 
+# Pear Desktop (YouTube Music): options.themes'teki CSS'i yalnız sayfa yüklenirken okur, dosyayı
+# izlemez. Açık uygulamaya yeni renkler DevTools portundan <style> olarak verilir (müzik sürer).
+PEAR_CSS = CFG / "dwl-theme/pear/dwl-theme.css"
+PEAR_CONFIG = CFG / "YouTube Music/config.json"
+PEAR_DEBUG_PORT = 9334   # ~/.config/youtube-music-flags.conf ile açılır (yalnız 127.0.0.1)
+
+
+def pear_css(t, name, live=False):
+    c = app_palette(t)
+    fa = lambda a: "rgba({},{},{},{})".format(*rgb(c["fg"]), a)
+    roles = {
+        "bg": "background general-background-c color-black4 detail-header player-page-background "
+              "nav-bar text-primary-inverse",
+        "bg2": "general-background-a color-black2 footer-background alert-with-actions-background "
+               "multiselect-form-footer-background",
+        "bg3": "player-bar-background brand-background-solid color-black1 static-brand-black",
+        "raised": "menu-popup-background search-background dropdown-item-hover-background",
+        "hover": "dialog-background-color dropdown-background opalescence-dark-grey search-border "
+                 "white-5 confirm-dialog-outline",
+        "fg": "text-primary color-white1 wordmark-text overlay-text-primary display-2_-_color "
+              "static-brand-white touch-response guide-entry-focus-border",
+        "muted": "text-secondary color-grey2 color-badge outline-button-border-color "
+                 "toggle-button-chip-border-color shelf-bottom-button-border-color",
+        "faint": "text-disabled color-grey3 color-grey4 color-grey5 icon-inactive icon-disabled "
+                 "message-renderer-text-color color-input-border",
+        "accent": "call-to-action themed-blue color-lightblue focus-active setting-item-toggle-active "
+                  "search-suggestion-focus-active playback-progress-color static-brand-red "
+                  "color-youtubered brand-link-text color-lightred color-mediumred "
+                  "play-pause-button-background",
+        "green": "themed-green color-lightgreen color-green-1",
+        "yellow": "color-yellow static-ad-yellow",
+    }
+    alphas = {
+        "divider": .1, "ten-percent-layer": .1, "badge-chip-background": .1, "guide-divider": .15,
+        "guide-hover": .2, "explore-chip-background": .15, "inactive-tab": .5, "progress-container": .3,
+        "player-bar-container-color": .2, "player-bar-ink-color": .7, "overlay-text-secondary": .7,
+        "menu-renderer-button-hover-background": .1, "search-bar-background-bauhaus": .15,
+        "search-bar-border-bauhaus": .15, "search-box-text-secondary": .5,
+        "search-suggestion-focus-active-background": .1, "search-suggestion-text-secondary": .5,
+        "dropdown-border-color": .1, "inline-badge-color": .7, "color-white1-alpha10": .1,
+        "color-white1-alpha20": .2, "color-white1-alpha50": .5, "color-white1-alpha70": .7,
+        "two-column-browse-results-description-color": .7, "player-bar-disabled-secondary-color": .5,
+    }
+    # bazı düğme/sekme/logo yazıları --ytmusic-* değil YouTube'un ortak değişkenlerini kullanır
+    sys_roles = {
+        "bg": "base-background", "bg2": "raised-background", "raised": "menu-background",
+        "fg": "text-primary wordmark-text keyboard-text-icon keyboard-text-chevron",
+        "muted": "text-secondary icon-inactive", "faint": "text-disabled icon-disabled",
+        "accent": "call-to-action static-brand-red themed-blue",
+    }
+    sys_alphas = {"tonal-wash": .05, "tonal-rim": .1, "solid-rim": .2, "additive-background": .1,
+                  "tonal-wash-inverse": .2, "button-chip-background-hover": .2, "solid-wash": .3,
+                  "solid-wash-inverse": .15, "outline": .2, "10-percent-layer": .1}
+    lines = [f"  --ytmusic-{v}: {c[r]};" for r, vs in roles.items() for v in vs.split()]
+    lines += [f"  --ytmusic-{v}: {fa(a)};" for v, a in alphas.items()]
+    lines += [f"  --yt-sys-color-baseline--{v}: {c[r]};" for r, vs in sys_roles.items() for v in vs.split()]
+    lines += [f"  --yt-sys-color-baseline--{v}: {fa(a)};" for v, a in sys_alphas.items()]
+    lines += [f"  --{v}: {c['fg']};" for v in ("text-primary-color", "dark-theme-text-color", "paper-tab-ink",
+                                              "paper-menu-color", "yt-deprecated-white-3")]
+    # sitenin html / html[music-web-color-migration] kurallarını yen; canlı <style> açılıştakini yener
+    root = "html:not(#dwl-a):not(#dwl-b)" if live else "html:not(#dwl-a)"
+    bar = "ytmusic-player-bar #progress-bar#progress-bar" if live else "ytmusic-player-bar #progress-bar"
+    return (f"/* dwl-theme: {name}. Elle düzenleme; tema değişince yeniden yazılır. */\n"
+            f"{root}, {root} [dark] {{\n" + "\n".join(lines) + "\n}\n"
+            f"{root} {{ background: {c['bg']}; }}\n"
+            f"{root} tp-yt-paper-tab.ytmusic-player-page {{ color: {c['muted']}; }}\n"
+            f"{root} tp-yt-paper-tab.iron-selected.ytmusic-player-page {{ color: {c['fg']}; }}\n"
+            # bu ikisi YouTube'un her sürümde adı değişen --t<hash> değişkenlerine bağlı; sınıfla hedefle
+            f"{root} ytmusic-nav-bar yt-icon-button.ytmusic-nav-bar {{ color: {c['fg']}; }}\n"
+            f"{root} .ytSpecButtonShapeNextMono.ytSpecButtonShapeNextTonal {{ color: {c['fg']};"
+            f" background: {fa(.1)}; }}\n"
+            f"{root} body {{ background: {c['bg']}; }}\n"
+            f"{bar} {{ --paper-slider-active-color: {c['accent']}; --paper-slider-knob-color: {c['accent']};"
+            f" --paper-slider-container-color: {fa(.3)}; }}\n"
+            f"{root} ::selection {{ background: {mix(c['sel'], c['bg'], 0.4)}; }}\n")
+
+
+def render_pear(t, name):
+    """CSS'i yazar, bir kez options.themes'e ekler, açık Pear'a canlı verir."""
+    if not PEAR_CONFIG.exists():
+        return
+    PEAR_CSS.parent.mkdir(parents=True, exist_ok=True)
+    tmp = PEAR_CSS.with_name(".dwl-theme.css.tmp")
+    tmp.write_text(pear_css(t, name))
+    tmp.replace(PEAR_CSS)
+    try:
+        conf = json.loads(PEAR_CONFIG.read_text())
+        opts = conf.setdefault("options", {})
+        if str(PEAR_CSS) not in (opts.get("themes") or []):
+            opts["themes"] = (opts.get("themes") or []) + [str(PEAR_CSS)]
+            tmp = PEAR_CONFIG.with_name(".config.json.dwl-tmp")
+            tmp.write_text(json.dumps(conf, indent="\t", ensure_ascii=False))
+            tmp.replace(PEAR_CONFIG)
+    except (OSError, ValueError):
+        pass
+    pear_live(t, name)
+
+
+def pear_live(t=None, name=None):
+    """Çalışan Pear'da dwl-theme <style>'ını yeniler (port kapalıysa sessizce False)."""
+    if t is None:
+        tid = current()
+        t = themes()[tid]
+        name = t.get("name", tid)
+    js = ("(()=>{let s=document.getElementById('dwl-theme');if(!s){s=document.createElement('style');"
+          "s.id='dwl-theme';document.head.appendChild(s)}s.textContent=" +
+          json.dumps(pear_css(t, name, live=True)) + ";return true})()")
+    return cdp_eval(PEAR_DEBUG_PORT, "music.youtube.com", js)
+
+
 BROWSER_SRC = ROOT / "extras/browser-theme"
 BROWSER_DIR = Path(os.environ.get("DWL_THEME_BROWSER") or CFG / "dwl-theme/browser")
 
@@ -723,7 +835,7 @@ def apply(tid, live=True):
             quiet("dunstctl", "reload", str(STATE / "dunstrc"))
         render_apps(all_[tid])
         name = all_[tid].get("name", tid)
-        for fn in (render_obsidian, render_discord, render_spotify, render_telegram):
+        for fn in (render_obsidian, render_discord, render_spotify, render_telegram, render_pear):
             try:
                 fn(all_[tid], name)
             except OSError as e:
@@ -1101,6 +1213,8 @@ def main():
         wall(a[1])
     elif a == ["spotify-live"]:
         sys.exit(0 if spotify_live() else 1)
+    elif a == ["pear-live"]:
+        sys.exit(0 if pear_live() else 1)
     elif a == ["current"]:
         print(current())
     elif len(a) == 2 and a[0] == "apply":

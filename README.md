@@ -31,7 +31,7 @@ More screenshots are in [`docs/screenshots/`](docs/screenshots).
 
 SDDM starts `bin/dwl-session`. It pins wlroots to the right GPU, sets the environment (including `DWL_HOME`, the root of this repo) and runs dwl. dwl starts `bin/dwl-autostart`, which launches the bar, the notification daemon, the polkit agent and the clipboard watcher. Nothing in the installed binary points at the repo: shortcuts and autostart go through `$DWL_HOME`.
 
-`dwl-theme apply <id>` renders one theme JSON into `~/.local/state/dwl-theme/`. dwl watches `dwl.conf` there (colours, border, gaps, animation, corner radius, shadow, blur, cursor) and the bar watches `theme.json`, so both change without a restart. The same command recolours Alacritty, fuzzel, dunst, Qt/KDE/GTK apps, Obsidian, Vesktop, Spotify (spicetify), Telegram and the login screen.
+`dwl-theme apply <id>` renders one theme JSON into `~/.local/state/dwl-theme/`. dwl watches `dwl.conf` there (colours, border, gaps, animation, corner radius, shadow, blur, cursor) and the bar watches `theme.json`, so both change without a restart. The same command recolours Alacritty, fuzzel, dunst, Qt/KDE/GTK apps, Obsidian, Vesktop, Spotify (spicetify), Pear Desktop / YouTube Music (live over a 127.0.0.1 DevTools port), Telegram and the login screen.
 
 ## Install
 
