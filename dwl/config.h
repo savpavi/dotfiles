@@ -55,6 +55,7 @@ static const Rule rules[] = {
 	{ "discord",               NULL,  1 << 2,  0,  "DP-1",  0 },
 	{ "vesktop",               NULL,  1 << 2,  0,  "DP-1",  0 },
 	{ "spotify",               NULL,  1 << 1,  0,  "DP-1",  0 },
+	{ "th-ch.youtube-music",   NULL,  1 << 1,  0,  "DP-1",  0 },  /* Pear Desktop (YouTube Music) */
 	{ "=brave-origin",         NULL,  1 << 0,  0,  "DP-1",  0 },  /* "=" tam eslesme: web app'ler (brave-origin-<site>-Default) haric */
 	{ "obsidian",              NULL,  1 << 3,  0,  "DP-1",  0 },
 	{ "mailcraft",             NULL,  1 << 4,  0,  "DP-1",  0 },
@@ -189,6 +190,7 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_w,           spawn,            SHCMD("/home/savpavi/.local/bin/start-windows-looking-glass") },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_w,           spawn,            SHCMD("/home/savpavi/.local/bin/vm-camera") },
 	{ MODKEY,                    XKB_KEY_s,           focusorspawn,     APP("spotify", "spotify-launcher") },
+	{ MODKEY,                    XKB_KEY_y,           focusorspawn,     APP("th-ch.youtube-music", "youtube-music") },
 	{ MODKEY,                    XKB_KEY_t,           focusorspawn,     APP("telegram", "Telegram") },
 	{ MODKEY,                    XKB_KEY_d,           focusorspawn,     APP("vesktop", "vesktop") },
 	{ MODKEY,                    XKB_KEY_z,           focusorspawn,     APP("dev.zed", "zeditor") },
