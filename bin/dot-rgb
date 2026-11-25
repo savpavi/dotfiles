@@ -33,7 +33,7 @@ n=${DOT_RGB_ARGB_LEDS:-120}
 # at most DOT_RGB_BOOT_TRIES times (default 3); after that paint whatever was detected.
 if [ "${1:-}" = boot ]; then
 	pid=${MAINPID:-$(systemctl --user show -p MainPID --value openrgb-server)}
-	for i in $(seq 60); do
+	for _ in $(seq 60); do
 		journalctl --user _PID="$pid" -o cat 2>/dev/null | grep -q 'Detection completed' && break
 		sleep 1
 	done
