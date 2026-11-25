@@ -52,12 +52,12 @@ static const Rule rules[] = {
 	{ "claude",                NULL,  1 << 0,  0,  "DP-3",  0 },
 	{ "telegram",              NULL,  1 << 1,  0,  "DP-3",  0 },
 	{ "dev.zed",               NULL,  1 << 3,  0,  "DP-3",  0 },
-	{ "discord",               NULL,  1 << 2,  0,  "DP-1",  0 },
-	{ "vesktop",               NULL,  1 << 2,  0,  "DP-1",  0 },
+	{ "discord",               NULL,  1 << 3,  0,  "DP-3",  0 },
+	{ "vesktop",               NULL,  1 << 3,  0,  "DP-3",  0 },
 	{ "spotify",               NULL,  1 << 1,  0,  "DP-1",  0 },
 	{ "th-ch.youtube-music",   NULL,  1 << 1,  0,  "DP-1",  0 },  /* Pear Desktop (YouTube Music) */
 	{ "=brave-origin",         NULL,  1 << 0,  0,  "DP-1",  0 },  /* "=" tam eslesme: web app'ler (brave-origin-<site>-Default) haric */
-	{ "obsidian",              NULL,  1 << 3,  0,  "DP-1",  0 },
+	{ "obsidian",              NULL,  1 << 4,  0,  "DP-3",  0 },
 	{ "mailcraft",             NULL,  1 << 4,  0,  "DP-1",  0 },
 	/* kucuk araclar dosenmesin */
 	{ "kcalc",                 NULL,  0,       1,  NULL,  0 },
