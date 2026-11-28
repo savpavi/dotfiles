@@ -27,6 +27,10 @@ An entry whose id matches a built-in replaces it; "hide" drops it. Commands are 
 lists, never run through a shell. The page cannot send a command, only an id.
 Theme chips apply a theme with `dwl-theme apply` (ids from themes/*.json only).
 
+The health card lists / and the disks mounted under /srv (use, NVMe temperature, smartd
+warnings from the last week) and, if ~/.config/dot-panel/config.json names one
+({"nas": "tailscale-host-name", "labels": {"storage": "archive"}}), whether that Tailscale machine is online and its ping.
+
 Env: DOT_PANEL_PORT (default 8777), DOT_PANEL_NO_ADB=1 (serve without touching phones).
 """
 import json
@@ -283,6 +287,105 @@ def volume(target):
     return {"level": round(float(m.group(1)) * 100), "muted": "MUTED" in out}
 
 
+# ---------------------------------------------------------------- health
+
+SMART_BAD = re.compile(r"FAILED|unreadable \(pending\)|Offline uncorrectable|ATA error count increased|failing now")
+_health = {"at": 0, "data": None}
+
+
+def mounts():
+    """/ and every filesystem mounted directly under /srv, with its source device."""
+    out = {}
+    try:
+        for line in Path("/proc/mounts").read_text().splitlines():
+            src, target, *_ = line.split()
+            target = target.replace("\\040", " ")
+            if target == "/" or (target.startswith("/srv/") and target.count("/") == 2):
+                out.setdefault(target, src)
+    except OSError:
+        pass
+    return out
+
+
+def nvme_temps():
+    temps = {}
+    for d in Path("/sys/class/hwmon").glob("hwmon*"):
+        try:
+            if (d / "name").read_text().strip() != "nvme":
+                continue
+            ctrl = re.search(r"nvme\d+$", str((d / "device").resolve()))
+            if ctrl:
+                temps[ctrl.group(0)] = round(int((d / "temp1_input").read_text()) / 1000)
+        except (OSError, ValueError):
+            pass
+    return temps
+
+
+def smart_warnings():
+    """smartd lines from the last week that point at a failing disk (not the routine 'changed' ones)."""
+    out = run(["journalctl", "-u", "smartd", "--since", "-7d", "-q", "-o", "cat", "--no-pager"], timeout=4)
+    bad = {}
+    for line in out.splitlines():
+        if "changed from" in line or not SMART_BAD.search(line):
+            continue
+        m = re.match(r"Device: /dev/(\w+)", line)
+        if m:
+            bad[m.group(1)] = line.split(",", 1)[-1].strip()[:120]
+    return bad
+
+
+def nas_status(host):
+    """Online state from Tailscale and one ping; no login to the NAS."""
+    if not host:
+        return None
+    st = {"name": host, "online": False, "ms": None}
+    try:
+        data = json.loads(run(["tailscale", "status", "--json"], timeout=3) or "{}")
+        for peer in (data.get("Peer") or {}).values():
+            if peer.get("HostName", "").lower() == host.lower():
+                st["online"] = bool(peer.get("Online"))
+                ip = (peer.get("TailscaleIPs") or [None])[0]
+                if ip:
+                    m = re.search(r"time=([\d.]+)", run(["ping", "-c", "1", "-W", "1", ip], timeout=3))
+                    if m:
+                        st["ms"] = round(float(m.group(1)), 1)
+                break
+    except ValueError:
+        pass
+    return st
+
+
+def health():
+    if time.time() - _health["at"] < 30 and _health["data"]:
+        return _health["data"]
+    cfg = read_json(CFG / "config.json") or {}
+    temps, bad = nvme_temps(), smart_warnings()
+    disks = []
+    for target, src in mounts().items():
+        try:
+            v = os.statvfs(target)
+        except OSError:
+            continue
+        size = v.f_blocks * v.f_frsize
+        if not size:
+            continue
+        used = size - v.f_bavail * v.f_frsize
+        dev = Path(src).name
+        base = re.sub(r"(p?\d+)$", "", dev) if dev.startswith("nvme") else re.sub(r"\d+$", "", dev)
+        ctrl = re.match(r"nvme\d+", dev)
+        name = "sistem" if target == "/" else Path(target).name
+        disks.append({
+            "name": (cfg.get("labels") or {}).get(name, name),
+            "used": used, "size": size, "pct": round(used * 100 / size),
+            "temp": temps.get(ctrl.group(0)) if ctrl else None,
+            "warn": bad.get(base),
+        })
+    disks.sort(key=lambda d: (d["name"] != "sistem", -d["size"]))  # system first, then biggest
+    data = {"disks": disks, "nas": nas_status(cfg.get("nas"))}
+    _health.update(at=time.time(), data=data)
+    return data
+
+
 IGNORE_REC = ("easyeffects", "pavucontrol", "peak detect", "dot-panel")
 
 
@@ -352,6 +455,7 @@ def state():
         "volume": volume(SINK),
         "mic": volume(SOURCE),
         "rec": recording(),
+        "health": health(),
         "actions": [{k: a.get(k) for k in ("id", "label", "icon", "page")} for a in actions()],
     }
 

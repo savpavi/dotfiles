@@ -76,29 +76,49 @@ body.night { opacity: .4; }
 #net .v i { font-style: normal; color: var(--c4); }
 
 /* media */
-#media { grid-area: media; display: flex; gap: 14px; align-items: stretch; isolation: isolate; }
+#right { grid-area: media; display: flex; flex-direction: column; gap: var(--gap); min-width: 0; min-height: 0; }
+#media { flex: none; display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; isolation: isolate; padding: 12px; }
 #media::before { content: ""; position: absolute; inset: -30%; z-index: -1; background: var(--art, none) center/cover;
-  filter: blur(36px) saturate(1.5); opacity: .45; transition: opacity .6s; }
+  filter: blur(30px) saturate(1.5); opacity: .4; transition: opacity .6s; }
 #media::after { content: ""; position: absolute; inset: 0; z-index: -1;
   background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--bg) 55%, transparent)); }
-#art { aspect-ratio: 1; width: min(44%, 176px); align-self: center; flex: none; border-radius: max(4px, var(--radius));
+#art { width: 66px; height: 66px; flex: none; border-radius: max(4px, var(--radius));
   background: var(--track) var(--art, none) center/cover no-repeat; display: grid; place-items: center;
-  font-size: 46px; color: var(--faded); box-shadow: 0 10px 30px -10px #000a; }
+  font-size: 28px; color: var(--faded); box-shadow: 0 6px 18px -8px #000a; }
 #art.has { font-size: 0; }
 #media.paused #art { filter: saturate(.55) brightness(.85); }
-.meta { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; }
-#title { font-size: 18px; font-weight: 700; margin-top: 5px; display: -webkit-box; -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; }
-#artist { color: var(--faded); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
-.prog { height: 4px; background: var(--track); border-radius: 2px; overflow: hidden; }
+.meta { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+#title { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#artist { color: var(--faded); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+#player { font-size: 9.5px; }
+.prog { height: 3px; background: var(--track); border-radius: 2px; overflow: hidden; margin-top: 4px; }
 .prog i { display: block; height: 100%; width: 0; background: var(--fg); transition: width 1s linear; }
-.times { display: flex; justify-content: space-between; color: var(--faded); font-size: 11px; margin-top: 4px; font-variant-numeric: tabular-nums; }
-.transport { display: flex; gap: 8px; align-items: center; justify-content: center; }
-.transport button { width: 46px; height: 46px; font-size: 22px; border-radius: 50%; background: transparent; border-color: transparent; }
-.transport button[data-id="play"] { width: 58px; height: 58px; font-size: 28px; background: var(--fg); color: var(--bg); }
-#vol { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--faded); }
-#vol .prog { flex: 1; }
+.times { display: none; }
+.mrow { grid-column: span 2; display: flex; align-items: center; gap: 10px; }
+.transport { display: flex; gap: 4px; align-items: center; }
+.transport button { width: 36px; height: 36px; font-size: 18px; border-radius: 50%; background: transparent; border-color: transparent; }
+.transport button[data-id="play"] { width: 40px; height: 40px; font-size: 20px; background: var(--fg); color: var(--bg); }
+#vol { flex: 1; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--faded); min-width: 0; }
+#vol .prog { flex: 1; margin: 0; }
 #vol .prog i { background: var(--accent); transition: width .3s; }
+
+/* health */
+#health { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; overflow: hidden; min-height: 0; }
+#health .hd { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+#nas { font-size: 11.5px; color: var(--faded); white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+#nas::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--faded); }
+#nas.up::before { background: var(--accent); }
+#nas.down { color: var(--urgent); }
+#nas.down::before { background: var(--urgent); }
+#disks { display: flex; flex-direction: column; justify-content: space-around; flex: 1; gap: 2px; min-height: 0; overflow: hidden; }
+.disk { display: grid; grid-template-columns: 78px 1fr 32px; align-items: center; gap: 8px; font-size: 11px; }
+.disk .n { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.disk .n small { color: var(--faded); font-size: 10px; margin-left: 3px; }
+.disk .prog { margin: 0; height: 5px; }
+.disk .prog i { background: var(--c3); transition: width .6s; }
+.disk.full .prog i { background: var(--urgent); }
+.disk.warn .n { color: var(--urgent); }
+.disk .p { text-align: right; color: var(--faded); font-variant-numeric: tabular-nums; }
 
 /* deck */
 #deckwrap { grid-area: deck; display: flex; gap: 8px; min-width: 0; }
@@ -152,7 +172,6 @@ button:active, button.flash { transform: scale(.93); background: var(--accent) !
   #deck { flex-wrap: wrap; overflow: visible; }
   #tabs { grid-template-columns: 34px; }
   #deck button { flex: 1 0 calc(25% - 8px); }
-  #art { width: 140px; }
 }
 </style>
 </head>
@@ -184,19 +203,26 @@ button:active, button.flash { transform: scale(.93); background: var(--accent) !
       <button id="themebtn" class="pill" style="max-width:48%;overflow:hidden;text-overflow:ellipsis">󰏘 <span id="tname"></span></button></div>
   </section>
 
-  <section class="card paused" id="media">
-    <div id="art">󰝚</div>
-    <div class="meta">
-      <div>
+  <div id="right">
+    <section class="card paused" id="media">
+      <div id="art">󰝚</div>
+      <div class="meta">
         <span class="label" id="player">Çalmıyor</span>
         <div id="title">—</div>
         <div id="artist"></div>
+        <div class="prog"><i id="prog"></i></div>
+        <div class="times"><span id="pos"></span><span id="len"></span></div>
       </div>
-      <div><div class="prog"><i id="prog"></i></div><div class="times"><span id="pos"></span><span id="len"></span></div></div>
-      <div class="transport" id="transport"></div>
-      <div id="vol"><span id="volic">󰕾</span><div class="prog"><i id="volb"></i></div><span id="volt"></span></div>
-    </div>
-  </section>
+      <div class="mrow">
+        <div class="transport" id="transport"></div>
+        <div id="vol"><span id="volic">󰕾</span><div class="prog"><i id="volb"></i></div><span id="volt"></span></div>
+      </div>
+    </section>
+    <section class="card" id="health">
+      <div class="hd"><span class="label">Depolama</span><span id="nas"></span></div>
+      <div id="disks"></div>
+    </section>
+  </div>
 
   <div id="deckwrap"><div id="tabs"></div><nav id="deck"></nav></div>
 </div>
@@ -386,6 +412,28 @@ function recording(rec, mic) {
   }
 }
 
+
+function health(h) {
+  if (!h) return;
+  const nas = $("#nas");
+  if (h.nas) {
+    nas.className = h.nas.online ? "up" : "down";
+    nas.textContent = `${h.nas.name} ${h.nas.online ? (h.nas.ms != null ? h.nas.ms + " ms" : "çevrimiçi") : "kapalı"}`;
+  } else nas.textContent = "";
+  const box = $("#disks"); box.innerHTML = "";
+  for (const d of h.disks || []) {
+    const row = document.createElement("div");
+    row.className = "disk" + (d.pct >= 90 ? " full" : "") + (d.warn ? " warn" : "");
+    if (d.warn) row.title = d.warn;
+    row.innerHTML = `<span class="n"></span><div class="prog"><i></i></div><span class="p"></span>`;
+    row.querySelector(".n").textContent = (d.warn ? "⚠ " : "") + d.name;
+    if (d.temp) { const t = document.createElement("small"); t.textContent = d.temp + "°"; row.querySelector(".n").append(t); }
+    width(row.querySelector("i"), d.pct);
+    row.querySelector(".p").textContent = d.pct + "%";
+    box.append(row);
+  }
+}
+
 async function post(url) {
   try { return (await fetch(url, { method: "POST", headers: { "X-Dot-Panel": "1" } })).ok; } catch { return false; }
 }
@@ -402,7 +450,7 @@ async function poll() {
     S = await r.json();
     drift = S.now - Date.now() / 1000;
     $("#offline").classList.remove("show");
-    applyTheme(S.theme); deck(S.actions || [], S.mic, S.volume, S.rec); stats(S.sys || {}); media(S.media, S.volume);
+    applyTheme(S.theme); deck(S.actions || [], S.mic, S.volume, S.rec); stats(S.sys || {}); media(S.media, S.volume); health(S.health);
     if (S.claude) quotas(S.claude);
   } catch { $("#offline").classList.add("show"); }
 }

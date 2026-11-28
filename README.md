@@ -80,7 +80,7 @@ tests/themes.sh                         # every theme in a headless dwl session
 | `dot-fm` | Actions behind the Dolphin service menus: video and PDF tools, copy path, rename, duplicates |
 | `dot-rgb [RRGGBB\|off]` | Paint RAM, mouse, board and ARGB headers (OpenRGB) plus the Logitech mouse/headset (Solaar) and the Epomaker HE75 Mag one colour; no argument = the dwl theme accent, which `dwl-theme apply` also sets |
 | `dot-lcd [FILE]` | Picture on the Thermalright cooler LCD (trcc-linux): no argument = the dwl theme's current static wallpaper cropped to the panel, or a per-theme file from `~/.config/dwl-theme/lcd.json`; GIFs are turned into MP4. `dwl-theme apply` calls it too |
-| `dot-panel [open]` | Desk panel for an old Android phone over USB (`adb reverse`, listens on 127.0.0.1 only): clock, Claude usage from the bar's cache, CPU/GPU/RAM, now playing, volume, a mic/camera-in-use light, theme picker and paged buttons in the dwl theme colours. Buttons run a fixed table of commands, extended in `~/.config/dot-panel/actions.json`; `open` shows it on the phone |
+| `dot-panel [open]` | Desk panel for an old Android phone over USB (`adb reverse`, listens on 127.0.0.1 only): clock, Claude usage from the bar's cache, CPU/GPU/RAM, now playing, volume, storage health (disk use, NVMe temperature, smartd warnings, optional Tailscale NAS ping), a mic/camera-in-use light, theme picker and paged buttons in the dwl theme colours. Buttons run a fixed table of commands, extended in `~/.config/dot-panel/actions.json`; `open` shows it on the phone |
 | `dot-ocr` | Select a region, copy its text (tesseract) |
 | `dot-webapp Name https://url` | Create a Brave Origin web-app launcher (never overwrites) |
 | `dot-resolve [FILE…]` | Prepare a video for DaVinci Resolve |
