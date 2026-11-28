@@ -1,0 +1,11 @@
+{
+  "name": "dot-panel",
+  "short_name": "Panel",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#1B1A17",
+  "theme_color": "#1B1A17",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

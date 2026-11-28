@@ -1,0 +1,533 @@
+#!/usr/bin/env python3
+"""dot-panel: a desk panel for an old Android phone, in the dwl theme colours.
+
+  dot-panel             serve the panel on 127.0.0.1 (the systemd unit runs this)
+  dot-panel open        forward the port to every adb phone and open the panel there
+                        (the full-screen app from panel/android if installed, else the browser)
+  dot-panel actions     print the buttons the panel will show
+
+The phone reaches the panel through `adb reverse` over USB: on the phone it is
+http://localhost:PORT, which Chrome treats as a secure page (fullscreen app, wake
+lock). Nothing listens on the network. While serving, the port is forwarded again
+whenever a phone is plugged in.
+
+The page shows the clock, Claude usage (the bar's cache file; this tool never reads
+a token), CPU/GPU/RAM, now playing (playerctl) and volume (wpctl), plus buttons.
+Buttons run only commands from a fixed table: the built-in ones below, replaced or
+extended by ~/.config/dot-panel/actions.json:
+
+  [{"id": "vm", "label": "Windows", "icon": "", "cmd": ["/path/to/script"], "page": "apps"},
+   {"id": "meet-cam", "label": "Kamera", "cmd": ["wtype", "-M", "ctrl", "e", "-m", "ctrl"], "page": "meeting"},
+   {"id": "lock", "hide": true}]
+
+"page" picks the deck page the button sits on; the page list is built from what the
+buttons use (built-ins: ses, sistem; anything without a page goes to "apps").
+
+An entry whose id matches a built-in replaces it; "hide" drops it. Commands are argv
+lists, never run through a shell. The page cannot send a command, only an id.
+Theme chips apply a theme with `dwl-theme apply` (ids from themes/*.json only).
+
+Env: DOT_PANEL_PORT (default 8777), DOT_PANEL_NO_ADB=1 (serve without touching phones).
+"""
+import json
+import mimetypes
+import os
+import re
+import shutil
+import subprocess
+import sys
+import threading
+import time
+import urllib.parse
+import urllib.request
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+WEB = ROOT / "panel"
+HOME = Path.home()
+PORT = int(os.environ.get("DOT_PANEL_PORT", "8777"))
+CFG = Path(os.environ.get("XDG_CONFIG_HOME") or HOME / ".config") / "dot-panel"
+STATE = Path(os.environ.get("XDG_STATE_HOME") or HOME / ".local/state") / "dwl-theme"
+CACHE = Path(os.environ.get("XDG_CACHE_HOME") or HOME / ".cache")
+CLAUDE = CACHE / "dwl-bar" / "claude-usage.json"
+FONT = Path("/usr/share/fonts/TTF")
+WEB_FILES = {"/": "index.html", "/index.html": "index.html", "/manifest.json": "manifest.json",
+             "/sw.js": "sw.js", "/icon.svg": "icon.svg"}
+FONT_FILES = {"/font/regular.ttf": "JetBrainsMonoNerdFont-Regular.ttf",
+              "/font/bold.ttf": "JetBrainsMonoNerdFont-Bold.ttf"}
+
+# Child processes need the session's tools and DWL_HOME (dwl-shot, the bar's ipc).
+ENV = dict(os.environ, DWL_HOME=str(ROOT))
+ENV["PATH"] = f"{HOME}/.local/bin:{ENV.get('PATH', '/usr/bin:/bin')}"
+
+SINK, SOURCE = "@DEFAULT_AUDIO_SINK@", "@DEFAULT_AUDIO_SOURCE@"
+BUILTIN = [
+    {"id": "prev", "label": "Önceki", "icon": "󰒮", "cmd": ["playerctl", "previous"], "page": "media"},
+    {"id": "play", "label": "Oynat", "icon": "󰐎", "cmd": ["playerctl", "play-pause"], "page": "media"},
+    {"id": "next", "label": "Sonraki", "icon": "󰒭", "cmd": ["playerctl", "next"], "page": "media"},
+    {"id": "voldown", "label": "Ses −", "icon": "󰝞", "cmd": ["wpctl", "set-volume", SINK, "5%-"], "page": "ses"},
+    {"id": "volup", "label": "Ses +", "icon": "󰝝", "cmd": ["wpctl", "set-volume", "-l", "1.0", SINK, "5%+"], "page": "ses"},
+    {"id": "mute", "label": "Sessiz", "icon": "󰖁", "cmd": ["wpctl", "set-mute", SINK, "toggle"], "page": "ses"},
+    {"id": "mic", "label": "Mikrofon", "icon": "󰍭", "cmd": ["wpctl", "set-mute", SOURCE, "toggle"], "page": "ses"},
+    {"id": "shot", "label": "Ekran görüntüsü", "icon": "󰹑", "cmd": [str(ROOT / "bin/dwl-shot"), "screen"], "page": "sistem"},
+    {"id": "wall", "label": "Duvar", "icon": "󰸉", "cmd": [str(ROOT / "bin/dwl-theme"), "wall", "next"], "page": "sistem"},
+    {"id": "lock", "label": "Kilitle", "icon": "󰌾", "cmd": ["quickshell", "ipc", "-p", str(ROOT / "bar"), "call", "lock", "lock"], "page": "sistem"},
+]
+
+
+def log(*a):
+    print("dot-panel:", *a, file=sys.stderr, flush=True)
+
+
+def run(cmd, timeout=3):
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=ENV)
+        return r.stdout if r.returncode == 0 else ""
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def read_json(p):
+    try:
+        return json.loads(Path(p).read_text())
+    except (OSError, ValueError):
+        return None
+
+
+# ---------------------------------------------------------------- actions
+
+def actions():
+    """Built-ins merged with the local file, in order: built-ins first, then new ids."""
+    out = {a["id"]: dict(a) for a in BUILTIN}
+    order = [a["id"] for a in BUILTIN]
+    extra = read_json(CFG / "actions.json")
+    if isinstance(extra, list):
+        for e in extra:
+            if not isinstance(e, dict) or not isinstance(e.get("id"), str):
+                continue
+            i = e["id"]
+            if e.get("hide"):
+                out.pop(i, None)
+                continue
+            cmd = e.get("cmd", out.get(i, {}).get("cmd"))
+            if not (isinstance(cmd, list) and cmd and all(isinstance(c, str) for c in cmd)):
+                log(f"actions.json: '{i}' needs cmd as a list of strings; skipped")
+                continue
+            out[i] = {**out.get(i, {}), **e, "cmd": [os.path.expanduser(c) for c in cmd]}
+            if i not in order:
+                order.append(i)
+    return [out[i] for i in order if i in out]
+
+
+def run_action(aid):
+    for a in actions():
+        if a["id"] == aid:
+            try:
+                subprocess.Popen(a["cmd"], env=ENV, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                 stderr=subprocess.DEVNULL, start_new_session=True)
+                return True
+            except OSError as e:
+                log(f"action {aid}: {e}")
+                return False
+    return False
+
+
+def theme_ids():
+    return {f.stem: f for f in (ROOT / "themes").glob("*.json")}
+
+
+def apply_theme(tid):
+    if tid not in theme_ids():
+        return False
+    subprocess.Popen([str(ROOT / "bin/dwl-theme"), "apply", tid], env=ENV, stdin=subprocess.DEVNULL,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    return True
+
+
+# ---------------------------------------------------------------- readings
+
+def hwmon(name, pci=None):
+    for d in Path("/sys/class/hwmon").glob("hwmon*"):
+        try:
+            if (d / "name").read_text().strip() != name:
+                continue
+            if pci and pci not in str((d / "device").resolve()):
+                continue
+            return d
+        except OSError:
+            pass
+    return None
+
+
+def temp(d, label):
+    if not d:
+        return None
+    for f in d.glob("temp*_label"):
+        try:
+            if f.read_text().strip() == label:
+                return round(int(f.with_name(f.name.replace("_label", "_input")).read_text()) / 1000)
+        except (OSError, ValueError):
+            pass
+    return None
+
+
+def main_gpu():
+    """The amdgpu card with the most VRAM (the dGPU, not the iGPU)."""
+    best = None
+    for c in Path("/sys/class/drm").glob("card[0-9]*"):
+        dev = c / "device"
+        try:
+            if not re.fullmatch(r"card\d+", c.name) or (dev / "vendor").read_text().strip() != "0x1002":
+                continue
+            vram = int((dev / "mem_info_vram_total").read_text())
+        except (OSError, ValueError):
+            continue
+        if not best or vram > best[0]:
+            best = (vram, dev)
+    return best[1] if best else None
+
+
+class Sampler(threading.Thread):
+    """CPU and network need two readings; keep a rolling one every 2 s."""
+
+    def __init__(self):
+        super().__init__(daemon=True)
+        self.data = {}
+        self.gpu = main_gpu()
+        self.cpu_mon = hwmon("k10temp") or hwmon("coretemp")
+        self.gpu_mon = None
+        if self.gpu:
+            pci = self.gpu.resolve().name
+            self.gpu_mon = hwmon("amdgpu", pci)
+
+    @staticmethod
+    def cpu_times():
+        with open("/proc/stat") as f:
+            v = [int(x) for x in f.readline().split()[1:]]
+        idle = v[3] + v[4]
+        return sum(v), idle
+
+    @staticmethod
+    def net_bytes():
+        rx = tx = 0
+        with open("/proc/net/dev") as f:
+            for line in f.readlines()[2:]:
+                name, rest = line.split(":", 1)
+                name = name.strip()
+                if name == "lo" or name.startswith(("virbr", "vnet", "docker", "veth", "br-", "tailscale")):
+                    continue
+                v = rest.split()
+                rx += int(v[0])
+                tx += int(v[8])
+        return rx, tx
+
+    def run(self):
+        prev_cpu, prev_net, prev_t = self.cpu_times(), self.net_bytes(), time.monotonic()
+        while True:
+            time.sleep(2)
+            try:
+                cpu, net, t = self.cpu_times(), self.net_bytes(), time.monotonic()
+                dt_total = cpu[0] - prev_cpu[0]
+                busy = 100 * (1 - (cpu[1] - prev_cpu[1]) / dt_total) if dt_total else 0
+                dt = t - prev_t
+                self.data = {
+                    "cpu": round(busy),
+                    "net_rx": round((net[0] - prev_net[0]) / dt),
+                    "net_tx": round((net[1] - prev_net[1]) / dt),
+                }
+                prev_cpu, prev_net, prev_t = cpu, net, t
+            except (OSError, ValueError, ZeroDivisionError) as e:
+                log("sampler:", e)
+
+    def read(self):
+        d = dict(self.data)
+        d["cpu_temp"] = temp(self.cpu_mon, "Tctl")
+        try:
+            mem = {}
+            with open("/proc/meminfo") as f:
+                for line in f:
+                    k, v = line.split(":")
+                    mem[k] = int(v.split()[0]) * 1024
+            d["ram_total"] = mem["MemTotal"]
+            d["ram_used"] = mem["MemTotal"] - mem["MemAvailable"]
+        except (OSError, KeyError, ValueError):
+            pass
+        if self.gpu:
+            try:
+                d["gpu"] = int((self.gpu / "gpu_busy_percent").read_text())
+                d["vram_used"] = int((self.gpu / "mem_info_vram_used").read_text())
+                d["vram_total"] = int((self.gpu / "mem_info_vram_total").read_text())
+            except (OSError, ValueError):
+                pass
+            d["gpu_temp"] = temp(self.gpu_mon, "edge")
+        return d
+
+
+def media():
+    fmt = "{{status}}\t{{playerName}}\t{{artist}}\t{{title}}\t{{position}}\t{{mpris:length}}\t{{mpris:artUrl}}"
+    out = run(["playerctl", "metadata", "--format", fmt]).rstrip("\n")
+    if not out:
+        return None
+    p = (out.split("\t") + [""] * 7)[:7]
+    num = lambda s: int(s) // 1_000_000 if s.isdigit() else None
+    return {"status": p[0], "player": p[1], "artist": p[2], "title": p[3],
+            "position": num(p[4]), "length": num(p[5]), "art": p[6]}
+
+
+def volume(target):
+    out = run(["wpctl", "get-volume", target])
+    m = re.search(r"Volume:\s*([\d.]+)", out)
+    if not m:
+        return None
+    return {"level": round(float(m.group(1)) * 100), "muted": "MUTED" in out}
+
+
+IGNORE_REC = ("easyeffects", "pavucontrol", "peak detect", "dot-panel")
+
+
+def recording():
+    """Apps holding the microphone or the camera right now (meeting indicator)."""
+    mic = []
+    try:
+        out = subprocess.run(["pactl", "-f", "json", "list", "source-outputs"], capture_output=True,
+                             text=True, timeout=2).stdout
+        for o in json.loads(out or "[]"):
+            props = o.get("properties", {})
+            name = props.get("application.name") or props.get("application.process.binary") or "?"
+            if not o.get("corked") and not any(i in name.lower() for i in IGNORE_REC):
+                mic.append(name)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        pass
+    cam = set()
+    for proc in Path("/proc").glob("[0-9]*"):
+        try:
+            for fd in (proc / "fd").iterdir():
+                if os.readlink(fd).startswith("/dev/video"):
+                    cam.add((proc / "comm").read_text().strip())
+                    break
+        except OSError:
+            continue
+    return {"mic": sorted(set(mic)), "cam": sorted(cam)}
+
+
+def theme():
+    t = read_json(STATE / "theme.json") or {}
+    try:
+        tid = (STATE / "current").read_text().strip()
+    except OSError:
+        tid = ""
+    bar = t.get("bar", {})
+    keys = ("bg", "fg", "faded", "accent", "onAccent", "urgent")
+    return {"id": tid, "name": t.get("name", tid), **{k: bar.get(k) for k in keys},
+            "palette": t.get("term", {}).get("palette", []), "radius": t.get("menu", {}).get("radius", 0)}
+
+
+def theme_list():
+    out = []
+    for tid, f in sorted(theme_ids().items()):
+        t = read_json(f) or {}
+        out.append({"id": tid, "name": t.get("name", tid), "accent": t.get("bar", {}).get("accent"),
+                    "bg": t.get("bar", {}).get("bg")})
+    return out
+
+
+def claude():
+    c = read_json(CLAUDE)
+    if not isinstance(c, dict):
+        return None
+    return {k: c.get(k) for k in ("captured_at", "five_hour", "seven_day")}
+
+
+SAMPLER = Sampler()
+
+
+def state():
+    return {
+        "now": int(time.time()),
+        "theme": theme(),
+        "claude": claude(),
+        "sys": SAMPLER.read(),
+        "media": media(),
+        "volume": volume(SINK),
+        "mic": volume(SOURCE),
+        "rec": recording(),
+        "actions": [{k: a.get(k) for k in ("id", "label", "icon", "page")} for a in actions()],
+    }
+
+
+# ---------------------------------------------------------------- album art
+
+_art = {"url": None, "body": None, "type": None}
+
+
+def art():
+    m = media()
+    url = (m or {}).get("art") or ""
+    if url == _art["url"]:
+        return _art["body"], _art["type"]
+    body, ctype = None, None
+    u = urllib.parse.urlparse(url)
+    try:
+        if u.scheme == "file":
+            p = Path(urllib.parse.unquote(u.path)).resolve()
+            if (p.is_relative_to(CACHE) or p.is_relative_to("/tmp")) and p.is_file() and p.stat().st_size < 8_000_000:
+                body, ctype = p.read_bytes(), mimetypes.guess_type(p.name)[0] or "image/jpeg"
+        elif u.scheme == "https":
+            req = urllib.request.Request(url, headers={"User-Agent": "dot-panel"})
+            with urllib.request.urlopen(req, timeout=4) as r:
+                ctype = r.headers.get_content_type()
+                if ctype.startswith("image/"):
+                    body = r.read(8_000_000)
+    except (OSError, ValueError) as e:
+        log("art:", e)
+    # Only hand out real pictures: a player could name any file as its cover.
+    if body and not body.startswith((b"\xff\xd8\xff", b"\x89PNG", b"GIF8", b"RIFF")):
+        body = None
+    _art.update(url=url, body=body, type=ctype if body else None)
+    return body, _art["type"]
+
+
+# ---------------------------------------------------------------- adb
+
+def adb_phones():
+    if not shutil.which("adb"):
+        return []
+    out = run(["adb", "devices"])
+    return [l.split()[0] for l in out.splitlines()[1:] if l.strip().endswith("\tdevice")]
+
+
+def forward(serial):
+    rule = f"tcp:{PORT}"
+    if rule not in run(["adb", "-s", serial, "reverse", "--list"]):
+        run(["adb", "-s", serial, "reverse", rule, rule])
+        log(f"forwarded port {PORT} to {serial}")
+
+
+def adb_loop():
+    while True:
+        for s in adb_phones():
+            forward(s)
+        time.sleep(5)
+
+
+APP = "io.github.savpavi.dotpanel"
+
+
+def open_on_phones():
+    phones = adb_phones()
+    if not phones:
+        print("no phone over adb (USB debugging on, authorised?)", file=sys.stderr)
+        return 1
+    for s in phones:
+        forward(s)
+        run(["adb", "-s", s, "shell", "input", "keyevent", "KEYCODE_WAKEUP"])  # refused on some ROMs
+        if APP in run(["adb", "-s", s, "shell", "pm", "list", "packages", APP]):
+            run(["adb", "-s", s, "shell", "am", "start", "-n", f"{APP}/.MainActivity"])
+            print(f"opened the panel app on {s}")
+        else:
+            run(["adb", "-s", s, "shell", "am", "start", "-a", "android.intent.action.VIEW",
+                 "-d", f"http://localhost:{PORT}/"])
+            print(f"opened in the browser on {s} (panel/android/build.sh makes the app)")
+    return 0
+
+
+# ---------------------------------------------------------------- http
+
+ALLOWED_HOSTS = {f"127.0.0.1:{PORT}", f"localhost:{PORT}"}
+
+
+class Handler(BaseHTTPRequestHandler):
+    server_version = "dot-panel"
+
+    def log_message(self, *a):
+        pass
+
+    def send(self, code, body=b"", ctype="application/json", cache="no-store"):
+        if isinstance(body, (dict, list)):
+            body = json.dumps(body).encode()
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", cache)
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def host_ok(self):
+        # Blocks DNS rebinding: a web page can only ever reach us under its own host name.
+        return self.headers.get("Host", "") in ALLOWED_HOSTS
+
+    def do_GET(self):
+        if not self.host_ok():
+            return self.send(403, {"error": "host"})
+        path = urllib.parse.urlparse(self.path).path
+        if path == "/api/state":
+            return self.send(200, state())
+        if path == "/api/themes":
+            return self.send(200, theme_list())
+        if path == "/api/art":
+            body, ctype = art()
+            return self.send(200, body, ctype) if body else self.send(404, {"error": "no art"})
+        if path in WEB_FILES:
+            f = WEB / WEB_FILES[path]
+            ctype = mimetypes.guess_type(f.name)[0] or "application/octet-stream"
+            if f.suffix == ".json":
+                ctype = "application/manifest+json"
+            try:
+                return self.send(200, f.read_bytes(), ctype + ("; charset=utf-8" if ctype.startswith("text") else ""))
+            except OSError:
+                return self.send(404, {"error": "missing"})
+        if path in FONT_FILES:
+            try:
+                return self.send(200, (FONT / FONT_FILES[path]).read_bytes(), "font/ttf", "max-age=604800")
+            except OSError:
+                return self.send(404, {"error": "font"})
+        self.send(404, {"error": "not found"})
+
+    def do_POST(self):
+        # The custom header forces a CORS preflight, which we never answer, so other
+        # web pages open on this computer cannot press buttons.
+        if not self.host_ok() or self.headers.get("X-Dot-Panel") != "1":
+            return self.send(403, {"error": "forbidden"})
+        path = urllib.parse.urlparse(self.path).path
+        if path.startswith("/api/action/"):
+            ok = run_action(path.removeprefix("/api/action/"))
+            return self.send(200 if ok else 404, {"ok": ok})
+        if path.startswith("/api/theme/"):
+            ok = apply_theme(path.removeprefix("/api/theme/"))
+            return self.send(200 if ok else 404, {"ok": ok})
+        self.send(404, {"error": "not found"})
+
+
+def serve():
+    SAMPLER.start()
+    if not os.environ.get("DOT_PANEL_NO_ADB"):
+        threading.Thread(target=adb_loop, daemon=True).start()
+    srv = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
+    log(f"http://127.0.0.1:{PORT}/")
+    srv.serve_forever()
+
+
+def main(argv):
+    cmd = argv[1] if len(argv) > 1 else "serve"
+    if cmd == "serve":
+        serve()
+    elif cmd == "open":
+        return open_on_phones()
+    elif cmd == "actions":
+        for a in actions():
+            print(f"{a['id']:<10} {a.get('label', ''):<18} {' '.join(a['cmd'])}")
+    elif cmd in ("-h", "--help", "help"):
+        print(__doc__.strip())
+    else:
+        print(__doc__.strip(), file=sys.stderr)
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv))
+    except KeyboardInterrupt:
+        pass

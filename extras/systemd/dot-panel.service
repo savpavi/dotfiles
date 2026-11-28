@@ -1,0 +1,12 @@
+[Unit]
+Description=dot-panel: desk panel for a phone over adb (127.0.0.1 only)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=%h/dotfiles/bin/dot-panel
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

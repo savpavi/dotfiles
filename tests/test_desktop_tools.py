@@ -26,4 +26,45 @@ class DesktopTools(unittest.TestCase):
             self.assertNotEqual(again.returncode, 0)
             self.assertEqual(p.read_text(), content)
 
+    def test_panel_actions_merge_hide_and_reject_bad_commands(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = Path(tmp)/'dot-panel'; cfg.mkdir()
+            (cfg/'actions.json').write_text('[{"id":"lock","hide":true},{"id":"x","label":"X","cmd":["true"]},'
+                                            '{"id":"bad","cmd":"rm -rf ~"},{"id":"mic","label":"Mic"}]')
+            r = subprocess.run([str(BIN/'dot-panel'), 'actions'], capture_output=True, text=True,
+                               env=dict(os.environ, XDG_CONFIG_HOME=tmp))
+            self.assertEqual(r.returncode, 0, r.stderr)
+            ids = [l.split()[0] for l in r.stdout.splitlines()]
+            self.assertNotIn('lock', ids); self.assertNotIn('bad', ids)
+            self.assertEqual(ids[-1], 'x')
+            self.assertIn('wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle', r.stdout)
+
+    def test_panel_refuses_foreign_hosts_and_bare_posts(self):
+        import socket, time, urllib.request, urllib.error
+        with socket.socket() as s:
+            s.bind(('127.0.0.1', 0)); port = s.getsockname()[1]
+        with tempfile.TemporaryDirectory() as tmp:
+            env = dict(os.environ, DOT_PANEL_PORT=str(port), XDG_CONFIG_HOME=tmp, DOT_PANEL_NO_ADB='1')
+            srv = subprocess.Popen([str(BIN/'dot-panel')], env=env, stderr=subprocess.DEVNULL)
+            try:
+                def code(path, method='GET', headers=None):
+                    req = urllib.request.Request(f'http://127.0.0.1:{port}{path}', method=method, headers=headers or {})
+                    try:
+                        return urllib.request.urlopen(req, timeout=2).status
+                    except urllib.error.HTTPError as e:
+                        return e.code
+                for _ in range(50):
+                    try:
+                        code('/api/themes'); break
+                    except OSError:
+                        time.sleep(0.1)
+                self.assertEqual(code('/api/themes'), 200)
+                self.assertEqual(code('/api/themes', headers={'Host': 'evil.example'}), 403)
+                self.assertEqual(code('/api/action/x', 'POST'), 403)
+                self.assertEqual(code('/api/action/nope', 'POST', {'X-Dot-Panel': '1'}), 404)
+                self.assertEqual(code('/api/theme/..%2fx', 'POST', {'X-Dot-Panel': '1'}), 404)
+                self.assertEqual(code('/../bin/dot-panel'), 404)
+            finally:
+                srv.terminate(); srv.wait(5)
+
 if __name__ == '__main__': unittest.main()
